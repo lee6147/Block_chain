@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blockchain Lab #3 — My Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-gray-800 py-6 shadow-lg">
+    <h1 class="text-3xl font-bold text-center">Blockchain Lab #3 &mdash; My Dashboard</h1>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- Card 1: 지갑 연결 -->
+      <div class="bg-gray-800 rounded-2xl p-6 shadow">
+        <h2 class="text-xl font-semibold mb-4">1. 지갑 연결</h2>
+        <button id="btnConnect" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg">
+          MetaMask 연결
+        </button>
+        <div id="walletInfo" class="mt-4 text-sm text-gray-400">지갑이 연결되지 않았습니다.</div>
+        <!-- TODO: 연결된 지갑의 잔액(balance)을 조회하여 표시하세요 -->
+        <!-- TODO: 연결된 지갑의 논스(nonce)를 조회하여 표시하세요 -->
+      </div>
+
+      <!-- Card 2: ETH 송금 -->
+      <div class="bg-gray-800 rounded-2xl p-6 shadow">
+        <h2 class="text-xl font-semibold mb-4">2. ETH 송금</h2>
+        <!-- TODO: 수신자 주소 입력 필드를 추가하세요 -->
+        <!-- TODO: 송금할 ETH 수량 입력 필드를 추가하세요 -->
+        <!-- TODO: '송금' 버튼을 추가하세요 -->
+        <!-- TODO: 트랜잭션 결과(해시, 상태)를 표시할 영역을 추가하세요 -->
+      </div>
+
+      <!-- Card 3: 트랜잭션 추적 -->
+      <div class="bg-gray-800 rounded-2xl p-6 shadow">
+        <h2 class="text-xl font-semibold mb-4">3. 트랜잭션 추적</h2>
+        <!-- TODO: 트랜잭션 해시 입력 필드를 추가하세요 -->
+        <!-- TODO: '조회' 버튼을 추가하세요 -->
+        <!-- TODO: 논스(nonce) 출력 영역을 추가하세요 -->
+        <!-- TODO: 가스(gas) 정보 출력 영역을 추가하세요 -->
+        <!-- TODO: 서명(v, r, s) 출력 영역을 추가하세요 -->
+      </div>
+
+      <!-- Card 4: 서명 검증 (트랜잭션 서명 검증) -->
+      <div class="bg-gray-800 rounded-2xl p-6 shadow">
+        <h2 class="text-xl font-semibold mb-4">4. 서명 검증</h2>
+        <!-- TODO: ethers.Transaction 클래스를 사용하여 raw tx를 파싱하세요 -->
+        <!-- TODO: 트랜잭션의 서명(v, r, s)에서 ecrecover로 공개키를 복원하세요 -->
+        <!-- TODO: 복원된 주소와 tx.from을 비교하여 서명 유효성을 검증하세요 -->
+        <!-- TODO: 검증 결과를 화면에 표시하세요 -->
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-800 py-4 text-center text-sm text-gray-500">
+    &copy; 2026 Blockchain Lab — Week 3 Sepolia 실습
+  </footer>
+
+  <!-- JavaScript -->
+  <script>
+    var walletProvider = null;
+    var walletSigner = null;
+    var walletAddress = null;
+
+    // 유틸: 요소 선택 헬퍼
+    function $(id) { return document.getElementById(id); }
+
+    // ──────────────────────────────────────────
+    // Card 1: MetaMask 지갑 연결 (구현 예시)
+    // ──────────────────────────────────────────
+    $("btnConnect").addEventListener("click", async function () {
+      if (typeof window.ethereum === "undefined") {
+        alert("MetaMask가 설치되어 있지 않습니다.");
+        return;
+      }
+      try {
+        walletProvider = new ethers.BrowserProvider(window.ethereum);
+        walletSigner = await walletProvider.getSigner();
+        walletAddress = await walletSigner.getAddress();
+        $("walletInfo").textContent = "연결됨: " + walletAddress;
+
+        // TODO: walletProvider.getBalance(walletAddress) 로 잔액을 조회하세요
+        // TODO: walletProvider.getTransactionCount(walletAddress) 로 논스를 조회하세요
+      } catch (err) {
+        console.error(err);
+        $("walletInfo").textContent = "연결 실패: " + err.message;
+      }
+    });
+
+    // ──────────────────────────────────────────
+    // Card 2: ETH 송금 (TODO)
+    // ──────────────────────────────────────────
+    // TODO: 송금 버튼 클릭 이벤트를 작성하세요
+    // TODO: walletSigner.sendTransaction({ to, value }) 를 호출하세요
+    // TODO: 트랜잭션 해시와 완료 상태를 화면에 표시하세요
+
+    // ──────────────────────────────────────────
+    // Card 3: 트랜잭션 추적 (TODO)
+    // ──────────────────────────────────────────
+    // TODO: 해시 입력값으로 walletProvider.getTransaction(hash) 를 호출하세요
+    // TODO: 반환된 객체에서 nonce, gasLimit, gasPrice 등을 추출하세요
+    // TODO: 서명 값(v, r, s)을 화면에 출력하세요
+
+    // ──────────────────────────────────────────
+    // Card 4: 트랜잭션 서명 검증 (TODO)
+    // ──────────────────────────────────────────
+    // TODO: ethers.Transaction.from(rawTx) 으로 트랜잭션을 파싱하세요
+    // TODO: 파싱된 트랜잭션에서 서명(signature)을 추출하세요
+    // TODO: ecrecover 원리를 활용하여 서명자 주소를 복원하세요
+    // TODO: 복원된 주소와 tx.from 을 비교하여 검증 결과를 표시하세요
+  </script>
+
+</body>
+</html>

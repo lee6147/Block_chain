@@ -1,0 +1,18 @@
+{
+  "name": "giwa-sepolia-lab",
+  "version": "1.0.0",
+  "description": "Blockchain Lab #3 — Sepolia / Base Sepolia / GIWA Sepolia 테스트넷 실습 (nonce, gas, signature, bridge)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "step1": "node scripts/01-check-balance.js",
+    "step2": "node scripts/02-send-eth.js",
+    "step3": "node scripts/03-track-tx.js",
+    "step4": "node scripts/04-verify-sig.js",
+    "step5": "node scripts/05-bridge-tx.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.0",
+    "ethers": "^6.16.0"
+  }
+}
