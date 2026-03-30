@@ -186,11 +186,19 @@ body {
   opacity: 0;
   transform: translateY(30px);
   transition: opacity 0.6s ease, transform 0.6s ease;
+  /* 폴백: JS 실패 시 3초 후 자동 표시 */
+  animation: sectionFallback 0s ease 3s forwards;
+}
+
+@keyframes sectionFallback {
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .section.visible {
   opacity: 1;
   transform: translateY(0);
+  /* visible 클래스가 추가되면 폴백 애니메이션 취소 */
+  animation: none;
 }
 
 .section-title {
@@ -3866,18 +3874,71 @@ document.addEventListener('DOMContentLoaded', function() {
 // Intersection Observer - 섹션 나타남 효과
 // =============================================
 function initIntersectionObserver() {
-  const sections = document.querySelectorAll('.section');
-  const observer = new IntersectionObserver(function(entries) {
+  var sections = document.querySelectorAll('.section');
+
+  // IntersectionObserver 지원 여부 확인
+  if (!('IntersectionObserver' in window)) {
+    // 미지원 브라우저: 모든 섹션 즉시 표시
+    sections.forEach(function(section) { section.classList.add('visible'); });
+    return;
+  }
+
+  var observer = new IntersectionObserver(function(entries) {
     entries.forEach(function(entry) {
       if (entry.isIntersecting) {
         entry.target.classList.add('visible');
       }
     });
-  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+  }, { threshold: 0.05, rootMargin: '200px 0px 200px 0px' });
 
   sections.forEach(function(section) {
     observer.observe(section);
   });
+
+  // 앵커 링크 클릭 시 해당 섹션을 즉시 visible로 설정
+  window.addEventListener('hashchange', function() {
+    var hash = window.location.hash;
+    if (hash) {
+      var target = document.querySelector(hash);
+      if (target) {
+        // 타겟 자체가 섹션이면 visible 추가
+        if (target.classList.contains('section')) {
+          target.classList.add('visible');
+        }
+        // 타겟이 섹션 내부 요소면 부모 섹션을 찾아서 visible 추가
+        var parentSection = target.closest('.section');
+        if (parentSection) {
+          parentSection.classList.add('visible');
+        }
+      }
+    }
+  });
+
+  // 페이지 로드 시 해시가 있으면 즉시 해당 섹션 표시
+  if (window.location.hash) {
+    var hash = window.location.hash;
+    var target = document.querySelector(hash);
+    if (target) {
+      if (target.classList.contains('section')) {
+        target.classList.add('visible');
+      }
+      var parentSection = target.closest('.section');
+      if (parentSection) {
+        parentSection.classList.add('visible');
+      }
+    }
+  }
+
+  // 1초 후 뷰포트에 보이는 모든 섹션을 강제로 visible 처리 (안전장치)
+  setTimeout(function() {
+    sections.forEach(function(section) {
+      var rect = section.getBoundingClientRect();
+      var windowHeight = window.innerHeight || document.documentElement.clientHeight;
+      if (rect.top < windowHeight + 200 && rect.bottom > -200) {
+        section.classList.add('visible');
+      }
+    });
+  }, 1000);
 }
 
 // =============================================
