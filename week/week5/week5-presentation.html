@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5주차 - Solidity &amp; Remix IDE</title>
+<style>
+  /* ── 리셋 & 기본 ── */
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:100%; height:100%; overflow:hidden; font-family:'Segoe UI','Malgun Gothic','맑은 고딕',sans-serif; background:#0f0c29; color:#e0e0e0; }
+
+  /* ── 진행바 ── */
+  #progress-bar { position:fixed; top:0; left:0; height:4px; background:linear-gradient(90deg,#7f5af0,#2cb67d); z-index:100; transition:width .4s ease; }
+
+  /* ── 슬라이드 컨테이너 ── */
+  .slide { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:40px 60px; opacity:0; visibility:hidden; transition:opacity .5s ease, transform .5s ease; transform:translateX(40px); background:linear-gradient(135deg,#0f0c29 0%,#302b63 50%,#24243e 100%); }
+  .slide.active { opacity:1; visibility:visible; transform:translateX(0); }
+  .slide.exit-left { opacity:0; visibility:hidden; transform:translateX(-40px); }
+
+  /* ── 슬라이드 번호 ── */
+  #slide-number { position:fixed; bottom:24px; right:40px; font-size:.9rem; color:#8888aa; z-index:99; }
+
+  /* ── 네비게이션 힌트 ── */
+  #nav-hint { position:fixed; bottom:24px; left:40px; font-size:.8rem; color:#666; z-index:99; }
+
+  /* ── 타이머 ── */
+  #timer { position:fixed; top:12px; right:40px; font-size:1rem; color:#8888aa; z-index:101; font-family:'Cascadia Code','Fira Code','Consolas',monospace; display:none; background:rgba(15,12,41,.8); padding:4px 12px; border-radius:6px; border:1px solid #333355; }
+
+  /* ── 발표자 노트 ── */
+  #notes-panel { position:fixed; bottom:0; left:0; right:0; background:rgba(15,12,41,.95); border-top:2px solid #7f5af0; padding:16px 40px; font-size:1rem; color:#ccccdd; z-index:101; display:none; max-height:120px; overflow-y:auto; }
+  #notes-panel .notes-label { color:#7f5af0; font-weight:600; margin-right:12px; font-size:.9rem; }
+
+  /* ── 제목 스타일 ── */
+  h1 { font-size:2.4rem; font-weight:700; margin-bottom:16px; background:linear-gradient(135deg,#7f5af0,#2cb67d); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1.3; text-align:center; }
+  h2 { font-size:2.2rem; font-weight:600; margin-bottom:20px; color:#e0e0e0; text-align:center; line-height:1.3; }
+  h3 { font-size:1.4rem; font-weight:600; margin-bottom:12px; color:#c0c0e0; }
+
+  /* ── 본문 ── */
+  p, li { font-size:1.1rem; line-height:1.8; color:#ccccdd; }
+  ul, ol { padding-left:28px; }
+  li { margin-bottom:6px; }
+  strong { color:#e0e0e0; }
+
+  /* ── 코드 블록 ── */
+  pre { background:#1e1e2e; border-radius:12px; padding:20px 24px; overflow-x:auto; margin:12px 0; width:100%; max-width:900px; border:1px solid #333355; box-shadow:0 4px 20px rgba(0,0,0,.4); }
+  code { font-family:'Cascadia Code','Fira Code','Consolas',monospace; font-size:0.95rem; line-height:1.6; }
+  /* 인라인 코드 */
+  .ic { background:#2a2a3e; color:#c3e88d; padding:2px 8px; border-radius:4px; font-family:'Cascadia Code','Fira Code','Consolas',monospace; font-size:0.95rem; }
+
+  /* ── 구문 하이라이팅 색상 ── */
+  .kw  { color:#c792ea; }
+  .typ { color:#c3e88d; }
+  .str { color:#c3e88d; }
+  .num { color:#f78c6c; }
+  .cmt { color:#8888aa; font-style:italic; }
+  .fn  { color:#82aaff; }
+  .op  { color:#89ddff; }
+  .vis { color:#f07178; }
+  .mod { color:#ffcb6b; }
+  .evt { color:#89ddff; }
+
+  /* ── 테이블 ── */
+  table { border-collapse:collapse; margin:12px auto; width:auto; min-width:600px; }
+  th { background:#2a2a4e; color:#c792ea; font-weight:600; padding:10px 16px; border:1px solid #444466; font-size:1.05rem; }
+  td { background:#1e1e2e; padding:10px 14px; border:1px solid #333355; font-size:1rem; color:#ccccdd; text-align:center; }
+
+  /* ── 표지 전용 ── */
+  .cover-title { font-size:3.4rem; font-weight:800; background:linear-gradient(135deg,#7f5af0,#2cb67d); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:12px; text-align:center; line-height:1.3; }
+  .cover-sub { font-size:1.5rem; color:#8888cc; margin-bottom:8px; text-align:center; }
+  .cover-author { font-size:1.1rem; color:#666688; margin-top:28px; text-align:center; }
+
+  /* ── 카드 / 박스 ── */
+  .box { background:rgba(30,30,46,.8); border:1px solid #333355; border-radius:12px; padding:20px 24px; margin:10px 0; max-width:900px; width:100%; }
+  .box-accent { border-left:4px solid #7f5af0; }
+  .box-green  { border-left:4px solid #2cb67d; }
+  .box-orange { border-left:4px solid #f78c6c; }
+
+  /* ── 배지 ── */
+  .badge { display:inline-block; padding:4px 14px; border-radius:20px; font-size:.9rem; font-weight:600; margin:4px; }
+  .badge-purple { background:rgba(127,90,240,.2); color:#c792ea; border:1px solid rgba(127,90,240,.4); }
+  .badge-green  { background:rgba(44,182,125,.2); color:#2cb67d; border:1px solid rgba(44,182,125,.4); }
+  .badge-orange { background:rgba(247,140,108,.2); color:#f78c6c; border:1px solid rgba(247,140,108,.4); }
+
+  /* ── 플로우 차트 ── */
+  .flow { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:10px; margin:14px 0; }
+  .flow-step { background:rgba(127,90,240,.15); border:1px solid #7f5af0; border-radius:10px; padding:10px 18px; font-size:1rem; color:#c792ea; font-weight:600; }
+  .flow-arrow { font-size:1.3rem; color:#7f5af0; }
+
+  /* ── 2-column ── */
+  .cols { display:flex; gap:24px; width:100%; max-width:1000px; }
+  .col { flex:1; }
+
+  /* ── 색상 박스 (Remix 버튼) ── */
+  .color-demo { display:inline-block; width:20px; height:20px; border-radius:4px; vertical-align:middle; margin-right:8px; }
+  .color-orange { background:#e67e22; }
+  .color-green  { background:#27ae60; }
+  .color-blue   { background:#3498db; }
+
+  /* ── 슬라이드 내부 정렬 보조 ── */
+  .content { max-width:1000px; width:100%; }
+  .text-center { text-align:center; }
+  .mt { margin-top:16px; }
+  .mb { margin-bottom:14px; }
+  .gap { height:14px; }
+</style>
+</head>
+<body>
+
+<!-- 진행바 -->
+<div id="progress-bar"></div>
+
+<!-- 슬라이드 번호 -->
+<div id="slide-number"></div>
+
+<!-- 네비게이션 힌트 -->
+<div id="nav-hint">← → 화살표 키 | N: 노트 | T: 타이머</div>
+
+<!-- 타이머 -->
+<div id="timer">00:00</div>
+
+<!-- 발표자 노트 패널 -->
+<div id="notes-panel">
+  <span class="notes-label">[노트]</span>
+  <span id="notes-text"></span>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 1 - 표지
+     ═══════════════════════════════════════════ -->
+<div class="slide active" data-slide="1" data-notes="5주차 수업 시작, 오늘은 Remix IDE에서 직접 코딩합니다">
+  <div class="cover-title">Solidity &amp; Remix IDE</div>
+  <div class="cover-sub">5주차 블록체인 실습</div>
+  <div style="height:12px;"></div>
+  <div class="cover-sub" style="font-size:1.2rem; color:#7f5af0;">Smart Contract 첫걸음</div>
+  <div class="cover-author">발표자: [이름] &nbsp;|&nbsp; 2026.04.01</div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 2 - 목표 + 목차
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="2" data-notes="전체 흐름을 먼저 소개하고, 각 파트별로 진행할 예정임을 안내">
+  <h1>오늘의 목표 &amp; 목차</h1>
+  <div class="content">
+    <div class="box box-accent mb">
+      <ul style="font-size:1.15rem; line-height:2;">
+        <li><strong>Remix IDE</strong> 기본 사용법 익히기</li>
+        <li><strong>HelloWorld.sol</strong> 작성 &amp; 배포</li>
+        <li>Solidity 기본 문법: 변수, 함수, 제어문</li>
+        <li><strong>Counter.sol</strong>로 상태 변경 이해</li>
+        <li><strong>Faucet.sol</strong> - 실전 스마트 컨트랙트 분석</li>
+      </ul>
+    </div>
+    <div class="cols">
+      <div class="col">
+        <div class="box box-green" style="padding:14px 20px;">
+          <h3 style="font-size:1.15rem;">Part 1 Remix IDE</h3>
+          <p style="font-size:1rem;">화면 구성, 워크플로우</p>
+        </div>
+        <div class="box box-green" style="padding:14px 20px;">
+          <h3 style="font-size:1.15rem;">Part 2 HelloWorld</h3>
+          <p style="font-size:1rem;">기본 문법, 함수, 데이터 위치</p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="box box-green" style="padding:14px 20px;">
+          <h3 style="font-size:1.15rem;">Part 3 Number &amp; Check</h3>
+          <p style="font-size:1rem;">타입, 조건문, 에러 핸들링</p>
+        </div>
+        <div class="box box-green" style="padding:14px 20px;">
+          <h3 style="font-size:1.15rem;">Part 4 Counter &amp; Faucet</h3>
+          <p style="font-size:1rem;">상태 변경, modifier, 보안 패턴</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 3 - Remix IDE (소개 + 화면구성 + 워크플로우)
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="3" data-notes="remix.ethereum.org 접속하라고 안내, 크롬 브라우저 권장">
+  <h1>Remix IDE - 웹 기반 개발 환경</h1>
+  <div class="content">
+    <div class="cols">
+      <div class="col">
+        <div class="box box-accent" style="padding:14px 20px; margin-bottom:10px;">
+          <p><strong>웹 기반</strong> Solidity IDE (설치 불필요)</p>
+          <p style="color:#8888aa; font-size:1rem;">브라우저에서 <span class="ic">remix.ethereum.org</span> 접속</p>
+        </div>
+        <div class="box box-green" style="padding:14px 20px; margin-bottom:10px;">
+          <h3 style="font-size:1.1rem;">화면 구성</h3>
+          <ul style="font-size:1rem;">
+            <li>좌측: 파일 탐색기 (.sol 관리)</li>
+            <li>중앙: 코드 에디터</li>
+            <li>우측: 컴파일러 / Deploy &amp; Run</li>
+            <li>하단: 콘솔 &amp; 트랜잭션 로그</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="box box-orange" style="padding:14px 20px; margin-bottom:10px;">
+          <h3 style="font-size:1.1rem;">개발 워크플로우</h3>
+          <div class="flow" style="flex-direction:column; align-items:flex-start; gap:6px; font-size:1rem;">
+            <div>1. 코드 작성 (.sol 파일)</div>
+            <div style="color:#7f5af0;">→ 2. 컴파일 (바이트코드 생성)</div>
+            <div style="color:#2cb67d;">→ 3. 배포 (EVM에 등록)</div>
+            <div style="color:#f78c6c;">→ 4. 테스트 (함수 호출)</div>
+          </div>
+        </div>
+        <div class="box box-accent" style="padding:14px 20px;">
+          <p style="text-align:center; font-size:1rem;">Remix VM: <strong>가스비 없이</strong> 실험 (계정당 100 ETH)</p>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mt">
+      <span class="badge badge-purple">무료</span>
+      <span class="badge badge-green">설치 불필요</span>
+      <span class="badge badge-orange">올인원 IDE</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 4 - HelloWorld.sol 전체 코드
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="4" data-notes="가장 간단한 컨트랙트, public 변수는 자동 getter 생성">
+  <h1>HelloWorld.sol</h1>
+  <div class="content">
+    <pre><code><span class="cmt">// SPDX-License-Identifier: MIT</span>
+<span class="kw">pragma solidity</span> <span class="str">^0.8.26</span>;
+
+<span class="kw">contract</span> <span class="fn">HelloWorld</span> {
+    <span class="typ">string</span> <span class="vis">public</span> greet = <span class="str">"Hello World"</span>;
+}</code></pre>
+    <div class="gap"></div>
+    <div class="box box-accent">
+      <p>가장 기본적인 스마트 컨트랙트</p>
+      <ul class="mt">
+        <li>배포하면 <span class="ic">greet</span> 변수에 "Hello World" 저장</li>
+        <li><span class="ic">public</span> 키워드로 자동 getter 함수 생성</li>
+        <li>외부에서 <span class="ic">greet()</span> 호출로 값 읽기 가능</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 5 - SPDX + pragma
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="5" data-notes="SPDX는 라이선스 명시, pragma는 컴파일러 버전 지정. 두 줄 다 반드시 작성">
+  <h1>SPDX 라이선스 &amp; pragma solidity</h1>
+  <div class="content">
+    <pre><code><span class="cmt">// SPDX-License-Identifier: MIT</span>     <span class="cmt">← 라이선스 명시 (없으면 경고)</span>
+<span class="kw">pragma solidity</span> <span class="str">^0.8.26</span>;            <span class="cmt">← 컴파일러 버전 지정</span></code></pre>
+    <div class="gap"></div>
+    <div class="cols">
+      <div class="col">
+        <div class="box box-accent">
+          <h3>SPDX 라이선스</h3>
+          <table style="min-width:auto; width:100%; font-size:.95rem;">
+            <tr><th>라이선스</th><th>의미</th></tr>
+            <tr><td><span class="ic">MIT</span></td><td>자유 사용/수정</td></tr>
+            <tr><td><span class="ic">GPL-3.0</span></td><td>소스 공개 의무</td></tr>
+            <tr><td><span class="ic">UNLICENSED</span></td><td>비공개</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="col">
+        <div class="box box-green">
+          <h3>pragma 버전 표기</h3>
+          <table style="min-width:auto; width:100%; font-size:.95rem;">
+            <tr><th>표기</th><th>의미</th></tr>
+            <tr><td><span class="ic">^0.8.26</span></td><td>0.8.26~0.9.0 미만</td></tr>
+            <tr><td><span class="ic">0.8.26</span></td><td>정확히 이 버전만</td></tr>
+            <tr><td><span class="ic">&gt;=0.8.0 &lt;0.9.0</span></td><td>범위 지정</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 6 - contract 키워드
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="6" data-notes="contract는 Java의 class와 유사. 컴파일하면 바이트코드가 되고, 배포하면 블록체인 주소를 갖게 됨">
+  <h1>contract 키워드</h1>
+  <div class="content">
+    <pre><code><span class="kw">contract</span> <span class="fn">HelloWorld</span> {
+    <span class="cmt">// 상태 변수, 함수 등 정의</span>
+}</code></pre>
+    <div class="gap"></div>
+    <div class="cols">
+      <div class="col">
+        <div class="box box-accent">
+          <h3>OOP의 class와 유사</h3>
+          <ul>
+            <li>상태 변수 (멤버 변수)</li>
+            <li>함수 (메서드)</li>
+            <li>생성자 (constructor)</li>
+            <li>이벤트 (event)</li>
+            <li>modifier (접근 제어)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="box box-green">
+          <h3>컴파일 과정</h3>
+          <div class="flow" style="flex-direction:column; align-items:flex-start; gap:6px; font-size:1rem;">
+            <div>.sol (Solidity 소스)</div>
+            <div style="color:#7f5af0;">↓ 컴파일</div>
+            <div>Bytecode (EVM 실행코드)</div>
+            <div style="color:#7f5af0;">↓ 배포</div>
+            <div>블록체인 위 컨트랙트 주소</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 7 - storage / memory / calldata
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="7" data-notes="참조 타입(string, array, struct)은 반드시 데이터 위치를 명시해야 함. 가스비 차이가 큼">
+  <h1>데이터 위치: storage / memory / calldata</h1>
+  <div class="content">
+    <table>
+      <tr>
+        <th>구분</th>
+        <th>storage</th>
+        <th>memory</th>
+        <th>calldata</th>
+      </tr>
+      <tr>
+        <td><strong>영속성</strong></td>
+        <td>영구 저장 (블록체인)</td>
+        <td>함수 실행 중만</td>
+        <td>함수 실행 중만</td>
+      </tr>
+      <tr>
+        <td><strong>변경 가능</strong></td>
+        <td>O (Mutable)</td>
+        <td>O (Mutable)</td>
+        <td>X (Immutable)</td>
+      </tr>
+      <tr>
+        <td><strong>가스 비용</strong></td>
+        <td style="color:#f78c6c;">높음</td>
+        <td style="color:#ffcb6b;">중간</td>
+        <td style="color:#2cb67d;">낮음</td>
+      </tr>
+      <tr>
+        <td><strong>사용처</strong></td>
+        <td>상태 변수</td>
+        <td>함수 내 임시 변수</td>
+        <td>external 함수 파라미터</td>
+      </tr>
+    </table>
+    <div class="gap"></div>
+    <div class="box box-accent" style="max-width:800px; margin:0 auto;">
+      <p class="text-center"><span class="ic">string public greet</span> → <strong>storage</strong>에 저장 (상태 변수)</p>
+      <p class="text-center mt" style="color:#8888aa;">참조 타입(string, array, struct)은 반드시 데이터 위치 명시!</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 8 - 함수 종류 + private/getter 패턴
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="8" data-notes="view는 읽기만, pure는 읽기도 안 함, 일반 함수는 상태 변경. private 변수는 _접두사 관례">
+  <h1>함수 종류 &amp; private/getter 패턴</h1>
+  <div class="content">
+    <div class="cols">
+      <div class="col">
+        <table style="min-width:auto; width:100%;">
+          <tr><th>종류</th><th>상태 읽기</th><th>상태 변경</th><th>Gas</th></tr>
+          <tr><td><span class="ic">view</span></td><td>O</td><td>X</td><td>무료</td></tr>
+          <tr><td><span class="ic">pure</span></td><td>X</td><td>X</td><td>무료</td></tr>
+          <tr><td>일반</td><td>O</td><td>O</td><td style="color:#f78c6c;">유료</td></tr>
+        </table>
+        <div class="gap"></div>
+        <div class="box box-orange" style="padding:14px 20px;">
+          <p><span class="ic">private</span>: 외부 접근 차단 (관례: <span class="ic">_</span> 접두사)</p>
+          <p style="color:#f78c6c; margin-top:6px; font-size:.95rem;">블록체인 데이터 자체는 누구나 읽을 수 있음!</p>
+        </div>
+      </div>
+      <div class="col">
+        <pre style="margin:0;"><code><span class="cmt">// 확장: private 변수 + getter</span>
+<span class="kw">contract</span> <span class="fn">HelloWorld</span> {
+    <span class="typ">string</span> <span class="vis">private</span> _greeting;
+
+    <span class="kw">function</span> <span class="fn">greet</span>()
+        <span class="vis">public</span> <span class="kw">view</span>
+        <span class="kw">returns</span> (<span class="typ">string</span> <span class="kw">memory</span>)
+    {
+        <span class="kw">return</span> _greeting;
+    }
+
+    <span class="kw">function</span> <span class="fn">setGreeting</span>(
+        <span class="typ">string</span> <span class="kw">memory</span> newGreeting
+    ) <span class="vis">public</span> {
+        _greeting = newGreeting;
+    }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 9 - HelloNumber.sol
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="9" data-notes="int은 음수 가능, uint는 양수만. ETH 금액은 항상 uint256 사용">
+  <h1>HelloNumber.sol - 정수 타입</h1>
+  <div class="content">
+    <pre><code><span class="kw">contract</span> <span class="fn">HelloNumber</span> {
+    <span class="typ">int</span> <span class="vis">public</span> myNumber = <span class="num">42</span>;
+    <span class="typ">uint</span> <span class="vis">public</span> myUnsigned = <span class="num">100</span>;
+}</code></pre>
+    <div class="gap"></div>
+    <table>
+      <tr><th>타입</th><th>범위</th><th>비트</th></tr>
+      <tr><td><span class="ic">int8</span></td><td>-128 ~ 127</td><td>8</td></tr>
+      <tr><td><span class="ic">int256</span> (<span class="ic">int</span>)</td><td>-2<sup>255</sup> ~ 2<sup>255</sup>-1</td><td>256</td></tr>
+      <tr><td><span class="ic">uint8</span></td><td>0 ~ 255</td><td>8</td></tr>
+      <tr><td><span class="ic">uint256</span> (<span class="ic">uint</span>)</td><td>0 ~ 2<sup>256</sup>-1</td><td>256</td></tr>
+    </table>
+    <div class="gap"></div>
+    <div class="box box-green" style="max-width:700px; margin:0 auto;">
+      <p class="text-center"><span class="ic">int</span> = <span class="ic">int256</span>, &nbsp; <span class="ic">uint</span> = <span class="ic">uint256</span></p>
+      <p class="text-center mt" style="color:#8888aa;">ETH 금액 처리는 항상 <span class="ic">uint256</span> 사용</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 10 - CheckNumber.sol (코드)
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="10" data-notes="if/else 문법은 JS와 동일. revert는 트랜잭션을 되돌리고 에러 메시지 반환">
+  <h1>CheckNumber.sol</h1>
+  <div class="content">
+    <pre><code><span class="cmt">// SPDX-License-Identifier: MIT</span>
+<span class="kw">pragma solidity</span> <span class="str">^0.8.26</span>;
+
+<span class="kw">contract</span> <span class="fn">CheckNumber</span> {
+    <span class="typ">int</span> <span class="vis">public</span> number = <span class="num">100</span>;
+
+    <span class="kw">function</span> <span class="fn">check</span>(<span class="typ">int</span> x) <span class="vis">public</span> <span class="kw">pure</span> <span class="kw">returns</span> (<span class="typ">string</span> <span class="kw">memory</span>) {
+        <span class="kw">if</span> (x > <span class="num">0</span>) <span class="kw">return</span> <span class="str">"The number is positive"</span>;
+        <span class="kw">else if</span> (x &lt; <span class="num">0</span>) <span class="mod">revert</span>(<span class="str">"The number is negative"</span>);
+        <span class="kw">return</span> <span class="str">"The number is zero"</span>;
+    }
+}</code></pre>
+    <div class="gap"></div>
+    <div class="cols">
+      <div class="col">
+        <div class="box box-accent">
+          <h3>왜 pure?</h3>
+          <ul>
+            <li>상태 변수를 읽지도 쓰지도 않음</li>
+            <li>파라미터 <span class="ic">x</span>만으로 결과 결정</li>
+            <li>= <strong>순수 함수</strong> (Pure Function)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="box box-green">
+          <h3>실행 결과</h3>
+          <p><span class="ic">check(3)</span> → "positive"</p>
+          <p><span class="ic">check(0)</span> → "zero"</p>
+          <p><span class="ic">check(-5)</span> → revert!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 11 - 에러 핸들링 비교표
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="11" data-notes="require는 가장 자주 사용. assert는 절대 발생하면 안 되는 상황에만. revert는 if문과 함께">
+  <h1>에러 핸들링: require / assert / revert</h1>
+  <div class="content">
+    <table>
+      <tr>
+        <th>키워드</th>
+        <th>용도</th>
+        <th>가스 환불</th>
+        <th>사용 예시</th>
+      </tr>
+      <tr>
+        <td><span class="ic">require</span></td>
+        <td>입력값 / 조건 검증</td>
+        <td style="color:#2cb67d;">O (환불)</td>
+        <td>require(msg.value > 0)</td>
+      </tr>
+      <tr>
+        <td><span class="ic">assert</span></td>
+        <td>내부 불변식 검증</td>
+        <td style="color:#2cb67d;">O (0.8+ 환불)</td>
+        <td>assert(balance >= 0)</td>
+      </tr>
+      <tr>
+        <td><span class="ic">revert</span></td>
+        <td>조건부 되돌리기</td>
+        <td style="color:#2cb67d;">O (환불)</td>
+        <td>if (...) revert("err")</td>
+      </tr>
+    </table>
+    <div class="gap"></div>
+    <pre><code><span class="cmt">// require: 조건이 false면 revert</span>
+<span class="mod">require</span>(msg.value > <span class="num">0</span>, <span class="str">"Must send ETH"</span>);
+
+<span class="cmt">// assert: 절대 발생하면 안 되는 상황</span>
+<span class="mod">assert</span>(totalSupply >= <span class="num">0</span>);
+
+<span class="cmt">// revert: if문과 함께 사용</span>
+<span class="kw">if</span> (balance &lt; amount) <span class="mod">revert</span>(<span class="str">"Insufficient"</span>);</code></pre>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 12 - Counter.sol + constructor
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="12" data-notes="count() 누를 때마다 주황 버튼 = 가스비, get()은 파란 버튼 = 무료. constructor는 배포 시 딱 1회 실행">
+  <h1>Counter.sol &amp; constructor</h1>
+  <div class="content">
+    <div class="cols">
+      <div class="col">
+        <pre style="margin:0;"><code><span class="cmt">// SPDX-License-Identifier: MIT</span>
+<span class="kw">pragma solidity</span> <span class="str">0.8.26</span>;
+
+<span class="kw">contract</span> <span class="fn">Counter</span> {
+    <span class="typ">uint</span> <span class="vis">public</span> counter;
+
+    <span class="kw">constructor</span>() {
+        counter = <span class="num">0</span>;
+    }
+
+    <span class="kw">function</span> <span class="fn">count</span>() <span class="vis">public</span> {
+        counter = counter + <span class="num">1</span>;
+    }
+
+    <span class="kw">function</span> <span class="fn">get</span>() <span class="vis">public</span> <span class="kw">view</span>
+        <span class="kw">returns</span> (<span class="typ">uint</span>)
+    {
+        <span class="kw">return</span> counter;
+    }
+}</code></pre>
+      </div>
+      <div class="col">
+        <div class="box box-accent" style="margin-bottom:12px;">
+          <h3>constructor 특징</h3>
+          <ul>
+            <li>배포 시 <strong>딱 1회</strong>만 실행</li>
+            <li>초기값 설정에 사용</li>
+            <li>파라미터를 받을 수 있음</li>
+            <li>배포 후에는 호출 불가</li>
+          </ul>
+        </div>
+        <div class="box box-orange">
+          <p><span class="ic">uint public counter;</span> 기본값이 <span class="ic">0</span>이므로 constructor 없이도 동일!</p>
+        </div>
+        <div class="box box-green" style="margin-top:12px;">
+          <h3 style="font-size:1.1rem;">파라미터 활용</h3>
+          <pre style="margin:6px 0;"><code style="font-size:.85rem;"><span class="kw">constructor</span>(<span class="typ">uint</span> _init) {
+    counter = _init;
+}</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 13 - Remix 버튼 색상
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="13" data-notes="학생들에게 Remix에서 버튼 색상 차이를 직접 확인시키기. 주황=가스, 파랑=무료">
+  <h1>Remix 버튼 색상의 의미</h1>
+  <div class="content text-center">
+    <div class="gap"></div>
+    <div class="box box-accent" style="max-width:700px; margin:16px auto; padding:24px;">
+      <p style="font-size:1.3rem;">
+        <span class="color-demo color-orange"></span>
+        <strong style="color:#e67e22;">주황색 버튼</strong> = <strong>상태 변경</strong> 함수
+      </p>
+      <p style="margin-top:8px; color:#ccccdd;">트랜잭션 발생, <strong>Gas 소비</strong></p>
+      <p style="margin-top:4px; color:#8888aa;">예: count(), setGreeting()</p>
+    </div>
+    <div class="box box-green" style="max-width:700px; margin:16px auto; padding:24px;">
+      <p style="font-size:1.3rem;">
+        <span class="color-demo color-blue"></span>
+        <strong style="color:#3498db;">파란색 버튼</strong> = <strong>view / pure</strong> 함수
+      </p>
+      <p style="margin-top:8px; color:#ccccdd;">읽기 전용, <strong>Gas 무료</strong></p>
+      <p style="margin-top:4px; color:#8888aa;">예: get(), greet(), counter()</p>
+    </div>
+    <div class="gap"></div>
+    <p style="color:#f78c6c; font-size:1.1rem;">색상으로 가스비 발생 여부를 직관적으로 구분!</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 14 - Faucet 개요 + 상태변수
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="14" data-notes="테스트넷에서 ETH 받는 곳, 24시간 쿨다운으로 남용 방지. 지금부터 Faucet.sol 한 줄씩 분석">
+  <h1>Faucet이란? &amp; 핵심 상태변수</h1>
+  <div class="content">
+    <div class="box box-accent mb" style="max-width:800px; margin:0 auto; padding:16px 24px;">
+      <p style="font-size:1.2rem; text-align:center;">
+        <strong>수도꼭지(Faucet)</strong> = ETH를 무료로 나눠주는 컨트랙트 (테스트넷용)
+      </p>
+    </div>
+    <pre><code><span class="cmt">// SPDX-License-Identifier: MIT</span>
+<span class="kw">pragma solidity</span> <span class="str">^0.8.0</span>;
+
+<span class="typ">address</span> <span class="kw">payable</span> <span class="vis">public</span> owner;
+
+<span class="typ">uint256</span> <span class="vis">public</span> <span class="kw">constant</span> WITHDRAWAL_AMOUNT = <span class="num">0.1 ether</span>;
+<span class="typ">uint256</span> <span class="vis">public</span> <span class="kw">constant</span> LOCK_TIME = <span class="num">1 days</span>;
+
+<span class="kw">mapping</span>(<span class="typ">address</span> => <span class="typ">uint256</span>) <span class="vis">public</span> lastWithdrawalTime;</code></pre>
+    <div class="gap"></div>
+    <table style="min-width:500px;">
+      <tr><th>변수</th><th>타입</th><th>역할</th></tr>
+      <tr><td><span class="ic">owner</span></td><td>address payable</td><td>컨트랙트 관리자</td></tr>
+      <tr><td><span class="ic">WITHDRAWAL_AMOUNT</span></td><td>uint256 constant</td><td>1회 출금량 (0.1 ETH)</td></tr>
+      <tr><td><span class="ic">LOCK_TIME</span></td><td>uint256 constant</td><td>출금 간격 (24시간)</td></tr>
+      <tr><td><span class="ic">lastWithdrawalTime</span></td><td>mapping</td><td>주소별 마지막 출금 시각</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 15 - modifier + msg 전역변수
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="15" data-notes="modifier는 함수 실행 전 조건 검사. msg.sender는 호출자 주소, msg.value는 보낸 ETH">
+  <h1>modifier &amp; msg 전역 변수</h1>
+  <div class="content">
+    <div class="cols">
+      <div class="col">
+        <pre style="margin:0;"><code><span class="kw">modifier</span> <span class="fn">onlyOwner</span>() {
+    <span class="mod">require</span>(
+        msg.sender == owner,
+        <span class="str">"Only owner"</span>
+    );
+    <span class="op">_;</span> <span class="cmt">// 원래 함수 본문</span>
+}
+
+<span class="cmt">// 사용법</span>
+<span class="kw">function</span> <span class="fn">withdrawAll</span>()
+    <span class="vis">public</span> <span class="fn">onlyOwner</span>
+{ ... }</code></pre>
+        <div class="box box-accent" style="margin-top:10px; padding:12px 20px;">
+          <p>코드 <strong>재사용</strong> + <span class="ic">_;</span> 위치에 원래 함수 실행</p>
+        </div>
+      </div>
+      <div class="col">
+        <table style="min-width:auto; width:100%;">
+          <tr><th>변수</th><th>설명</th></tr>
+          <tr><td><span class="ic">msg.sender</span></td><td>함수 호출한 <strong>주소</strong></td></tr>
+          <tr><td><span class="ic">msg.value</span></td><td>보낸 <strong>ETH</strong> (wei)</td></tr>
+          <tr><td><span class="ic">msg.data</span></td><td>호출 데이터</td></tr>
+        </table>
+        <div class="gap"></div>
+        <div class="box box-green" style="padding:12px 20px;">
+          <h3 style="font-size:1.1rem;">단위 변환</h3>
+          <ul style="font-size:1rem;">
+            <li><span class="ic">1 ether</span> = 10<sup>18</sup> wei</li>
+            <li><span class="ic">1 gwei</span> = 10<sup>9</sup> wei</li>
+            <li><span class="ic">1 days</span> = 86400 seconds</li>
+          </ul>
+        </div>
+        <div class="box box-accent" style="margin-top:10px; padding:12px 20px;">
+          <pre style="margin:0; padding:8px;"><code style="font-size:.85rem;"><span class="kw">constructor</span>() {
+    owner = <span class="kw">payable</span>(msg.sender);
+}</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 16 - withdraw() 함수
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="16" data-notes="withdraw가 Faucet의 핵심 함수. 시간 검증 → 잔액 검증 → 기록 → 전송 → 이벤트 순서">
+  <h1>Faucet - withdraw()</h1>
+  <div class="content">
+    <pre><code><span class="kw">function</span> <span class="fn">withdraw</span>() <span class="vis">public</span> {
+    <span class="cmt">// 1. 시간 검증 (24시간 경과 여부)</span>
+    <span class="mod">require</span>(
+        <span class="kw">block.timestamp</span> >= lastWithdrawalTime[msg.sender] + LOCK_TIME,
+        <span class="str">"Wait 24 hours"</span>
+    );
+    <span class="cmt">// 2. 잔액 검증</span>
+    <span class="mod">require</span>(
+        <span class="kw">address</span>(<span class="kw">this</span>).balance >= WITHDRAWAL_AMOUNT,
+        <span class="str">"Not enough funds"</span>
+    );
+    <span class="cmt">// 3. 출금 시간 기록</span>
+    lastWithdrawalTime[msg.sender] = <span class="kw">block.timestamp</span>;
+    <span class="cmt">// 4. ETH 전송</span>
+    <span class="kw">payable</span>(msg.sender).<span class="fn">transfer</span>(WITHDRAWAL_AMOUNT);
+    <span class="cmt">// 5. 이벤트 발행</span>
+    <span class="kw">emit</span> <span class="evt">Withdrawal</span>(msg.sender, WITHDRAWAL_AMOUNT);
+}</code></pre>
+    <div class="gap"></div>
+    <div class="box box-accent" style="max-width:700px; margin:0 auto;">
+      <p class="text-center"><span class="ic">block.timestamp</span> = 현재 블록의 UNIX 타임스탬프 (초)</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 17 - deposit / withdrawAll / receive
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="17" data-notes="deposit은 payable 키워드로 ETH를 받음. receive는 데이터 없이 ETH만 보낼 때 자동 호출">
+  <h1>deposit / withdrawAll / receive</h1>
+  <div class="content">
+    <pre><code><span class="cmt">// ETH 입금 함수</span>
+<span class="kw">function</span> <span class="fn">deposit</span>() <span class="vis">public</span> <span class="kw">payable</span> {
+    <span class="kw">emit</span> <span class="evt">Deposit</span>(msg.sender, msg.value);
+}
+
+<span class="cmt">// 전액 회수 (owner 전용)</span>
+<span class="kw">function</span> <span class="fn">withdrawAll</span>() <span class="vis">public</span> <span class="fn">onlyOwner</span> {
+    <span class="typ">uint256</span> amount = <span class="kw">address</span>(<span class="kw">this</span>).balance;
+    owner.<span class="fn">transfer</span>(amount);
+    <span class="kw">emit</span> <span class="evt">Withdrawal</span>(owner, amount);
+}
+
+<span class="cmt">// 직접 ETH 전송 시 자동 호출</span>
+<span class="kw">receive</span>() <span class="vis">external</span> <span class="kw">payable</span> {
+    <span class="kw">emit</span> <span class="evt">Deposit</span>(msg.sender, msg.value);
+}</code></pre>
+    <div class="gap"></div>
+    <div class="cols" style="max-width:800px; margin:0 auto;">
+      <div class="col">
+        <div class="box box-accent">
+          <p><span class="ic">payable</span>: ETH를 받을 수 있는 함수</p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="box box-green">
+          <p><span class="ic">receive()</span>: 데이터 없이 ETH만 보낼 때</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 18 - 보안 + 사용 흐름
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="18" data-notes="실전 DeFi도 동일한 보안 패턴 사용. 배포→입금→출금→회수 흐름 설명">
+  <h1>Faucet 보안 &amp; 사용 흐름</h1>
+  <div class="content">
+    <div class="cols">
+      <div class="col">
+        <div class="box box-accent" style="padding:14px 20px; margin-bottom:10px;">
+          <h3 style="font-size:1.1rem;">1. 접근 제어</h3>
+          <p style="font-size:1rem;"><span class="ic">onlyOwner</span> modifier → withdrawAll은 owner만</p>
+        </div>
+        <div class="box box-green" style="padding:14px 20px; margin-bottom:10px;">
+          <h3 style="font-size:1.1rem;">2. 레이트 리밋</h3>
+          <p style="font-size:1rem;"><span class="ic">LOCK_TIME = 1 days</span> → 24시간에 1회</p>
+        </div>
+        <div class="box box-orange" style="padding:14px 20px; margin-bottom:10px;">
+          <h3 style="font-size:1.1rem;">3. 잔액 검증</h3>
+          <p style="font-size:1rem;"><span class="ic">address(this).balance</span> → 부족 시 거부</p>
+        </div>
+        <div class="box box-accent" style="padding:14px 20px;">
+          <h3 style="font-size:1.1rem;">4. 불변 파라미터</h3>
+          <p style="font-size:1rem;"><span class="ic">constant</span> → 출금량/잠금시간 변경 불가</p>
+        </div>
+      </div>
+      <div class="col">
+        <h3 class="text-center" style="margin-bottom:14px;">사용 흐름</h3>
+        <div class="flow" style="flex-direction:column; gap:8px;">
+          <div class="flow-step" style="width:100%; text-align:center; background:rgba(127,90,240,.2);">
+            1. 배포 → constructor() → owner 설정
+          </div>
+          <div style="color:#7f5af0; text-align:center;">↓</div>
+          <div class="flow-step" style="width:100%; text-align:center; background:rgba(44,182,125,.2); border-color:#2cb67d;">
+            2. 입금 → deposit() / receive() → ETH 충전
+          </div>
+          <div style="color:#2cb67d; text-align:center;">↓</div>
+          <div class="flow-step" style="width:100%; text-align:center; background:rgba(247,140,108,.2); border-color:#f78c6c;">
+            3. 출금 → withdraw() → 0.1 ETH 수령
+          </div>
+          <div style="color:#f78c6c; text-align:center;">↓</div>
+          <div class="flow-step" style="width:100%; text-align:center; background:rgba(255,203,107,.2); border-color:#ffcb6b;">
+            4. 회수 → withdrawAll() → owner 전액 회수
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 19 - 핵심 요약 + 과제
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="19" data-notes="팀별로 Faucet.sol 이해하고 다음 시간에 발표">
+  <h1>핵심 요약 &amp; 과제</h1>
+  <div class="content">
+    <div class="cols">
+      <div class="col">
+        <div class="box box-accent" style="padding:14px 20px; margin-bottom:10px;">
+          <h3 style="font-size:1.1rem;">Solidity 기본</h3>
+          <ul style="font-size:1rem;">
+            <li>SPDX + pragma + contract</li>
+            <li>상태 변수 (storage 저장)</li>
+            <li>함수: view / pure / 일반</li>
+            <li>데이터 위치: storage/memory/calldata</li>
+          </ul>
+        </div>
+        <div class="box box-green" style="padding:14px 20px; margin-bottom:10px;">
+          <h3 style="font-size:1.1rem;">핵심 패턴</h3>
+          <ul style="font-size:1rem;">
+            <li>require/assert/revert 에러 핸들링</li>
+            <li>modifier로 접근 제어</li>
+            <li>mapping으로 상태 추적</li>
+            <li>payable로 ETH 송수신</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="box box-orange" style="padding:20px 24px;">
+          <h3 style="font-size:1.3rem; color:#f78c6c; margin-bottom:14px;">이번 주 과제</h3>
+          <ol style="font-size:1.05rem; line-height:2;">
+            <li><strong>Faucet.sol</strong> Remix에서 배포 &amp; 테스트</li>
+            <li><span class="ic">msg.sender</span> 계정 변경 확인</li>
+            <li><span class="ic">msg.value</span> 다양한 값 테스트</li>
+            <li>withdraw() 24시간 제한 확인</li>
+            <li>다른 계정으로 withdrawAll() 결과</li>
+          </ol>
+        </div>
+        <div class="gap"></div>
+        <p class="text-center" style="color:#8888aa; font-size:1rem;">Remix VM에서 Account를 바꿔가며 테스트!</p>
+      </div>
+    </div>
+    <div class="gap"></div>
+    <div class="cover-title" style="font-size:2rem;">감사합니다</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     JavaScript - 슬라이드 네비게이션 + 노트 + 타이머
+     ═══════════════════════════════════════════ -->
+<script>
+(function() {
+  const slides = document.querySelectorAll('.slide');
+  const progressBar = document.getElementById('progress-bar');
+  const slideNumber = document.getElementById('slide-number');
+  const total = slides.length;
+  let current = 0;
+
+  // ── 진행바 & 슬라이드 번호 ──
+  function updateProgress() {
+    const pct = ((current + 1) / total) * 100;
+    progressBar.style.width = pct + '%';
+    slideNumber.textContent = (current + 1) + ' / ' + total;
+    updateNotes();
+  }
+
+  function goTo(index) {
+    if (index < 0 || index >= total || index === current) return;
+
+    const prev = slides[current];
+    const next = slides[index];
+    const goingForward = index > current;
+
+    prev.classList.remove('active');
+    if (goingForward) prev.classList.add('exit-left');
+    prev.style.transform = goingForward ? 'translateX(-40px)' : 'translateX(40px)';
+
+    next.style.transition = 'none';
+    next.style.transform = goingForward ? 'translateX(40px)' : 'translateX(-40px)';
+    next.style.opacity = '0';
+    next.classList.remove('exit-left');
+    next.classList.add('active');
+
+    void next.offsetWidth;
+
+    next.style.transition = 'opacity .5s ease, transform .5s ease';
+    next.style.transform = 'translateX(0)';
+    next.style.opacity = '1';
+
+    current = index;
+    updateProgress();
+  }
+
+  // ── 발표자 노트 ──
+  const notesPanel = document.getElementById('notes-panel');
+  const notesText = document.getElementById('notes-text');
+  let notesVisible = false;
+
+  function updateNotes() {
+    const noteData = slides[current].getAttribute('data-notes');
+    notesText.textContent = noteData || '(이 슬라이드에 노트 없음)';
+  }
+
+  function toggleNotes() {
+    notesVisible = !notesVisible;
+    notesPanel.style.display = notesVisible ? 'block' : 'none';
+    updateNotes();
+  }
+
+  // ── 타이머 ──
+  const timerEl = document.getElementById('timer');
+  let timerVisible = false;
+  let timerStarted = false;
+  let startTime = 0;
+  let timerInterval = null;
+
+  function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  }
+
+  function updateTimer() {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    timerEl.textContent = formatTime(elapsed);
+  }
+
+  function toggleTimer() {
+    timerVisible = !timerVisible;
+    timerEl.style.display = timerVisible ? 'block' : 'none';
+    if (timerVisible && !timerStarted) {
+      timerStarted = true;
+      startTime = Date.now();
+      timerInterval = setInterval(updateTimer, 1000);
+    }
+  }
+
+  // ── 키보드 이벤트 ──
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ') {
+      e.preventDefault();
+      goTo(current + 1);
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      goTo(current - 1);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      goTo(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      goTo(total - 1);
+    } else if (e.key === 'n' || e.key === 'N') {
+      e.preventDefault();
+      toggleNotes();
+    } else if (e.key === 't' || e.key === 'T') {
+      e.preventDefault();
+      toggleTimer();
+    }
+  });
+
+  // ── 터치 지원 ──
+  let touchStartX = 0;
+  document.addEventListener('touchstart', function(e) {
+    touchStartX = e.touches[0].clientX;
+  });
+  document.addEventListener('touchend', function(e) {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) goTo(current + 1);
+      else goTo(current - 1);
+    }
+  });
+
+  // ── 클릭 네비게이션 (좌우 15% 영역) ──
+  document.addEventListener('click', function(e) {
+    const x = e.clientX;
+    const w = window.innerWidth;
+    if (x < w * 0.15) goTo(current - 1);
+    else if (x > w * 0.85) goTo(current + 1);
+  });
+
+  // ── 초기화 ──
+  updateProgress();
+})();
+</script>
+
+</body>
+</html>
