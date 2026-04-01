@@ -8191,7 +8191,7 @@
         setTimeout(function() { compileIcon.textContent = '⚙️'; }, 2000);
       } else {
         var commitHash = BlockchainEngine.generateTxHash().slice(2, 10);
-        var successMsg = '✅ 컴파일 성공! Faucet.sol — Solidity 0.8.0 (commit: 0x' + commitHash + ')';
+        var successMsg = '✅ 컴파일 성공! Faucet.sol — Solidity 0.8.26 (commit: 0x' + commitHash + ')';
         if (warnings.length > 0) {
           successMsg += ' | ⚠️ 경고: ' + warnings.join(', ');
           status.className = 'lab3-compile-status lab3-cs-success';
@@ -8203,7 +8203,7 @@
           status.textContent = successMsg;
           showToast('컴파일 성공!', 'success');
         }
-        addConsoleLog('✅ Faucet.sol 컴파일 성공 (Solidity 0.8.0)', 'var(--neon-green, #22c55e)', 'lab3');
+        addConsoleLog('✅ Faucet.sol 컴파일 성공 (Solidity 0.8.26)', 'var(--neon-green, #22c55e)', 'lab3');
         lab3Contract.compiled = true;
         btnDeploy.disabled = false;
         compileIcon.textContent = '✅';
