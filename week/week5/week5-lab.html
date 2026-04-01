@@ -760,9 +760,9 @@
     .compile-result, .deploy-result {
       display: none;
       margin-top: 8px;
-      padding: 8px 10px;
+      padding: 8px 12px;
       border-radius: var(--radius-sm);
-      font-size: 0.75rem;
+      font-size: 0.86rem;
       line-height: 1.5;
     }
     .compile-result.show, .deploy-result.show { display: block; animation: slideUp 0.3s ease; }
@@ -863,7 +863,7 @@
       padding: 10px 14px;
       background: var(--bg-surface);
       border-bottom: 1px solid var(--border);
-      font-size: 0.82rem;
+      font-size: 0.94rem;
       color: var(--text-muted);
       display: flex;
       align-items: center;
@@ -909,7 +909,7 @@
       margin-bottom: 14px;
     }
     .func-group-title {
-      font-size: 0.75rem;
+      font-size: 0.86rem;
       color: var(--text-muted);
       margin-bottom: 8px;
       font-weight: 600;
@@ -924,11 +924,11 @@
       flex-wrap: wrap;
     }
     .func-btn {
-      padding: 6px 14px;
+      padding: 7px 16px;
       border: none;
       border-radius: var(--radius-sm);
       font-family: var(--font-mono);
-      font-size: 0.78rem;
+      font-size: 0.9rem;
       font-weight: 600;
       cursor: pointer;
       transition: all var(--transition-fast);
@@ -958,13 +958,13 @@
     .func-input {
       flex: 1;
       min-width: 80px;
-      padding: 6px 10px;
+      padding: 7px 10px;
       background: var(--bg-surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       color: var(--text-primary);
       font-family: var(--font-mono);
-      font-size: 0.75rem;
+      font-size: 0.86rem;
       outline: none;
     }
     .func-input:focus { border-color: var(--neon-cyan); }
@@ -972,10 +972,10 @@
 
     .func-result {
       margin-top: 6px;
-      padding: 6px 10px;
+      padding: 8px 12px;
       border-radius: var(--radius-sm);
       font-family: var(--font-mono);
-      font-size: 0.75rem;
+      font-size: 0.86rem;
       animation: slideUp 0.3s ease;
       line-height: 1.5;
     }
@@ -1004,7 +1004,7 @@
       padding: 12px;
     }
     .state-vars-title {
-      font-size: 0.78rem;
+      font-size: 0.9rem;
       font-weight: 600;
       color: var(--text-secondary);
       margin-bottom: 8px;
@@ -1022,8 +1022,8 @@
       display: flex; align-items: center; gap: 6px;
     }
     .state-var-visibility {
-      font-size: 0.62rem;
-      padding: 1px 6px;
+      font-size: 0.72rem;
+      padding: 2px 7px;
       border-radius: 8px;
       font-weight: 600;
     }
@@ -1032,12 +1032,12 @@
     .state-var-visibility.internal { background: rgba(245,158,11,0.15); color: var(--neon-orange); }
     .state-var-name {
       font-family: var(--font-mono);
-      font-size: 0.78rem;
+      font-size: 0.9rem;
       color: var(--text-primary);
     }
     .state-var-value {
       font-family: var(--font-mono);
-      font-size: 0.78rem;
+      font-size: 0.9rem;
       color: var(--neon-cyan);
       font-weight: 600;
     }
@@ -1591,8 +1591,8 @@
 
     /* 함수 배지 */
     .func-badge {
-      font-size: 0.6rem;
-      padding: 1px 8px;
+      font-size: 0.69rem;
+      padding: 2px 9px;
       border-radius: 10px;
       font-weight: 600;
       text-transform: uppercase;
@@ -1633,7 +1633,7 @@
 
     /* 컨트랙트 함수 설명 */
     .func-description {
-      font-size: 0.68rem;
+      font-size: 0.78rem;
       color: var(--text-dim);
       margin-top: 4px;
       font-style: italic;
@@ -1744,7 +1744,8 @@
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
-  flex: 1;
+  width: 100%;
+  height: 100%;
 }
 .lab3-tracker-row {
   display: flex;
@@ -1765,11 +1766,13 @@
   transition: color 0.3s;
 }
 .lab3-tracker-value.lab3-flash {
-  animation: lab3TrackerFlash 0.6s ease;
+  animation: lab3TrackerFlash 1.2s ease;
 }
 @keyframes lab3TrackerFlash {
   0%, 100% { background: transparent; border-radius: 4px; }
-  30% { background: rgba(167, 139, 250, 0.35); }
+  15% { background: rgba(167, 139, 250, 0.55); }
+  40% { background: rgba(124, 58, 237, 0.35); }
+  70% { background: rgba(167, 139, 250, 0.15); }
 }
 
 /* 24시간 경과 버튼 */
@@ -1924,12 +1927,13 @@
   flex-shrink: 0;
 }
 .lab3-code-textarea {
-  flex: 1;
+  width: 100%;
+  height: 100%;
   padding: 14px 14px 14px 10px;
   background: transparent;
   border: none;
   outline: none;
-  color: #c9d1d9;
+  color: transparent;
   font-family: var(--lab3-mono);
   font-size: 0.76rem;
   line-height: 1.7;
@@ -1941,7 +1945,7 @@
   caret-color: var(--lab3-purple);
 }
 .lab3-code-textarea::selection {
-  background: rgba(167, 139, 250, 0.25);
+  background: rgba(167, 139, 250, 0.35);
 }
 .lab3-code-textarea:focus {
   background: rgba(167, 139, 250, 0.02);
@@ -2566,7 +2570,8 @@
   margin-bottom: 8px;
 }
 .lab3-fn-input {
-  flex: 1;
+  width: 100%;
+  height: 100%;
   padding: 7px 12px;
   background: #0d1117;
   border: 1px solid var(--lab3-border);
@@ -2967,33 +2972,7 @@
     .console-entry.tx { color: var(--neon-orange); }
     .console-entry .timestamp { color: var(--text-dim); margin-right: 6px; }
 
-    /* 토스트 알림 */
-    .toast-container {
-      position: fixed;
-      top: 16px;
-      right: 16px;
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      pointer-events: none;
-    }
-    .toast {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 10px 16px;
-      font-size: 0.78rem;
-      color: var(--text-primary);
-      box-shadow: var(--shadow-lg);
-      animation: toastIn 0.35s ease, toastOut 0.35s ease 2.5s forwards;
-      pointer-events: auto;
-      max-width: 360px;
-      font-family: var(--font-ui);
-    }
-    .toast.toast-success { border-left: 3px solid var(--neon-green); }
-    .toast.toast-error { border-left: 3px solid var(--neon-red); }
-    .toast.toast-info { border-left: 3px solid var(--neon-cyan); }
+    /* 토스트 알림 — 통합 스타일은 아래 섹션 4에서 정의 (중복 제거됨) */
 
     /* 배포 오버레이 */
     .deploy-overlay {
@@ -3065,15 +3044,7 @@
 /* ────────────────────────────────────────
    1. 파티클 네트워크 배경 캔버스
    ──────────────────────────────────────── */
-#bgCanvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1;
-  pointer-events: none;
-}
+/* #bgCanvas — 상단에서 이미 정의됨 (중복 제거) */
 
 /* ────────────────────────────────────────
    2. 마이닝 애니메이션 오버레이
@@ -3321,7 +3292,8 @@
 }
 
 .toast-message {
-  flex: 1;
+  width: 100%;
+  height: 100%;
   line-height: 1.4;
 }
 
@@ -3357,11 +3329,7 @@
 /* ────────────────────────────────────────
    5. 성공/실패 효과
    ──────────────────────────────────────── */
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 50%, 90% { transform: translateX(-8px); }
-  30%, 70% { transform: translateX(8px); }
-}
+/* @keyframes shake — 상단에서 이미 정의됨 (중복 제거) */
 
 @keyframes pulse-green {
   0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
@@ -3591,6 +3559,20 @@
       line-height: 1;
     }
 
+    /* 런처 카드 시작 배지 */
+    .card-start-badge {
+      position: absolute;
+      top: -1px;
+      left: -1px;
+      background: var(--neon-cyan);
+      color: var(--bg-deep);
+      padding: 4px 12px;
+      border-radius: var(--radius-xl) 0 var(--radius-md) 0;
+      font-size: 0.65rem;
+      font-weight: 700;
+      animation: pulse 2s ease infinite;
+    }
+
     /* 런처 카드 완료 오버레이 */
     .card-completed-badge {
       position: absolute;
@@ -3655,10 +3637,10 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      padding: 2px 8px;
+      padding: 3px 9px;
       background: rgba(245,158,11,0.1);
       border-radius: 10px;
-      font-size: 0.65rem;
+      font-size: 0.75rem;
       color: var(--neon-orange);
       font-family: var(--font-mono);
     }
@@ -3925,15 +3907,176 @@
       .nav-tabs { display: none; }
       .lab-navbar { flex-wrap: wrap; gap: 8px; }
     }
+
+    /* ===== CodeTracer - 코드 실행 추적 시각화 ===== */
+    .trace-line {
+      display: block;
+      position: relative;
+      transition: background 0.3s ease;
+    }
+    .trace-line.trace-active {
+      background: rgba(0, 212, 255, 0.12);
+      animation: traceGlow 1.2s ease infinite;
+    }
+    .trace-line.trace-done {
+      background: rgba(16, 185, 129, 0.05);
+    }
+    .trace-line.trace-error {
+      background: rgba(239, 68, 68, 0.12);
+    }
+    .trace-line.trace-skip {
+      opacity: 0.35;
+    }
+    .trace-line.trace-constructor {
+      background: rgba(124, 58, 237, 0.08);
+    }
+    .trace-line.trace-active::before,
+    .trace-line.trace-done::before,
+    .trace-line.trace-error::before,
+    .trace-line.trace-constructor::before {
+      content: '';
+      position: absolute;
+      left: -8px;
+      top: 1px;
+      bottom: 1px;
+      width: 3px;
+      border-radius: 2px;
+    }
+    .trace-line.trace-active::before {
+      background: var(--neon-cyan);
+      box-shadow: 0 0 8px var(--neon-cyan);
+    }
+    .trace-line.trace-done::before {
+      background: rgba(16, 185, 129, 0.4);
+    }
+    .trace-line.trace-error::before {
+      background: var(--neon-red);
+      box-shadow: 0 0 8px var(--neon-red);
+    }
+    .trace-line.trace-constructor::before {
+      background: var(--neon-purple);
+      box-shadow: 0 0 8px var(--neon-purple);
+    }
+    @keyframes traceGlow {
+      0%, 100% { background: rgba(0, 212, 255, 0.12); }
+      50% { background: rgba(0, 212, 255, 0.2); }
+    }
+
+    /* 라인 넘버 하이라이트 */
+    .line-numbers div.ln-active, .lab3-line-numbers div.ln-active {
+      color: var(--neon-cyan) !important;
+      font-weight: 700;
+      text-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+    }
+    .line-numbers div.ln-done, .lab3-line-numbers div.ln-done {
+      color: var(--neon-green) !important;
+    }
+    .line-numbers div.ln-error, .lab3-line-numbers div.ln-error {
+      color: var(--neon-red) !important;
+      font-weight: 700;
+    }
+
+    /* 트레이스 패널 */
+    .trace-panel {
+      display: none;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(124, 58, 237, 0.08));
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: var(--radius-md);
+      padding: 10px 16px;
+      margin: 0 0 4px 0;
+      font-size: 0.88rem;
+      animation: fadeInUp 0.3s ease;
+    }
+    .trace-panel.active {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .trace-panel-icon {
+      font-size: 1.3rem;
+      min-width: 24px;
+      text-align: center;
+    }
+    .trace-panel-step {
+      color: var(--neon-cyan);
+      font-weight: 700;
+      font-family: var(--font-mono);
+      min-width: 44px;
+      font-size: 0.88rem;
+    }
+    .trace-panel-desc {
+      flex: 1;
+      color: var(--text-primary);
+      font-family: var(--font-ui);
+      font-size: 0.88rem;
+      line-height: 1.4;
+      white-space: normal;
+      word-break: keep-all;
+    }
+    .trace-panel-progress {
+      display: flex;
+      gap: 3px;
+      align-items: center;
+    }
+    .trace-panel-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--bg-elevated);
+      transition: background 0.3s ease;
+    }
+    .trace-panel-dot.done { background: var(--neon-green); }
+    .trace-panel-dot.active {
+      background: var(--neon-cyan);
+      box-shadow: 0 0 6px var(--neon-cyan);
+    }
+    .trace-btn-next {
+      background: rgba(0, 212, 255, 0.15);
+      border: 1px solid rgba(0, 212, 255, 0.35);
+      color: var(--neon-cyan);
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 700;
+      white-space: nowrap;
+      min-height: 44px;
+      transition: background var(--transition-fast), transform 0.1s;
+    }
+    .trace-btn-next:hover { background: rgba(0, 212, 255, 0.25); transform: scale(1.05); }
+    .trace-btn-next:active { transform: scale(0.97); }
+    .trace-btn-stop {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: var(--neon-red);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.75rem;
+      min-height: 44px;
+      transition: background var(--transition-fast);
+    }
+    .trace-btn-stop:hover { background: rgba(239, 68, 68, 0.2); }
+    .trace-play-btn {
+      background: rgba(0, 212, 255, 0.1) !important;
+      border: 1px solid rgba(0, 212, 255, 0.3) !important;
+      color: var(--neon-cyan) !important;
+      font-weight: 600 !important;
+    }
+    .trace-play-btn:hover {
+      background: rgba(0, 212, 255, 0.2) !important;
+      box-shadow: 0 0 8px rgba(0, 212, 255, 0.2) !important;
+    }
   </style>
 </head>
 <body>
 
   <!-- 토스트 알림 -->
-  <div class="toast-container" id="toastContainer"></div>
+  <div class="toast-container" id="toastContainer" aria-live="polite" role="status"></div>
 
   <!-- 배포 오버레이 -->
-  <div class="deploy-overlay" id="deployOverlay">
+  <div class="deploy-overlay" id="deployOverlay" role="dialog" aria-modal="true" aria-label="블록 생성 중">
     <div class="deploy-spinner-block">&#x1f9ca;</div>
     <div class="deploy-overlay-title">블록 생성 중...</div>
     <div class="deploy-steps">
@@ -3941,7 +4084,7 @@
         <span>&#9203;</span><span>트랜잭션 서명 및 전송 중...</span>
       </div>
       <div class="deploy-step" id="deployStep2">
-        <span>&#9203;</span><span>바이트코드 검증 및 블록 채굴 중...</span>
+        <span>&#9203;</span><span>블록 생성 및 바이트코드 실행 중...</span>
       </div>
       <div class="deploy-step" id="deployStep3">
         <span>&#9203;</span><span>컨트랙트 배포 완료!</span>
@@ -3950,7 +4093,7 @@
   </div>
 
   <!-- 키보드 단축키 모달 -->
-  <div class="shortcuts-modal" id="shortcutsModal">
+  <div class="shortcuts-modal" id="shortcutsModal" role="dialog" aria-modal="true" aria-label="키보드 단축키">
     <div class="shortcuts-content">
       <div class="shortcuts-title">&#x2328;&#xfe0f; 키보드 단축키</div>
       <div class="shortcut-item">
@@ -4000,7 +4143,8 @@
 
         <div class="cards-container">
           <!-- Lab 1 카드 -->
-          <div class="lab-card" onclick="launchLab('lab1')" id="card-lab1">
+          <div class="lab-card" onclick="launchLab('lab1')" id="card-lab1" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();launchLab('lab1')}">
+            <div class="card-start-badge" id="startBadge">&#x25b6; 시작</div>
             <div class="card-number">1</div>
             <div class="card-key-hint"><span class="kbd">1</span></div>
             <div class="card-icon">&#x1f44b;</div>
@@ -4030,7 +4174,7 @@
           </div>
 
           <!-- Lab 2 카드 -->
-          <div class="lab-card" onclick="launchLab('lab2')" id="card-lab2">
+          <div class="lab-card" onclick="launchLab('lab2')" id="card-lab2" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();launchLab('lab2')}">
             <div class="card-number">2</div>
             <div class="card-key-hint"><span class="kbd">2</span></div>
             <div class="card-icon">&#x1f522;</div>
@@ -4060,7 +4204,7 @@
           </div>
 
           <!-- Lab 3 카드 -->
-          <div class="lab-card" onclick="launchLab('lab3')" id="card-lab3">
+          <div class="lab-card" onclick="launchLab('lab3')" id="card-lab3" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();launchLab('lab3')}">
             <div class="card-number">3</div>
             <div class="card-key-hint"><span class="kbd">3</span></div>
             <div class="card-icon">&#x1f6b0;</div>
@@ -4143,9 +4287,18 @@
               <span id="lab1CursorPos">줄 1, 열 1</span>
             </div>
             <div class="editor-toolbar-right">
+              <button class="toolbar-btn trace-play-btn" onclick="startManualTrace('lab1')">&#9654; 코드 추적</button>
               <button class="toolbar-btn" onclick="resetLabCode('lab1')">&#x21ba; 초기화</button>
               <button class="toolbar-btn" onclick="copyLabCode('lab1')">&#128203; 복사</button>
             </div>
+          </div>
+          <div class="trace-panel" id="lab1TracePanel" aria-live="polite">
+            <span class="trace-panel-icon" id="lab1TraceIcon">&#9654;</span>
+            <span class="trace-panel-step" id="lab1TraceStep">0/0</span>
+            <span class="trace-panel-desc" id="lab1TraceDesc">&#8230;</span>
+            <div class="trace-panel-progress" id="lab1TraceDots"></div>
+            <button class="trace-btn-next" id="lab1TraceNext" onclick="CodeTracer.stepForward()" style="display:none">다음 &#9654;</button>
+            <button class="trace-btn-stop" onclick="CodeTracer.stop()">&#9632; 중지</button>
           </div>
           <div class="editor-wrapper">
             <div class="line-numbers" id="lab1LineNumbers"></div>
@@ -4163,8 +4316,8 @@
             <button class="btn btn-compile" id="lab1BtnCompile" onclick="handleCompile('lab1')">&#x26a1; 컴파일</button>
             <button class="btn btn-deploy" id="lab1BtnDeploy" onclick="handleDeploy('lab1')" disabled>&#x1f680; 배포</button>
             <button class="btn btn-reset" onclick="resetLabCode('lab1')">&#x21ba; 코드 초기화</button>
-            <div class="compile-result" id="lab1CompileResult"></div>
-            <div class="deploy-result" id="lab1DeployResult"></div>
+            <div class="compile-result" id="lab1CompileResult" aria-live="assertive"></div>
+            <div class="deploy-result" id="lab1DeployResult" aria-live="assertive"></div>
           </div>
           <div class="control-section">
             <div class="control-section-title">&#x1f464; 계정 정보</div>
@@ -4180,7 +4333,7 @@
               <div class="chain-info-card"><div class="chain-info-value" id="lab1BlockNum">0</div><div class="chain-info-label">블록 번호</div></div>
               <div class="chain-info-card"><div class="chain-info-value" id="lab1TxCount">0</div><div class="chain-info-label">트랜잭션</div></div>
               <div class="chain-info-card"><div class="chain-info-value">20</div><div class="chain-info-label">Gas Price (Gwei)</div></div>
-              <div class="chain-info-card"><div class="chain-info-value" style="color:var(--neon-green);font-size:0.75rem;">가상 VM</div><div class="chain-info-label">네트워크</div></div>
+              <div class="chain-info-card"><div class="chain-info-value" style="color:var(--neon-green);font-size:0.75rem;">Remix VM</div><div class="chain-info-label">네트워크</div></div>
             </div>
           </div>
           <div class="control-section">
@@ -4193,7 +4346,7 @@
         <div class="interaction-panel">
           <div class="interaction-header">
             <span>&#x1f4cb; 배포된 컨트랙트</span>
-            <span style="font-size:0.7rem;color:var(--text-dim);" id="lab1DeployCount">0개 배포됨</span>
+            <span style="font-size:0.8rem;color:var(--text-dim);" id="lab1DeployCount">0개 배포됨</span>
           </div>
           <div class="interaction-content" id="lab1Interaction">
             <div class="no-contract-msg" id="lab1NoContract">
@@ -4251,9 +4404,18 @@
               <span id="lab2CursorPos">줄 1, 열 1</span>
             </div>
             <div class="editor-toolbar-right">
+              <button class="toolbar-btn trace-play-btn" onclick="startManualTrace('lab2')">&#9654; 코드 추적</button>
               <button class="toolbar-btn" onclick="resetLabCode('lab2')">&#x21ba; 초기화</button>
               <button class="toolbar-btn" onclick="copyLabCode('lab2')">&#128203; 복사</button>
             </div>
+          </div>
+          <div class="trace-panel" id="lab2TracePanel" aria-live="polite">
+            <span class="trace-panel-icon" id="lab2TraceIcon">&#9654;</span>
+            <span class="trace-panel-step" id="lab2TraceStep">0/0</span>
+            <span class="trace-panel-desc" id="lab2TraceDesc">&#8230;</span>
+            <div class="trace-panel-progress" id="lab2TraceDots"></div>
+            <button class="trace-btn-next" id="lab2TraceNext" onclick="CodeTracer.stepForward()" style="display:none">다음 &#9654;</button>
+            <button class="trace-btn-stop" onclick="CodeTracer.stop()">&#9632; 중지</button>
           </div>
           <div class="editor-wrapper">
             <div class="line-numbers" id="lab2LineNumbers"></div>
@@ -4270,8 +4432,8 @@
             <button class="btn btn-compile" id="lab2BtnCompile" onclick="handleCompile('lab2')">&#x26a1; 컴파일</button>
             <button class="btn btn-deploy" id="lab2BtnDeploy" onclick="handleDeploy('lab2')" disabled>&#x1f680; 배포</button>
             <button class="btn btn-reset" onclick="resetLabCode('lab2')">&#x21ba; 코드 초기화</button>
-            <div class="compile-result" id="lab2CompileResult"></div>
-            <div class="deploy-result" id="lab2DeployResult"></div>
+            <div class="compile-result" id="lab2CompileResult" aria-live="assertive"></div>
+            <div class="deploy-result" id="lab2DeployResult" aria-live="assertive"></div>
           </div>
           <div class="control-section">
             <div class="control-section-title">&#x1f464; 계정 정보</div>
@@ -4287,7 +4449,7 @@
               <div class="chain-info-card"><div class="chain-info-value" id="lab2BlockNum">0</div><div class="chain-info-label">블록 번호</div></div>
               <div class="chain-info-card"><div class="chain-info-value" id="lab2TxCount">0</div><div class="chain-info-label">트랜잭션</div></div>
               <div class="chain-info-card"><div class="chain-info-value">20</div><div class="chain-info-label">Gas Price (Gwei)</div></div>
-              <div class="chain-info-card"><div class="chain-info-value" style="color:var(--neon-green);font-size:0.75rem;">가상 VM</div><div class="chain-info-label">네트워크</div></div>
+              <div class="chain-info-card"><div class="chain-info-value" style="color:var(--neon-green);font-size:0.75rem;">Remix VM</div><div class="chain-info-label">네트워크</div></div>
             </div>
           </div>
           <div class="control-section" id="lab2GasSection">
@@ -4308,7 +4470,7 @@
         <div class="interaction-panel">
           <div class="interaction-header">
             <span>&#x1f4cb; 배포된 컨트랙트</span>
-            <span style="font-size:0.7rem;color:var(--text-dim);" id="lab2DeployCount">0개 배포됨</span>
+            <span style="font-size:0.8rem;color:var(--text-dim);" id="lab2DeployCount">0개 배포됨</span>
           </div>
           <div class="interaction-content" id="lab2Interaction">
             <div class="no-contract-msg" id="lab2NoContract">
@@ -4328,6 +4490,19 @@
 
     <!-- ==================== Lab 3 (Faucet) - 플레이스홀더 ==================== -->
     <section id="lab3" class="page">
+
+      <!-- Lab 3 네비바 (Lab 1/2와 동일 패턴) -->
+      <nav class="lab-navbar">
+        <div class="nav-left">
+          <button class="btn-back" onclick="navigate('launcher')">&#8592; 런처</button>
+        </div>
+        <div class="nav-center">Lab 3: Faucet 시뮬레이터</div>
+        <div class="nav-tabs">
+          <button class="nav-tab" onclick="navigate('lab1')">Lab 1</button>
+          <button class="nav-tab" onclick="navigate('lab2')">Lab 2</button>
+          <button class="nav-tab active" onclick="navigate('lab3')">Lab 3</button>
+        </div>
+      </nav>
 
 <!-- msg.sender / msg.value 트래커 (시각화 영역 상단) -->
 <div class="lab3-msg-tracker" id="lab3MsgTracker">
@@ -4366,19 +4541,36 @@
           Faucet.sol
         </span>
         <div class="lab3-code-editor-actions">
+          <button class="lab3-btn-compile trace-play-btn" onclick="startManualTrace('lab3')" style="background:rgba(0,212,255,0.1)!important;border:1px solid rgba(0,212,255,0.3)!important;color:var(--neon-cyan)!important;font-weight:600!important;">&#9654; 코드 추적</button>
+          <button class="lab3-btn-compile" onclick="lab3_copyCode()" style="background:linear-gradient(135deg, var(--lab3-purple), #7c3aed);color:#fff;">📋 복사</button>
+          <button class="lab3-btn-compile" onclick="lab3_resetCode()" style="background:linear-gradient(135deg, #6b7280, #4b5563);color:#fff;">↺ 초기화</button>
           <button class="lab3-btn-compile" id="lab3BtnCompile" onclick="lab3_compile()">
             <span id="lab3CompileIcon">⚙️</span> 컴파일
           </button>
           <button class="lab3-btn-deploy" id="lab3BtnDeploy" onclick="lab3_deploy()" disabled>
             🚀 배포
           </button>
+          <button class="lab3-btn-compile" onclick="resetLab3()" title="Lab 3 전체 초기화" style="background:rgba(239,68,68,0.15);color:#ef4444;border-color:rgba(239,68,68,0.3);">
+            🔄 리셋
+          </button>
         </div>
+      </div>
+      <div class="trace-panel" id="lab3TracePanel" aria-live="polite">
+        <span class="trace-panel-icon" id="lab3TraceIcon">&#9654;</span>
+        <span class="trace-panel-step" id="lab3TraceStep">0/0</span>
+        <span class="trace-panel-desc" id="lab3TraceDesc">&#8230;</span>
+        <div class="trace-panel-progress" id="lab3TraceDots"></div>
+        <button class="trace-btn-next" id="lab3TraceNext" onclick="CodeTracer.stepForward()" style="display:none">다음 &#9654;</button>
+        <button class="trace-btn-stop" onclick="CodeTracer.stop()">&#9632; 중지</button>
       </div>
       <div class="lab3-code-area-container" id="lab3CodeAreaContainer">
         <div class="lab3-line-numbers" id="lab3LineNumbers"></div>
-        <textarea class="lab3-code-textarea" id="lab3CodeTextarea" spellcheck="false" wrap="off"></textarea>
+        <div style="flex:1;position:relative;min-height:300px;">
+          <div class="code-highlight" id="lab3Highlight" style="position:absolute;top:0;left:0;width:100%;height:100%;padding:14px 14px 14px 10px;font-family:var(--lab3-mono);font-size:0.76rem;line-height:1.7;white-space:pre;overflow:auto;pointer-events:none;z-index:1;color:var(--lab3-text);"></div>
+          <textarea class="lab3-code-textarea" id="lab3CodeTextarea" spellcheck="false" wrap="off" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;color:transparent;caret-color:var(--lab3-purple);background:transparent;"></textarea>
+        </div>
       </div>
-      <div class="lab3-compile-status lab3-cs-info" id="lab3CompileStatus">
+      <div class="lab3-compile-status lab3-cs-info" id="lab3CompileStatus" aria-live="assertive">
         💡 편집기에서 코드를 수정하고 컴파일 버튼을 눌러보세요.
       </div>
     </div>
@@ -4485,6 +4677,29 @@
         </div>
       </div>
     </div>
+
+    <!-- 가스비 통계 -->
+    <div class="lab3-state-section" style="margin-top:12px;">
+      <div class="lab3-panel-title">⛽ 가스비 통계</div>
+      <div class="lab3-state-monitor" id="lab3GasStatsPanel">
+        <div class="lab3-state-row">
+          <span class="lab3-state-key">호출 횟수</span>
+          <span class="lab3-state-val" id="lab3GasCallCount">0</span>
+        </div>
+        <div class="lab3-state-row">
+          <span class="lab3-state-key">누적 가스</span>
+          <span class="lab3-state-val" id="lab3GasTotalGas">0</span>
+        </div>
+        <div class="lab3-state-row">
+          <span class="lab3-state-key">평균 가스</span>
+          <span class="lab3-state-val" id="lab3GasAvgGas">-</span>
+        </div>
+        <div class="lab3-state-row">
+          <span class="lab3-state-key">ETH 소모</span>
+          <span class="lab3-state-val" id="lab3GasEthSpent">0</span>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- =========================================
@@ -4530,7 +4745,7 @@
               WITHDRAWAL_AMOUNT()
               <span class="lab3-fn-badge lab3-badge-view">constant</span>
             </div>
-            <div class="lab3-fn-description">1회 출금 가능 금액입니다. (0.1 ether = 10^17 wei)</div>
+            <div class="lab3-fn-description">1회 출금 가능 금액입니다. 코드에서 설정한 값이 적용됩니다.</div>
             <button class="lab3-btn-fn lab3-btn-read" onclick="lab3_fnWithdrawalAmount()">📖 호출</button>
             <div class="lab3-fn-result" id="lab3ResultWithdrawalAmount"></div>
           </div>
@@ -4573,7 +4788,7 @@
               withdraw()
               <span class="lab3-fn-badge lab3-badge-external">external</span>
             </div>
-            <div class="lab3-fn-description">Faucet에서 0.1 ETH를 수령합니다. 24시간에 1회만 가능합니다.</div>
+            <div class="lab3-fn-description">Faucet에서 WITHDRAWAL_AMOUNT만큼 ETH를 수령합니다. LOCK_TIME에 1회만 가능합니다.</div>
             <button class="lab3-btn-fn lab3-btn-write" id="lab3BtnWithdraw" onclick="lab3_withdraw()">🔸 실행</button>
             <div class="lab3-fn-result" id="lab3ResultWithdraw"></div>
           </div>
@@ -4627,7 +4842,7 @@
 
         <!-- ===== 가이드 시나리오 (접기/펼치기) ===== -->
         <div class="lab3-guide-section">
-          <button class="lab3-guide-toggle-btn" id="lab3GuideToggleBtn" onclick="lab3_toggleGuide()">
+          <button class="lab3-guide-toggle-btn" id="lab3GuideToggleBtn" onclick="lab3_toggleGuide()" aria-expanded="false" aria-controls="lab3GuideContent">
             <span class="lab3-guide-toggle-icon" id="lab3GuideToggleIcon">▶</span>
             📖 실습 가이드 시나리오
             <span class="lab3-guide-badge" id="lab3GuideBadge">0/12</span>
@@ -4646,6 +4861,47 @@
           </div>
         </div>
 
+        <!-- ===== 도전과제 ===== -->
+        <div class="challenge-box">
+          <div class="challenge-title">&#127942; 도전과제</div>
+          <div class="challenge-item">
+            <span>&#127919;</span>
+            <div>
+              <strong>도전 1:</strong> <code>WITHDRAWAL_AMOUNT</code>를 <code>0.2 ether</code>로 변경하고 다시 컴파일/배포하여 출금 금액 변화를 확인해보세요!
+              <button class="hint-btn" onclick="toggleHint('lab3Hint1')">&#128161; 힌트</button>
+              <div class="hint-code" id="lab3Hint1">uint public constant WITHDRAWAL_AMOUNT = 0.2 ether;
+// 배포 후 withdraw() 실행 시 0.2 ETH가 출금됩니다.</div>
+            </div>
+          </div>
+          <div class="challenge-item">
+            <span>&#127919;</span>
+            <div>
+              <strong>도전 2:</strong> <code>LOCK_TIME</code>을 <code>1 hours</code>(3600초)로 변경하고, 더 짧은 시간에 재출금이 가능한지 확인해보세요!
+              <button class="hint-btn" onclick="toggleHint('lab3Hint2')">&#128161; 힌트</button>
+              <div class="hint-code" id="lab3Hint2">uint public constant LOCK_TIME = 1 hours;
+// 1시간(3600초) 후 재출금이 가능해집니다.
+// 기존 24 hours(86400초)보다 훨씬 짧습니다.</div>
+            </div>
+          </div>
+          <div class="challenge-item">
+            <span>&#127919;</span>
+            <div>
+              <strong>도전 3:</strong> <code>receive()</code> 함수를 제거하고 직접 ETH 전송을 시도하면 어떤 에러가 발생하는지 확인해보세요!
+              <button class="hint-btn" onclick="toggleHint('lab3Hint3')">&#128161; 힌트</button>
+              <div class="hint-code" id="lab3Hint3">// receive() external payable { } 를 삭제하면
+// 직접 ETH 전송 시 트랜잭션이 revert 됩니다.
+// fallback()도 없으면 컨트랙트가 ETH를 받을 수 없습니다.
+// deposit()은 payable이므로 여전히 동작합니다.</div>
+            </div>
+          </div>
+          <div style="margin-top:10px;padding:8px;background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);font-size:0.83rem;color:var(--text-dim);line-height:1.5;">
+            &#9997;&#65039; <strong style="color:var(--text-secondary)">방법:</strong>
+            왼쪽 에디터에서 코드 수정 &#8594; 컴파일 &#8594; 배포하면 변경된 동작을 확인할 수 있습니다!
+            <br>&#128161; 재배포해도 실습 가이드 진행률은 유지됩니다. 안심하고 코드를 수정해보세요!
+            <br>(전체 리셋은 에디터의 "&#128260; 리셋" 버튼을 사용하세요)
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -4659,7 +4915,7 @@
 
   <!-- 하단 콘솔 (공유) -->
   <div class="console-panel" id="consolePanel">
-    <div class="console-header" onclick="toggleConsole()">
+    <div class="console-header" onclick="toggleConsole()" role="button" tabindex="0" aria-expanded="true" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleConsole()}">
       <div class="console-header-left">
         <span>&#x1f5a5;&#xfe0f;</span>
         <span>콘솔</span>
@@ -4674,7 +4930,7 @@
         <span class="console-toggle">&#x25bc;</span>
       </div>
     </div>
-    <div class="console-body" id="consoleBody"></div>
+    <div class="console-body" id="consoleBody" aria-live="polite" role="log"></div>
   </div>
 
   <!-- 블록체인 배경 효과 캔버스 -->
@@ -4726,10 +4982,8 @@
 
         /* 콘솔 표시/숨김 */
         const consoleEl = document.getElementById('consolePanel');
-        if (pageId === 'launcher') {
-          consoleEl.style.display = 'none';
-        } else {
-          consoleEl.style.display = 'flex';
+        if (consoleEl) {
+          consoleEl.style.display = (pageId === 'launcher') ? 'none' : 'flex';
         }
 
         /* 브라우저 탭 타이틀 업데이트 */
@@ -4764,7 +5018,7 @@
         setTimeout(() => {
           card.classList.remove('mining');
           navigate(labId);
-        }, 600);
+        }, 300);
       } else {
         navigate(labId);
       }
@@ -4821,13 +5075,25 @@
       /* Ctrl+Enter: 컴파일 */
       if (e.ctrlKey && e.key === 'Enter' && currentPage.startsWith('lab')) {
         e.preventDefault();
-        handleCompile(currentPage);
+        if (currentPage === 'lab3') {
+          var btn = document.getElementById('lab3BtnCompile');
+          if (btn && !btn.disabled) lab3_compile();
+        } else {
+          handleCompile(currentPage);
+        }
       }
+
       /* Ctrl+Shift+D: 배포 */
       if (e.ctrlKey && e.shiftKey && (e.key === 'D' || e.key === 'd') && currentPage.startsWith('lab')) {
         e.preventDefault();
-        handleDeploy(currentPage);
+        if (currentPage === 'lab3') {
+          var btn = document.getElementById('lab3BtnDeploy');
+          if (btn && !btn.disabled) lab3_deploy();
+        } else {
+          handleDeploy(currentPage);
+        }
       }
+
     });
 
     /* 초기 해시 처리 */
@@ -4884,6 +5150,7 @@
       get sender() { return this.currentAccount.address; },
 
       advanceBlock() { this.blockNumber++; this.timestamp += 12; },
+      advanceTime(seconds) { this.timestamp += seconds; this.blockNumber += Math.floor(seconds / 12); },
 
       /* Lab별 독립 상태 */
       contracts: {},
@@ -4931,7 +5198,7 @@
       const ICONS = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
       const toast = document.createElement('div');
       toast.className = 'toast toast-' + type;
-      toast.innerHTML = '<span class="toast-icon">' + (ICONS[type]||'') + '</span><span class="toast-message">' + message + '</span>';
+      toast.innerHTML = '<span class="toast-icon">' + (ICONS[type]||'') + '</span><span class="toast-message">' + escapeHtml(message) + '</span>';
       container.appendChild(toast);
       requestAnimationFrame(() => { requestAnimationFrame(() => { toast.classList.add('show'); }); });
       setTimeout(() => {
@@ -4942,6 +5209,15 @@
     }
 
     function formatNumber(n) { return n.toLocaleString('ko-KR'); }
+
+    /* Lab3 전용 콘솔 로그 함수 (색상 기반 → logConsole 타입 매핑) */
+    function addConsoleLog(message, color, labId) {
+      var type = 'info';
+      if (color && color.indexOf('#ef4444') >= 0) type = 'error';
+      else if (color && (color.indexOf('green') >= 0 || color.indexOf('#22c55e') >= 0)) type = 'success';
+      else if (color && (color.indexOf('#fbbf24') >= 0 || color.indexOf('#f59e0b') >= 0)) type = 'warning';
+      logConsole(type, escapeHtml(message), labId);
+    }
 
     function getDefaultValue(type) {
       if (type === 'string') return '';
@@ -4955,8 +5231,9 @@
     let consoleLogId = 0;
     let consoleCurrentTab = 'tx';
     const consoleLogs = [];
+    const CONSOLE_MAX_ENTRIES = 200; /* 콘솔 로그 최대 개수 제한 */
 
-    function logConsole(type, message, labId) {
+    function logConsole(type, message, labId, logtype) {
       consoleEntryCount++;
       consoleLogId++;
       const body = document.getElementById('consoleBody');
@@ -4978,6 +5255,7 @@
       const entry = document.createElement('div');
       entry.className = 'console-entry ' + type;
       entry.dataset.lab = labId || '';
+      entry.dataset.logtype = logtype || (message.indexOf('[Event]') >= 0 ? 'event' : 'tx');
 
       const statusIcons = { success: '&#9989;', error: '&#10060;', info: '&#x2139;&#xfe0f;', warning: '&#9888;', tx: '&#128310;' };
       const icon = statusIcons[type] || '&#x2139;&#xfe0f;';
@@ -4996,6 +5274,15 @@
         '</div>';
 
       body.appendChild(entry);
+
+      /* 콘솔 로그 최대 개수 제한 — 오래된 항목 자동 제거 */
+      while (consoleLogs.length > CONSOLE_MAX_ENTRIES) {
+        consoleLogs.shift();
+      }
+      while (body.children.length > CONSOLE_MAX_ENTRIES) {
+        body.removeChild(body.firstChild);
+      }
+
       body.scrollTop = body.scrollHeight;
 
       const badge = document.getElementById('consoleCount');
@@ -5013,10 +5300,28 @@
       document.querySelectorAll('.console-tab-btn').forEach((b, i) => {
         b.classList.toggle('active', (i === 0 && tab === 'tx') || (i === 1 && tab === 'event'));
       });
+      /* 필터링 적용 */
+      const entries = document.querySelectorAll('#consoleBody .console-entry');
+      entries.forEach(entry => {
+        if (tab === 'tx') {
+          entry.style.display = '';
+        } else if (tab === 'event') {
+          entry.style.display = (entry.dataset.logtype === 'event') ? '' : 'none';
+        }
+      });
+      /* 이벤트 탭 전환 시 가이드 12단계(check-events) 완료 */
+      if (tab === 'event' && typeof window.lab3_completeGuideStep === 'function') {
+        window.lab3_completeGuideStep('check-events');
+      }
     }
 
     function toggleConsole() {
       document.getElementById('consolePanel').classList.toggle('collapsed');
+      var header = document.querySelector('.console-header');
+      if (header) {
+        var isCollapsed = document.getElementById('consolePanel').classList.contains('collapsed');
+        header.setAttribute('aria-expanded', String(!isCollapsed));
+      }
     }
 
     function clearConsole() {
@@ -5097,13 +5402,34 @@
       }).join('');
     }
 
+    /** 하이라이트된 HTML을 줄별 trace-line div로 래핑
+     *  멀티라인 span 태그를 라인 경계에서 올바르게 닫고 다시 열기 */
+    function wrapHighlightedLines(html) {
+      var lines = html.split('\n');
+      var openTag = ''; // 현재 열려있는 span 태그 추적
+      return lines.map(function(line, i) {
+        var content = openTag + (line || ' ');
+        // 열린/닫힌 span 태그 추적
+        var opens = content.match(/<span[^>]*>/g) || [];
+        var closes = content.match(/<\/span>/g) || [];
+        if (opens.length > closes.length) {
+          openTag = opens[opens.length - 1]; // 마지막 열린 태그 보존
+          content += '</span>'; // 현재 줄 닫기
+        } else {
+          openTag = '';
+        }
+        return '<div class="trace-line" data-line="' + (i + 1) + '">' + content + '</div>';
+      }).join('');
+    }
+
     function updateEditor(labId) {
       const textarea = document.getElementById(labId + 'Textarea');
       const highlight = document.getElementById(labId + 'Highlight');
       const lineNums = document.getElementById(labId + 'LineNumbers');
+      if (!textarea || !highlight || !lineNums) return;
       const code = textarea.value;
 
-      highlight.innerHTML = highlightSolidity(code);
+      highlight.innerHTML = wrapHighlightedLines(highlightSolidity(code));
       const lines = code.split('\n');
       lineNums.innerHTML = lines.map((_, i) => '<div>' + (i+1) + '</div>').join('');
 
@@ -5116,11 +5442,524 @@
 
     function syncEditorScroll(labId) {
       const textarea = document.getElementById(labId + 'Textarea');
+      if (!textarea) return;
       const highlight = document.getElementById(labId + 'Highlight');
       const lineNums = document.getElementById(labId + 'LineNumbers');
-      highlight.scrollTop = textarea.scrollTop;
-      highlight.scrollLeft = textarea.scrollLeft;
-      lineNums.scrollTop = textarea.scrollTop;
+      if (highlight) { highlight.scrollTop = textarea.scrollTop; highlight.scrollLeft = textarea.scrollLeft; }
+      if (lineNums) lineNums.scrollTop = textarea.scrollTop;
+    }
+
+    // ===== CodeTracer 엔진 - 코드 실행 추적 시각화 =====
+    const CodeTracer = {
+      active: false,
+      labId: null,
+      steps: [],
+      currentStep: -1,
+      timer: null,
+      finishTimer: null,
+      speed: 700,
+      mode: 'auto',
+      onComplete: null,
+      isLab3: false,
+
+      /** 트레이스 시작 */
+      startTrace: function(labId, steps, options) {
+        if (this.active) this.stop();
+        if (!steps || steps.length === 0) return;
+        options = options || {};
+        this.active = true;
+        this.labId = labId;
+        this.steps = steps;
+        this.currentStep = -1;
+        this.speed = options.speed || 700;
+        this.mode = options.mode || 'auto';
+        this.onComplete = options.onComplete || null;
+        this.isLab3 = (labId === 'lab3');
+        this.clearHighlights();
+        this.showPanel();
+        if (this.mode === 'auto') {
+          this.playNext();
+        } else {
+          this._advanceStep();
+        }
+      },
+
+      /** 한 스텝 진행 (공통 로직) */
+      _advanceStep: function() {
+        if (!this.active) return false;
+        if (this.currentStep >= this.steps.length - 1) {
+          this.finish();
+          return false;
+        }
+        this.currentStep++;
+        var step = this.steps[this.currentStep];
+        this.highlightStep(step);
+        this.updatePanel(step);
+        return true;
+      },
+
+      /** 자동 재생: 타이머로 다음 스텝 */
+      playNext: function() {
+        var self = this;
+        if (!this._advanceStep()) return;
+        var step = this.steps[this.currentStep];
+        this.timer = setTimeout(function() { self.playNext(); }, step.duration || self.speed);
+      },
+
+      /** 수동 스텝: 버튼 클릭으로 다음 라인 */
+      stepForward: function() {
+        this._advanceStep();
+      },
+
+      /** 라인 하이라이트 적용 */
+      highlightStep: function(step) {
+        var highlightEl = this.getHighlightEl();
+        var lineNumsEl = this.getLineNumsEl();
+        if (!highlightEl) return;
+
+        /* 이전 active → done */
+        highlightEl.querySelectorAll('.trace-line.trace-active').forEach(function(el) {
+          el.classList.remove('trace-active');
+          el.classList.add('trace-done');
+        });
+        if (lineNumsEl) {
+          lineNumsEl.querySelectorAll('.ln-active').forEach(function(el) {
+            el.classList.remove('ln-active');
+            el.classList.add('ln-done');
+          });
+        }
+
+        /* 현재 라인 하이라이트 */
+        var lineStart = step.line;
+        var lineEnd = step.lineEnd || step.line;
+        var hlClass = step.highlight === 'error' ? 'trace-error' :
+                      step.highlight === 'skip' ? 'trace-skip' :
+                      step.highlight === 'constructor' ? 'trace-constructor' : 'trace-active';
+
+        for (var i = lineStart; i <= lineEnd; i++) {
+          var lineEl = highlightEl.querySelector('.trace-line[data-line="' + i + '"]');
+          if (lineEl) {
+            lineEl.classList.add(hlClass);
+            if (i === lineStart) this.scrollToLine(lineEl, highlightEl);
+          }
+          if (lineNumsEl) {
+            var lnDivs = lineNumsEl.querySelectorAll('div');
+            if (lnDivs[i - 1] && step.highlight !== 'skip') {
+              lnDivs[i - 1].classList.add(step.highlight === 'error' ? 'ln-error' : 'ln-active');
+            }
+          }
+        }
+      },
+
+      /** 에디터 스크롤 동기화 */
+      scrollToLine: function(lineEl, highlightEl) {
+        var lineTop = lineEl.offsetTop;
+        var parentH = highlightEl.clientHeight;
+        var target = Math.max(0, lineTop - parentH / 3);
+        highlightEl.scrollTop = target;
+        var taId = this.isLab3 ? 'lab3CodeTextarea' : this.labId + 'Textarea';
+        var ta = document.getElementById(taId);
+        if (ta) ta.scrollTop = target;
+        var ln = this.getLineNumsEl();
+        if (ln) ln.scrollTop = target;
+      },
+
+      /** 트레이스 패널 표시 */
+      showPanel: function() {
+        var panel = document.getElementById(this.labId + 'TracePanel');
+        if (panel) panel.classList.add('active');
+        var dotsEl = document.getElementById(this.labId + 'TraceDots');
+        if (dotsEl) {
+          var html = '';
+          for (var i = 0; i < Math.min(this.steps.length, 20); i++) {
+            html += '<div class="trace-panel-dot" id="' + this.labId + 'Dot' + i + '"></div>';
+          }
+          dotsEl.innerHTML = html;
+        }
+        /* 수동 모드: "다음 ▶" 버튼 표시 */
+        var nextBtn = document.getElementById(this.labId + 'TraceNext');
+        if (nextBtn) nextBtn.style.display = this.mode === 'manual' ? 'inline-block' : 'none';
+      },
+
+      /** 패널 업데이트 */
+      updatePanel: function(step) {
+        var stepEl = document.getElementById(this.labId + 'TraceStep');
+        var descEl = document.getElementById(this.labId + 'TraceDesc');
+        var iconEl = document.getElementById(this.labId + 'TraceIcon');
+        if (stepEl) stepEl.textContent = (this.currentStep + 1) + '/' + this.steps.length;
+        if (descEl) descEl.textContent = step.desc;
+        if (iconEl) iconEl.textContent = step.icon || '\u25B6';
+        for (var i = 0; i <= this.currentStep && i < 20; i++) {
+          var dot = document.getElementById(this.labId + 'Dot' + i);
+          if (dot) dot.className = 'trace-panel-dot ' + (i === this.currentStep ? 'active' : 'done');
+        }
+      },
+
+      /** 트레이스 완료 */
+      finish: function() {
+        var self = this;
+        clearTimeout(this.timer);
+        clearTimeout(this.finishTimer);
+        var descEl = document.getElementById(this.labId + 'TraceDesc');
+        if (descEl) descEl.textContent = '\u2705 실행 추적 완료';
+        var iconEl = document.getElementById(this.labId + 'TraceIcon');
+        if (iconEl) iconEl.textContent = '\u2705';
+        this.finishTimer = setTimeout(function() {
+          self.clearHighlights();
+          var panel = document.getElementById(self.labId + 'TracePanel');
+          if (panel) panel.classList.remove('active');
+          self.active = false;
+          if (self.onComplete) self.onComplete();
+        }, 1200);
+      },
+
+      /** 중지 */
+      stop: function() {
+        clearTimeout(this.timer);
+        clearTimeout(this.finishTimer);
+        this.clearHighlights();
+        var panel = document.getElementById(this.labId + 'TracePanel');
+        if (panel) panel.classList.remove('active');
+        this.active = false;
+        this.steps = [];
+        this.currentStep = -1;
+      },
+
+      /** 모든 하이라이트 정리 */
+      clearHighlights: function() {
+        var el = this.getHighlightEl();
+        if (el) el.querySelectorAll('.trace-line').forEach(function(l) {
+          l.classList.remove('trace-active', 'trace-done', 'trace-error', 'trace-skip', 'trace-constructor');
+        });
+        var ln = this.getLineNumsEl();
+        if (ln) ln.querySelectorAll('div').forEach(function(d) {
+          d.classList.remove('ln-active', 'ln-done', 'ln-error');
+        });
+      },
+
+      getHighlightEl: function() {
+        return document.getElementById(this.isLab3 ? 'lab3Highlight' : this.labId + 'Highlight');
+      },
+      getLineNumsEl: function() {
+        return document.getElementById(this.isLab3 ? 'lab3LineNumbers' : this.labId + 'LineNumbers');
+      }
+    };
+
+    // ===== 트레이스 스텝 생성기 =====
+
+    /** 컴파일 트레이스: 코드 각 라인을 분석하여 컴파일 과정 시각화 */
+    function generateCompileTrace(code) {
+      var lines = code.split('\n');
+      var steps = [];
+      for (var i = 0; i < lines.length; i++) {
+        var ln = i + 1;
+        var t = lines[i].trim();
+        if (!t || t === '{' || t === '}') continue;
+
+        if (t.startsWith('//')) {
+          steps.push({ line: ln, desc: '\uD83D\uDCDD 주석/라이선스 확인', icon: '\uD83D\uDCDD', duration: 500 });
+        } else if (t.startsWith('pragma')) {
+          steps.push({ line: ln, desc: '\u2699\uFE0F 컴파일러 버전 확인: ' + t, icon: '\u2699\uFE0F', duration: 700 });
+        } else if (t.startsWith('contract ')) {
+          var nm = t.match(/contract\s+(\w+)/);
+          steps.push({ line: ln, desc: '\uD83D\uDCE6 컨트랙트 선언: ' + (nm ? nm[1] : ''), icon: '\uD83D\uDCE6', duration: 700 });
+        } else if (!t.startsWith('function') && !t.startsWith('constructor') && !t.startsWith('modifier') && !t.startsWith('event ') && !t.startsWith('receive') && !t.startsWith('fallback') && (t.includes('public ') || t.includes('private ') || t.includes('internal ') || t.includes('constant '))) {
+          var vn = t.split(/[=;]/)[0].trim().split(/\s+/).pop();
+          steps.push({ line: ln, desc: '\uD83D\uDCBE 상태 변수 선언: ' + vn, icon: '\uD83D\uDCBE', duration: 650 });
+        } else if (t.startsWith('constructor')) {
+          steps.push({ line: ln, desc: '\uD83D\uDD28 생성자(constructor) 검증', icon: '\uD83D\uDD28', highlight: 'constructor', duration: 650 });
+        } else if (t.startsWith('function ')) {
+          var fn = t.match(/function\s+(\w+)/);
+          steps.push({ line: ln, desc: '\uD83D\uDD27 함수 시그니처 검증: ' + (fn ? fn[1] + '()' : ''), icon: '\uD83D\uDD27', duration: 600 });
+        } else if (t.startsWith('modifier ')) {
+          var md = t.match(/modifier\s+(\w+)/);
+          steps.push({ line: ln, desc: '\uD83D\uDEE1\uFE0F modifier 검증: ' + (md ? md[1] : ''), icon: '\uD83D\uDEE1\uFE0F', duration: 650 });
+        } else if (t.startsWith('event ')) {
+          var ev = t.match(/event\s+(\w+)/);
+          steps.push({ line: ln, desc: '\uD83D\uDCE2 이벤트 선언 검증: ' + (ev ? ev[1] : ''), icon: '\uD83D\uDCE2', duration: 600 });
+        } else if (t.startsWith('mapping')) {
+          steps.push({ line: ln, desc: '\uD83D\uDDFA\uFE0F 매핑 타입 검증', icon: '\uD83D\uDDFA\uFE0F', duration: 600 });
+        } else if (t.startsWith('receive(') || t.startsWith('receive (')) {
+          steps.push({ line: ln, desc: '\uD83D\uDCE5 receive() 함수 검증', icon: '\uD83D\uDCE5', duration: 600 });
+        }
+      }
+      return steps;
+    }
+
+    /** 배포 트레이스: constructor 실행 과정 시각화 */
+    function generateDeployTrace(code) {
+      var lines = code.split('\n');
+      var steps = [];
+
+      /* 1. 컨트랙트 선언 라인 */
+      for (var i = 0; i < lines.length; i++) {
+        if (lines[i].trim().startsWith('contract ')) {
+          var nm = lines[i].trim().match(/contract\s+(\w+)/);
+          steps.push({ line: i + 1, desc: '\uD83D\uDCE6 컨트랙트 인스턴스 생성: ' + (nm ? nm[1] : ''), icon: '\uD83D\uDCE6', duration: 750, highlight: 'constructor' });
+          break;
+        }
+      }
+
+      /* 2. 초기값이 있는 상태 변수 */
+      for (var i = 0; i < lines.length; i++) {
+        var t = lines[i].trim();
+        if (t.startsWith('function') || t.startsWith('constructor') || t.startsWith('modifier') || t.startsWith('event ') || t.startsWith('//') || t.startsWith('receive') || t.startsWith('mapping') || !t) continue;
+        if (t.includes('=') && (t.includes('public ') || t.includes('private ') || t.includes('internal ') || t.includes('constant '))) {
+          var parts = t.split('=');
+          var vn = parts[0].trim().split(/\s+/).pop();
+          var vv = parts[1] ? parts[1].split(';')[0].trim() : '';
+          steps.push({ line: i + 1, desc: '\uD83D\uDCBE 초기화: ' + vn + ' = ' + vv, icon: '\uD83D\uDCBE', duration: 700, highlight: 'constructor' });
+        }
+      }
+
+      /* 3. constructor 본문 */
+      for (var i = 0; i < lines.length; i++) {
+        if (lines[i].trim().startsWith('constructor')) {
+          steps.push({ line: i + 1, desc: '\uD83D\uDD28 constructor() 실행', icon: '\uD83D\uDD28', duration: 700, highlight: 'constructor' });
+          var bc = 0, started = false;
+          for (var j = i; j < lines.length; j++) {
+            if (lines[j].includes('{')) { bc++; started = true; }
+            if (lines[j].includes('}')) bc--;
+            if (started && j > i && bc > 0) {
+              var inner = lines[j].trim();
+              if (inner && inner !== '{' && inner !== '}') {
+                steps.push({ line: j + 1, desc: '\u26A1 실행: ' + inner, icon: '\u26A1', duration: 650, highlight: 'constructor' });
+              }
+            }
+            if (started && bc <= 0 && j > i) break;
+          }
+          break;
+        }
+      }
+
+      return steps;
+    }
+
+    /** 함수 호출 트레이스: 특정 함수의 실행 과정 시각화 */
+    function generateFunctionCallTrace(code, fnName, isViewOrPure) {
+      var lines = code.split('\n');
+      var steps = [];
+      var fnIdx = -1, fnEnd = -1;
+
+      /* 함수 선언 찾기 */
+      for (var i = 0; i < lines.length; i++) {
+        if (lines[i].includes('function ' + fnName)) {
+          fnIdx = i;
+          steps.push({ line: i + 1, desc: '\uD83D\uDCDE ' + fnName + '() 호출', icon: '\uD83D\uDCDE', duration: 650 });
+          var bc = 0;
+          for (var j = i; j < lines.length; j++) {
+            bc += (lines[j].match(/\{/g) || []).length;
+            bc -= (lines[j].match(/\}/g) || []).length;
+            if (bc === 0 && j > i) { fnEnd = j; break; }
+          }
+          break;
+        }
+      }
+
+      /* 함수 없으면 public 변수 auto-getter */
+      if (fnIdx === -1) {
+        for (var i = 0; i < lines.length; i++) {
+          if (lines[i].includes('public ') && lines[i].includes(fnName)) {
+            steps.push({ line: i + 1, desc: '\uD83D\uDCD6 ' + fnName + '() auto-getter 호출', icon: '\uD83D\uDCD6', duration: 750 });
+            steps.push({ line: i + 1, desc: '\u2705 값 반환: ' + fnName, icon: '\u2705', duration: 650 });
+            return steps;
+          }
+        }
+        return steps;
+      }
+
+      /* 함수 본문 라인별 처리 */
+      if (fnIdx >= 0 && fnEnd >= 0) {
+        var bc = 0, started = false;
+        for (var j = fnIdx; j <= fnEnd; j++) {
+          if (lines[j].includes('{')) { bc++; started = true; }
+          if (lines[j].includes('}')) bc--;
+          if (started && j > fnIdx && bc > 0) {
+            var inner = lines[j].trim();
+            if (!inner || inner === '{' || inner === '}') continue;
+            var icon = '\u26A1', desc = '\u26A1 실행: ' + inner, hl = 'active';
+            if (inner.startsWith('return ')) { icon = '\u21A9\uFE0F'; desc = '\u21A9\uFE0F 반환: ' + inner; }
+            else if (inner.startsWith('require(') || inner.startsWith('revert(')) { icon = '\u26A0\uFE0F'; desc = '\u26A0\uFE0F 검증: ' + inner; }
+            else if (inner.includes(' = ')) { icon = '\uD83D\uDCBE'; desc = '\uD83D\uDCBE 상태 변경: ' + inner; }
+            else if (inner.startsWith('emit ')) { icon = '\uD83D\uDCE2'; desc = '\uD83D\uDCE2 이벤트 발생: ' + inner; }
+            else if (inner.startsWith('if ') || inner.startsWith('} else')) { icon = '\uD83D\uDD00'; desc = '\uD83D\uDD00 조건 분기: ' + inner; }
+            steps.push({ line: j + 1, desc: desc, icon: icon, duration: 650, highlight: hl });
+          }
+        }
+      }
+
+      return steps;
+    }
+
+    /** 코드 워크스루: 모든 라인을 교육적으로 설명 (수동 모드용) */
+    function generateCodeWalkthrough(code) {
+      var lines = code.split('\n');
+      var steps = [];
+      var inFn = null;
+
+      for (var i = 0; i < lines.length; i++) {
+        var ln = i + 1;
+        var t = lines[i].trim();
+        if (!t) continue;
+        if (t === '{' || t === '}') {
+          if (t === '}' && inFn) inFn = null;
+          continue;
+        }
+
+        if (t.startsWith('// SPDX')) {
+          steps.push({ line: ln, desc: '\uD83D\uDCDC \uB77C\uC774\uC120\uC2A4 \uC2DD\uBCC4\uC790 \u2014 \uC774 \uCF54\uB4DC\uC758 \uB77C\uC774\uC120\uC2A4(MIT)\uB97C \uC120\uC5B8\uD569\uB2C8\uB2E4. \uC624\uD508\uC18C\uC2A4 \uD45C\uC900\uC785\uB2C8\uB2E4.', icon: '\uD83D\uDCDC', duration: 800 });
+        } else if (t.startsWith('//')) {
+          steps.push({ line: ln, desc: '\uD83D\uDCDD \uC8FC\uC11D \u2014 \uCF54\uB4DC \uC124\uBA85\uC744 \uC704\uD55C \uBA54\uBAA8. \uCEF4\uD30C\uC77C\uB7EC\uAC00 \uBB34\uC2DC\uD569\uB2C8\uB2E4.', icon: '\uD83D\uDCDD', duration: 600 });
+        } else if (t.startsWith('pragma')) {
+          var ver = t.match(/[\^~]?([\d.]+)/);
+          var verStr = ver ? ver[0] : '';
+          var caret = t.includes('^') ? ' (^\uB294 "\uC774 \uBC84\uC804 \uC774\uC0C1"\uC744 \uC758\uBBF8)' : ' (\uC815\uD655\uD788 \uC774 \uBC84\uC804\uB9CC \uD5C8\uC6A9)';
+          steps.push({ line: ln, desc: '\u2699\uFE0F \uCEF4\uD30C\uC77C\uB7EC \uBC84\uC804 \u2014 Solidity ' + verStr + caret, icon: '\u2699\uFE0F', duration: 800 });
+        } else if (t.startsWith('contract ')) {
+          var nm = t.match(/contract\s+(\w+)/);
+          steps.push({ line: ln, desc: '\uD83D\uDCE6 \uCEE8\uD2B8\uB799\uD2B8 \uC120\uC5B8 \u2014 "' + (nm ? nm[1] : '') + '" \uC2A4\uB9C8\uD2B8 \uCEE8\uD2B8\uB799\uD2B8. \uBE14\uB85D\uCCB4\uC778\uC5D0 \uBC30\uD3EC\uB418\uB294 \uD504\uB85C\uADF8\uB7A8 \uB2E8\uC704\uC785\uB2C8\uB2E4.', icon: '\uD83D\uDCE6', duration: 900 });
+        } else if (t.startsWith('modifier ')) {
+          var md = t.match(/modifier\s+(\w+)/);
+          inFn = md ? md[1] : 'modifier';
+          steps.push({ line: ln, desc: '\uD83D\uDEE1\uFE0F modifier ' + (md ? md[1] + '()' : '') + ' \u2014 \uD568\uC218 \uC2E4\uD589 \uC804 \uC870\uAC74\uC744 \uAC80\uC0AC\uD558\uB294 \uC7A5\uCE58. \uC5EC\uB7EC \uD568\uC218\uC5D0 \uC7AC\uC0AC\uC6A9 \uAC00\uB2A5\uD569\uB2C8\uB2E4.', icon: '\uD83D\uDEE1\uFE0F', duration: 900 });
+        } else if (t.startsWith('constructor')) {
+          inFn = 'constructor';
+          steps.push({ line: ln, desc: '\uD83D\uDD28 \uC0DD\uC131\uC790(constructor) \u2014 \uCEE8\uD2B8\uB799\uD2B8 \uBC30\uD3EC \uC2DC \uB531 1\uBC88\uB9CC \uC2E4\uD589\uB429\uB2C8\uB2E4. \uCD08\uAE30 \uC124\uC815\uC5D0 \uC0AC\uC6A9\uD569\uB2C8\uB2E4.', icon: '\uD83D\uDD28', duration: 900, highlight: 'constructor' });
+        } else if (t.startsWith('function ')) {
+          var fn = t.match(/function\s+(\w+)/);
+          var fnN = fn ? fn[1] : '';
+          inFn = fnN;
+          var vis = t.match(/\b(public|external|internal|private)\b/);
+          var mut = t.match(/\b(view|pure|payable)\b/);
+          var ret = t.match(/returns\s*\(([^)]+)\)/);
+          var d = '\uD83D\uDD27 \uD568\uC218 ' + fnN + '() \u2014 ';
+          if (vis) d += vis[1] + ' \uC811\uADFC\uC81C\uC5B4, ';
+          if (mut && mut[1] === 'view') d += 'view(\uC77D\uAE30 \uC804\uC6A9, \uAC00\uC2A4\uBE44 \uBB34\uB8CC)';
+          else if (mut && mut[1] === 'pure') d += 'pure(\uC678\uBD80 \uB370\uC774\uD130 \uC811\uADFC \uBD88\uAC00, \uAC00\uC2A4\uBE44 \uBB34\uB8CC)';
+          else if (mut && mut[1] === 'payable') d += 'payable(ETH \uC218\uC2E0 \uAC00\uB2A5)';
+          else d += '\uC0C1\uD0DC \uBCC0\uACBD \uD568\uC218(\uAC00\uC2A4\uBE44 \uC18C\uBAA8)';
+          if (ret) d += '. \uBC18\uD658: ' + ret[1];
+          steps.push({ line: ln, desc: d, icon: '\uD83D\uDD27', duration: 900 });
+        } else if (t.startsWith('receive(') || t.startsWith('receive (')) {
+          steps.push({ line: ln, desc: '\uD83D\uDCE5 receive() \u2014 data \uC5C6\uC774 ETH\uB9CC \uC804\uC1A1\uBC1B\uC744 \uB54C \uC790\uB3D9 \uD638\uCD9C. payable\uC774\uBBC0\uB85C ETH\uB97C \uC218\uC2E0\uD569\uB2C8\uB2E4.', icon: '\uD83D\uDCE5', duration: 900 });
+        } else if (t.startsWith('event ')) {
+          var ev = t.match(/event\s+(\w+)/);
+          steps.push({ line: ln, desc: '\uD83D\uDCE2 \uC774\uBCA4\uD2B8 \uC120\uC5B8 \u2014 ' + (ev ? ev[1] : '') + '. emit\uC73C\uB85C \uBC1C\uC0DD\uC2DC\uD0A4\uBA74 \uD2B8\uB79C\uC7AD\uC158 \uB85C\uADF8\uC5D0 \uAE30\uB85D\uB429\uB2C8\uB2E4.', icon: '\uD83D\uDCE2', duration: 800 });
+        } else if (t.startsWith('mapping')) {
+          var mp = t.match(/mapping\((\w+)\s*=>\s*(\w+)\)/);
+          steps.push({ line: ln, desc: '\uD83D\uDDFA\uFE0F \uB9E4\uD551(mapping) \u2014 ' + (mp ? mp[1] + ' \u2192 ' + mp[2] : '\uD0A4-\uAC12') + ' \uC800\uC7A5\uC18C. \uD574\uC2DC\uB9F5\uCC98\uB7FC \uD0A4\uB85C \uAC12\uC744 \uBE60\uB974\uAC8C \uCC3E\uC744 \uC218 \uC788\uC2B5\uB2C8\uB2E4.', icon: '\uD83D\uDDFA\uFE0F', duration: 800 });
+        } else if (!t.startsWith('function') && !t.startsWith('constructor') && !t.startsWith('modifier') && !t.startsWith('event ') && !t.startsWith('receive') && !t.startsWith('if ') && !t.startsWith('} else') && !t.startsWith('return ') && !t.startsWith('require') && !t.startsWith('revert') && !t.startsWith('emit ') && !t.startsWith('_;') && (t.includes('public ') || t.includes('private ') || t.includes('internal ') || t.includes('constant '))) {
+          var tp = t.match(/^(\w+)/);
+          var vs = t.match(/\b(public|private|internal)\b/);
+          var cn = t.includes('constant');
+          var vn = t.split(/[=;]/)[0].trim().split(/\s+/).pop();
+          var dd = '\uD83D\uDCBE \uC0C1\uD0DC \uBCC0\uC218 ' + vn + ' \u2014 ';
+          if (tp) dd += tp[1] + ' \uD0C0\uC785, ';
+          if (vs) {
+            dd += vs[1] + ' \uC811\uADFC\uC81C\uC5B4';
+            if (vs[1] === 'public') dd += ' (\uC790\uB3D9 getter \uD568\uC218 \uC0DD\uC131\uB428)';
+            else if (vs[1] === 'private') dd += ' (\uC678\uBD80\uC5D0\uC11C \uC9C1\uC811 \uC811\uADFC \uBD88\uAC00)';
+          }
+          if (cn) dd += ', constant(\uBCC0\uACBD \uBD88\uAC00)';
+          if (t.includes('=')) { var iv = t.split('=')[1].split(';')[0].trim(); dd += '. \uCD08\uAE30\uAC12: ' + iv; }
+          steps.push({ line: ln, desc: dd, icon: '\uD83D\uDCBE', duration: 800 });
+        } else if (t.startsWith('require(') || t.startsWith('require (')) {
+          var reqEnd = ln;
+          if (!t.includes(');')) { for (var k = i + 1; k < lines.length; k++) { if (lines[k].includes(');')) { reqEnd = k + 1; break; } } }
+          steps.push({ line: ln, lineEnd: reqEnd, desc: '\u26A0\uFE0F require \uAC80\uC99D \u2014 \uC870\uAC74\uC774 false\uC774\uBA74 \uD2B8\uB79C\uC7AD\uC158\uC744 \uC911\uB2E8(revert)\uD558\uACE0 \uC5D0\uB7EC \uBA54\uC2DC\uC9C0\uB97C \uBC18\uD658\uD569\uB2C8\uB2E4.', icon: '\u26A0\uFE0F', duration: 800 });
+          if (reqEnd > ln) i = reqEnd - 1;
+        } else if (t.startsWith('revert(')) {
+          steps.push({ line: ln, desc: '\uD83D\uDEAB revert \u2014 \uC2E4\uD589\uC744 \uAC15\uC81C \uC911\uB2E8. \uBAA8\uB4E0 \uC0C1\uD0DC \uBCC0\uACBD\uC774 \uB864\uBC31\uB429\uB2C8\uB2E4.', icon: '\uD83D\uDEAB', duration: 800, highlight: 'error' });
+        } else if (t.startsWith('emit ')) {
+          var em = t.match(/emit\s+(\w+)/);
+          steps.push({ line: ln, desc: '\uD83D\uDCE2 \uC774\uBCA4\uD2B8 \uBC1C\uC0DD \u2014 ' + (em ? em[1] : '') + ' \uC774\uBCA4\uD2B8\uB97C \uD2B8\uB79C\uC7AD\uC158 \uB85C\uADF8\uC5D0 \uAE30\uB85D\uD569\uB2C8\uB2E4.', icon: '\uD83D\uDCE2', duration: 800 });
+        } else if (t.startsWith('return ')) {
+          var rv = t.replace('return ', '').replace(';', '').trim();
+          steps.push({ line: ln, desc: '\u21A9\uFE0F \uAC12 \uBC18\uD658 \u2014 ' + rv + '\uB97C \uD638\uCD9C\uC790\uC5D0\uAC8C \uBC18\uD658\uD558\uACE0 \uD568\uC218\uB97C \uC885\uB8CC\uD569\uB2C8\uB2E4.', icon: '\u21A9\uFE0F', duration: 700 });
+        } else if (t.startsWith('if ') || t.startsWith('if(')) {
+          var cd = t.match(/if\s*\(([^{]+)\)/);
+          steps.push({ line: ln, desc: '\uD83D\uDD00 \uC870\uAC74 \uBD84\uAE30 \u2014 ' + (cd ? cd[1].trim() : '') + ' \uC870\uAC74\uC774 true\uC774\uBA74 \uC544\uB798 \uBE14\uB85D\uC744 \uC2E4\uD589\uD569\uB2C8\uB2E4.', icon: '\uD83D\uDD00', duration: 800 });
+        } else if (t.startsWith('} else if') || t.startsWith('else if')) {
+          var cd2 = t.match(/if\s*\(([^{]+)\)/);
+          steps.push({ line: ln, desc: '\uD83D\uDD00 \uC870\uAC74 \uBD84\uAE30 \u2014 \uC774\uC804 \uC870\uAC74\uC774 false\uC77C \uB54C ' + (cd2 ? cd2[1].trim() : '') + '\uC744 \uCD94\uAC00 \uAC80\uC0AC\uD569\uB2C8\uB2E4.', icon: '\uD83D\uDD00', duration: 800 });
+        } else if (t === '_;') {
+          steps.push({ line: ln, desc: '\u23E9 \uD50C\uB808\uC774\uC2A4\uD640\uB354(_) \u2014 modifier \uAC80\uC99D \uD1B5\uACFC \uD6C4 \uC6D0\uB798 \uD568\uC218\uC758 \uBCF8\uBB38\uC774 \uC5EC\uAE30\uC11C \uC2E4\uD589\uB429\uB2C8\uB2E4.', icon: '\u23E9', duration: 800 });
+        } else if (t.includes('.transfer(')) {
+          steps.push({ line: ln, desc: '\uD83D\uDCB8 ETH \uC804\uC1A1 \u2014 transfer()\uB85C \uC774\uB354\uB97C \uC804\uC1A1\uD569\uB2C8\uB2E4. \uC2E4\uD328 \uC2DC \uC790\uB3D9\uC73C\uB85C revert\uB429\uB2C8\uB2E4.', icon: '\uD83D\uDCB8', duration: 800 });
+        } else if (t.includes(' = ') && t.endsWith(';')) {
+          var lhs = t.split('=')[0].trim();
+          steps.push({ line: ln, desc: '\u26A1 \uAC12 \uB300\uC785 \u2014 ' + lhs + '\uC5D0 \uC0C8 \uAC12\uC744 \uC800\uC7A5\uD569\uB2C8\uB2E4.', icon: '\u26A1', duration: 700 });
+        } else {
+          steps.push({ line: ln, desc: '\u26A1 \uC2E4\uD589: ' + t, icon: '\u26A1', duration: 600 });
+        }
+      }
+      return steps;
+    }
+
+    /** 수동 트레이스 시작 (에디터 "코드 추적" 버튼) */
+    function startManualTrace(labId) {
+      var taId = labId === 'lab3' ? 'lab3CodeTextarea' : labId + 'Textarea';
+      var textarea = document.getElementById(taId);
+      if (!textarea) return;
+      var code = textarea.value;
+      var steps = generateCodeWalkthrough(code);
+      if (steps.length === 0) return;
+      CodeTracer.startTrace(labId, steps, { mode: 'manual' });
+    }
+
+    /** CheckNumber check() 분기 시각화 트레이스
+     *  입력값 x에 따라 실행/건너뛴 라인을 다르게 표시 */
+    function generateCheckBranchTrace(code, x) {
+      var lines = code.split('\n');
+      var steps = [];
+      var fnIdx = -1;
+
+      /* check 함수 찾기 */
+      for (var i = 0; i < lines.length; i++) {
+        if (lines[i].includes('function check')) { fnIdx = i; break; }
+      }
+      if (fnIdx === -1) return steps;
+
+      /* 주요 라인 인덱스 찾기 */
+      var ifLine = -1, retPosLine = -1, elseIfLine = -1, revertLine = -1, retZeroLine = -1;
+      for (var i = fnIdx; i < lines.length; i++) {
+        var t = lines[i].trim();
+        if (t.match(/if\s*\(\s*x\s*>\s*0/)) ifLine = i;
+        if (t.includes('return') && t.includes('positive')) retPosLine = i;
+        if (t.match(/else\s+if\s*\(\s*x\s*<\s*0/)) elseIfLine = i;
+        if (t.includes('revert') && t.includes('negative')) revertLine = i;
+        if (t.includes('return') && t.includes('zero')) retZeroLine = i;
+      }
+
+      /* 함수 호출 */
+      steps.push({ line: fnIdx + 1, desc: '\uD83D\uDCDE check(' + x + ') \uD638\uCD9C \u2014 pure \uD568\uC218 (\uAC00\uC2A4\uBE44 \uBB34\uB8CC)', icon: '\uD83D\uDCDE', duration: 700 });
+
+      if (x > 0) {
+        /* ===== \uC591\uC218 \uACBD\uB85C ===== */
+        if (ifLine >= 0) steps.push({ line: ifLine + 1, desc: '\uD83D\uDD00 \uC870\uAC74 \uAC80\uC0AC: x > 0 \u2192 ' + x + ' > 0 \u2192 true \u2705', icon: '\uD83D\uDD00', duration: 800 });
+        if (retPosLine >= 0) steps.push({ line: retPosLine + 1, desc: '\u21A9\uFE0F \uBC18\uD658: "The number is positive"', icon: '\u21A9\uFE0F', duration: 700 });
+        if (elseIfLine >= 0) steps.push({ line: elseIfLine + 1, desc: '\u23ED\uFE0F \uAC74\uB108\uB6F0: else if (x < 0) \u2014 \uC774\uBBF8 \uBC18\uD658\uB428', icon: '\u23ED\uFE0F', duration: 500, highlight: 'skip' });
+        if (revertLine >= 0) steps.push({ line: revertLine + 1, desc: '\u23ED\uFE0F \uAC74\uB108\uB6F0: revert \u2014 \uC2E4\uD589\uB418\uC9C0 \uC54A\uC74C', icon: '\u23ED\uFE0F', duration: 500, highlight: 'skip' });
+        if (retZeroLine >= 0) steps.push({ line: retZeroLine + 1, desc: '\u23ED\uFE0F \uAC74\uB108\uB6F0: return "zero" \u2014 \uC2E4\uD589\uB418\uC9C0 \uC54A\uC74C', icon: '\u23ED\uFE0F', duration: 500, highlight: 'skip' });
+
+      } else if (x < 0) {
+        /* ===== \uC74C\uC218 \uACBD\uB85C (revert!) ===== */
+        if (ifLine >= 0) steps.push({ line: ifLine + 1, desc: '\uD83D\uDD00 \uC870\uAC74 \uAC80\uC0AC: x > 0 \u2192 ' + x + ' > 0 \u2192 false \u274C', icon: '\uD83D\uDD00', duration: 800 });
+        if (retPosLine >= 0) steps.push({ line: retPosLine + 1, desc: '\u23ED\uFE0F \uAC74\uB108\uB6F0: return "positive" \u2014 \uC870\uAC74 \uBD88\uB9CC\uC871', icon: '\u23ED\uFE0F', duration: 500, highlight: 'skip' });
+        if (elseIfLine >= 0) steps.push({ line: elseIfLine + 1, desc: '\uD83D\uDD00 \uC870\uAC74 \uAC80\uC0AC: x < 0 \u2192 ' + x + ' < 0 \u2192 true \u2705', icon: '\uD83D\uDD00', duration: 800 });
+        if (revertLine >= 0) steps.push({ line: revertLine + 1, desc: '\uD83D\uDEAB revert! "The number is negative" \u2014 \uC2E4\uD589 \uC911\uB2E8!', icon: '\uD83D\uDEAB', duration: 900, highlight: 'error' });
+        if (retZeroLine >= 0) steps.push({ line: retZeroLine + 1, desc: '\u23ED\uFE0F \uB3C4\uB2EC \uBD88\uAC00: revert\uB85C \uC2E4\uD589\uC774 \uC911\uB2E8\uB428', icon: '\u23ED\uFE0F', duration: 500, highlight: 'skip' });
+
+      } else {
+        /* ===== 0 \uACBD\uB85C ===== */
+        if (ifLine >= 0) steps.push({ line: ifLine + 1, desc: '\uD83D\uDD00 \uC870\uAC74 \uAC80\uC0AC: x > 0 \u2192 0 > 0 \u2192 false \u274C', icon: '\uD83D\uDD00', duration: 800 });
+        if (retPosLine >= 0) steps.push({ line: retPosLine + 1, desc: '\u23ED\uFE0F \uAC74\uB108\uB6F0: return "positive" \u2014 \uC870\uAC74 \uBD88\uB9CC\uC871', icon: '\u23ED\uFE0F', duration: 500, highlight: 'skip' });
+        if (elseIfLine >= 0) steps.push({ line: elseIfLine + 1, desc: '\uD83D\uDD00 \uC870\uAC74 \uAC80\uC0AC: x < 0 \u2192 0 < 0 \u2192 false \u274C', icon: '\uD83D\uDD00', duration: 800 });
+        if (revertLine >= 0) steps.push({ line: revertLine + 1, desc: '\u23ED\uFE0F \uAC74\uB108\uB6F0: revert \u2014 \uC870\uAC74 \uBD88\uB9CC\uC871', icon: '\u23ED\uFE0F', duration: 500, highlight: 'skip' });
+        if (retZeroLine >= 0) steps.push({ line: retZeroLine + 1, desc: '\u21A9\uFE0F \uB450 \uC870\uAC74 \uBAA8\uB450 false \u2192 \uAE30\uBCF8 return: "The number is zero"', icon: '\u21A9\uFE0F', duration: 800 });
+      }
+
+      return steps;
     }
 
     // ===== [5] Lab 상태 관리 =====
@@ -5177,15 +6016,16 @@
     };
 
     const LAB_GUIDES = {
-      'lab1-tab1': '<div class="step"><span class="step-num" id="gs-l1t1-1">1</span><span>코드를 확인하세요. <code style="color:var(--neon-green)">string public greet</code></span></div><div class="step"><span class="step-num" id="gs-l1t1-2">2</span><span><b style="color:var(--neon-cyan)">컴파일</b> 버튼을 누르세요</span></div><div class="step"><span class="step-num" id="gs-l1t1-3">3</span><span><b style="color:var(--neon-orange)">배포</b> 버튼을 누르세요</span></div><div class="step"><span class="step-num" id="gs-l1t1-4">4</span><span>우측에서 <b style="color:var(--neon-green)">greet</b> 버튼 클릭!</span></div><div style="margin-top:8px;padding:8px;background:rgba(0,212,255,0.05);border-radius:6px;font-size:0.72rem;color:var(--text-dim);">&#128161; <code style="color:var(--neon-orange)">public</code> 변수는 자동으로 getter 함수가 생성됩니다.</div>',
+      'lab1-tab1': '<div class="step"><span class="step-num" id="gs-l1t1-1">1</span><span>코드를 확인하세요. <code style="color:var(--neon-green)">string public greet</code></span></div><div class="step"><span class="step-num" id="gs-l1t1-2">2</span><span><b style="color:var(--neon-cyan)">컴파일</b> 버튼을 누르세요</span></div><div class="step"><span class="step-num" id="gs-l1t1-3">3</span><span><b style="color:var(--neon-orange)">배포</b> 버튼을 누르세요</span></div><div class="step"><span class="step-num" id="gs-l1t1-4">4</span><span>우측에서 <b style="color:var(--neon-green)">greet</b> 버튼 클릭!</span></div><div style="margin-top:8px;padding:8px;background:rgba(0,212,255,0.05);border-radius:6px;font-size:0.83rem;color:var(--text-dim);">&#128161; <code style="color:var(--neon-orange)">public</code> 변수는 자동으로 getter 함수가 생성됩니다.</div>',
 
-      'lab1-tab2': '<div class="step"><span class="step-num" id="gs-l1t2-1">1</span><span><code style="color:var(--neon-red)">private</code> 변수와 함수를 확인하세요</span></div><div class="step"><span class="step-num" id="gs-l1t2-2">2</span><span>컴파일 &#8594; 배포</span></div><div class="step"><span class="step-num" id="gs-l1t2-3">3</span><span><b style="color:var(--neon-green)">greet()</b>를 호출해보세요</span></div><div class="step"><span class="step-num" id="gs-l1t2-4">4</span><span><b style="color:var(--neon-orange)">setGreeting</b>으로 값을 변경하세요</span></div><div class="step"><span class="step-num" id="gs-l1t2-5">5</span><span>다시 <b style="color:var(--neon-green)">greet()</b>를 호출하여 변경 확인!</span></div><div style="margin-top:8px;padding:8px;background:rgba(245,158,11,0.05);border-radius:6px;font-size:0.72rem;color:var(--text-dim);">&#128161; 상태 변경 함수는 gas를 소모합니다. 잔액 변화를 확인해보세요.</div>',
+      'lab1-tab2': '<div class="step"><span class="step-num" id="gs-l1t2-1">1</span><span><code style="color:var(--neon-red)">private</code> 변수와 함수를 확인하세요</span></div><div class="step"><span class="step-num" id="gs-l1t2-2">2</span><span>컴파일 &#8594; 배포</span></div><div class="step"><span class="step-num" id="gs-l1t2-3">3</span><span><b style="color:var(--neon-green)">greet()</b>를 호출해보세요</span></div><div class="step"><span class="step-num" id="gs-l1t2-4">4</span><span><b style="color:var(--neon-orange)">setGreeting</b>으로 값을 변경하세요</span></div><div class="step"><span class="step-num" id="gs-l1t2-5">5</span><span>다시 <b style="color:var(--neon-green)">greet()</b>를 호출하여 변경 확인!</span></div><div style="margin-top:8px;padding:8px;background:rgba(245,158,11,0.05);border-radius:6px;font-size:0.83rem;color:var(--text-dim);">&#128161; 상태 변경 함수는 gas를 소모합니다. 잔액 변화를 확인해보세요.</div><div class="info-box" style="margin-top:10px;"><div class="info-box-title">&#128230; 데이터 위치: storage vs memory vs calldata</div><p style="font-size:0.73rem;color:var(--text-secondary);margin-bottom:8px;">코드에서 <code style="color:var(--neon-green);">string memory</code>가 보이시나요? Solidity는 참조 타입(string, array 등)에 데이터 위치를 명시해야 합니다.</p><table class="compare-table"><thead><tr><th></th><th>storage</th><th>memory</th><th>calldata</th></tr></thead><tbody><tr><td style="font-weight:600;color:var(--text-primary)">저장 위치</td><td>블록체인 (영구)</td><td>메모리 (임시)</td><td>메모리 (임시)</td></tr><tr><td style="font-weight:600;color:var(--text-primary)">수명</td><td>트랜잭션 이후에도 유지</td><td>함수 실행 중만 존재</td><td>함수 실행 중만 존재</td></tr><tr><td style="font-weight:600;color:var(--text-primary)">수정 가능</td><td style="color:var(--neon-green);">&#9989; O</td><td style="color:var(--neon-green);">&#9989; O</td><td style="color:var(--neon-red);">&#10060; X (읽기 전용)</td></tr><tr><td style="font-weight:600;color:var(--text-primary)">가스 비용</td><td style="color:var(--neon-red);">비쌈</td><td style="color:var(--neon-orange);">중간</td><td style="color:var(--neon-green);">저렴</td></tr><tr><td style="font-weight:600;color:var(--text-primary)">사용 예</td><td>상태 변수 (<code style="font-size:0.65rem;">_greeting</code>)</td><td>함수 매개변수/지역변수</td><td>external 함수 매개변수</td></tr></tbody></table><div style="margin-top:6px;padding:6px 8px;background:rgba(0,212,255,0.05);border-radius:var(--radius-sm);font-size:0.7rem;color:var(--text-dim);line-height:1.5;">&#128161; <code style="color:var(--neon-orange);">setGreeting(string <strong>memory</strong> newGreeting)</code>에서 memory를 쓰는 이유: 매개변수는 함수 실행 중에만 필요하므로 비싼 storage 대신 memory를 사용합니다.</div></div>',
 
-      'lab1-tab3': '<div class="step"><span class="step-num" id="gs-l1t3-1">1</span><span><code style="color:var(--neon-green)">int</code> 타입 변수를 확인하세요</span></div><div class="step"><span class="step-num" id="gs-l1t3-2">2</span><span>컴파일 &#8594; 배포 &#8594; <b style="color:var(--neon-green)">number</b> 확인</span></div><div class="step"><span class="step-num" id="gs-l1t3-3">3</span><span><b style="color:var(--neon-orange)">도전과제</b>에 도전해보세요!</span></div><div style="margin-top:8px;padding:8px;background:rgba(245,158,11,0.05);border-radius:6px;font-size:0.72rem;color:var(--neon-orange);">&#127919; <code style="color:var(--neon-red)">private</code>으로 바꾸고 getter/setter를 추가해보세요!</div>',
 
-      'lab2-counter': '<div class="step"><span class="step-num" id="gs-l2c-1">1</span><span><code style="color:var(--neon-green)">uint</code> 타입과 <code>constructor</code>를 확인하세요</span></div><div class="step"><span class="step-num" id="gs-l2c-2">2</span><span>컴파일 &#8594; 배포</span></div><div class="step"><span class="step-num" id="gs-l2c-3">3</span><span><b style="color:var(--neon-orange)">count()</b>를 여러 번 호출해보세요</span></div><div class="step"><span class="step-num" id="gs-l2c-4">4</span><span><b style="color:var(--neon-green)">get()</b>으로 값을 확인하세요</span></div><div style="margin-top:8px;padding:8px;background:rgba(0,212,255,0.05);border-radius:6px;font-size:0.72rem;color:var(--text-dim);">&#128161; 상태 변경(주황) vs 읽기(초록) 함수의 가스비 차이를 관찰하세요!</div>',
+      'lab1-tab3': '<div class="step"><span class="step-num" id="gs-l1t3-1">1</span><span><code style="color:var(--neon-green)">int</code> 타입 변수를 확인하세요</span></div><div class="step"><span class="step-num" id="gs-l1t3-2">2</span><span>컴파일 &#8594; 배포 &#8594; <b style="color:var(--neon-green)">number</b> 확인</span></div><div class="step"><span class="step-num" id="gs-l1t3-3">3</span><span><b style="color:var(--neon-orange)">도전과제</b>에 도전해보세요!</span></div><div style="margin-top:8px;padding:8px;background:rgba(245,158,11,0.05);border-radius:6px;font-size:0.83rem;color:var(--neon-orange);">&#127919; <code style="color:var(--neon-red)">private</code>으로 바꾸고 getter/setter를 추가해보세요!</div><div style="margin-top:6px;padding:6px 8px;background:rgba(0,212,255,0.05);border-radius:6px;font-size:0.7rem;color:var(--text-dim);line-height:1.4;">💡 <code style="color:var(--neon-cyan)">int</code>는 음수를 포함하는 정수 타입입니다. 음수가 필요 없는 경우(잔액, 카운터 등)에는 <code style="color:var(--neon-green)">uint</code>를 사용하는 것이 Solidity의 일반적 관행입니다. Lab 2에서 <code>uint</code>를 배웁니다.</div>',
 
-      'lab2-check': '<div class="step"><span class="step-num" id="gs-l2k-1">1</span><span><code style="color:var(--neon-cyan)">pure</code> 키워드와 <code>revert</code>를 확인하세요</span></div><div class="step"><span class="step-num" id="gs-l2k-2">2</span><span>컴파일 &#8594; 배포</span></div><div class="step"><span class="step-num" id="gs-l2k-3">3</span><span>양수(42), 0, 음수(-5)를 각각 입력해보세요</span></div><div style="margin-top:8px;padding:8px;background:rgba(239,68,68,0.05);border-radius:6px;font-size:0.72rem;color:var(--neon-red);">&#9888; 음수 입력 시 revert가 발생합니다. 에러 메시지를 확인하세요!</div>'
+      'lab2-counter': '<div class="step"><span class="step-num" id="gs-l2c-1">1</span><span><code style="color:var(--neon-green)">uint</code> 타입과 <code>constructor</code>를 확인하세요</span></div><div class="step"><span class="step-num" id="gs-l2c-2">2</span><span>컴파일 &#8594; 배포</span></div><div class="step"><span class="step-num" id="gs-l2c-3">3</span><span><b style="color:var(--neon-orange)">count()</b>를 여러 번 호출해보세요</span></div><div class="step"><span class="step-num" id="gs-l2c-4">4</span><span><b style="color:var(--neon-green)">get()</b>으로 값을 확인하세요</span></div><div style="margin-top:8px;padding:8px;background:rgba(0,212,255,0.05);border-radius:6px;font-size:0.83rem;color:var(--text-dim);">&#128161; 상태 변경(주황) vs 읽기(초록) 함수의 가스비 차이를 관찰하세요!</div><div style="margin-top:6px;padding:6px 8px;background:rgba(124,58,237,0.05);border-radius:6px;font-size:0.7rem;color:var(--text-dim);line-height:1.4;">💡 Solidity에서 <code style="color:var(--neon-cyan)">uint</code>의 기본값은 <strong>0</strong>입니다. <code>constructor</code>에서 <code>counter = 0</code>은 생략 가능하지만, constructor의 동작을 보여주기 위해 포함했습니다.</div>',
+
+      'lab2-check': '<div class="step"><span class="step-num" id="gs-l2k-1">1</span><span><code style="color:var(--neon-cyan)">pure</code> 키워드와 <code>revert</code>를 확인하세요</span></div><div class="step"><span class="step-num" id="gs-l2k-2">2</span><span>컴파일 &#8594; 배포</span></div><div class="step"><span class="step-num" id="gs-l2k-3">3</span><span>양수(42), 0, 음수(-5)를 각각 입력해보세요</span></div><div style="margin-top:8px;padding:8px;background:rgba(239,68,68,0.05);border-radius:6px;font-size:0.83rem;color:var(--neon-red);">&#9888; 음수 입력 시 revert가 발생합니다. 에러 메시지를 확인하세요!</div><div style="margin-top:8px;padding:8px;background:rgba(59,130,246,0.05);border-radius:6px;font-size:0.83rem;color:var(--text-dim);">&#128202; <strong style="color:var(--text-secondary);">우측 패널</strong>에서 require/revert/assert 비교표와 pure vs view 다이어그램을 확인하세요!</div>'
     };
 
     const HINT_CODE_LAB1_TAB3 = '// SPDX-License-Identifier: MIT\npragma solidity ^0.8.26;\n\ncontract HelloNumber {\n    int private _number = 10;\n\n    function getNumber() public view returns (int) {\n        return _number;\n    }\n\n    function setNumber(int newNumber) public {\n        _number = newNumber;\n    }\n}';
@@ -5202,6 +6042,7 @@
       state.currentSubTab = subTabId;
       state.compiled = false;
       state.deployed = false;
+      state.deployCount = 0;
       state.storage = {};
       state.varVisibility = {};
       state.abi = { publicVars: [], viewFunctions: [], writeFunctions: [] };
@@ -5229,6 +6070,9 @@
       /* 가이드 */
       document.getElementById(labId + 'Guide').innerHTML = LAB_GUIDES[subTabId] || '';
 
+      /* 배포 카운트 리셋 */
+      document.getElementById(labId + 'DeployCount').textContent = '0개 배포됨';
+
       /* 컴파일/배포 리셋 */
       document.getElementById(labId + 'BtnDeploy').disabled = true;
       const cr = document.getElementById(labId + 'CompileResult');
@@ -5242,6 +6086,7 @@
       document.getElementById(labId + 'ContractUI').innerHTML = '';
 
       logConsole('info', '&#128193; ' + FILE_NAMES[subTabId] + ' 파일이 로드되었습니다', labId);
+      showToast('info', '새 컨트랙트 환경으로 전환되었습니다. 컴파일 → 배포를 진행하세요.');
     }
 
     function loadSubTabCode(labId, subTabId) {
@@ -5255,6 +6100,7 @@
     }
 
     function resetLabCode(labId) {
+      if (!confirm('코드를 초기 상태로 되돌릴까요?')) return;
       const state = labStates[labId];
       const code = DEFAULT_CODES[state.currentSubTab];
       document.getElementById(labId + 'Textarea').value = code;
@@ -5380,7 +6226,14 @@
       const origHTML = btn.innerHTML;
       btn.innerHTML = '<span class="spinner"></span> 컴파일 중...';
 
+      /* 코드 실행 추적 시작 */
+      var traceSteps = generateCompileTrace(code);
+      var traceDuration = 0;
+      for (var k = 0; k < traceSteps.length; k++) traceDuration += (traceSteps[k].duration || 450);
+      if (traceSteps.length > 0) CodeTracer.startTrace(labId, traceSteps);
+
       setTimeout(() => {
+        CodeTracer.stop();
         const errors = validateSolidity(code);
         if (errors.length > 0) {
           result.className = 'compile-result error show';
@@ -5414,7 +6267,7 @@
         }
         btn.disabled = false;
         btn.innerHTML = origHTML;
-      }, 500 + Math.random() * 300);
+      }, Math.max(800, traceDuration + 200));
     }
 
     // ===== [8] 배포 시뮬레이션 =====
@@ -5424,16 +6277,27 @@
       const state = labStates[labId];
       if (!state || !state.compiled) return;
 
+      // 즉시 버튼 비활성화 (중복 배포 방지)
+      const deployBtn = document.getElementById(labId + 'BtnDeploy');
+      if (deployBtn) deployBtn.disabled = true;
+
       const overlay = document.getElementById('deployOverlay');
       const steps = [document.getElementById('deployStep1'), document.getElementById('deployStep2'), document.getElementById('deployStep3')];
       steps.forEach(s => { s.className = 'deploy-step'; s.children[0].textContent = '&#9203;'; });
       overlay.classList.add('show');
 
+      /* 배포 시 constructor 실행 추적 */
+      var deployCode = document.getElementById(labId + 'Textarea').value;
+      var deployTraceSteps = generateDeployTrace(deployCode);
+      setTimeout(function() {
+        if (deployTraceSteps.length > 0) CodeTracer.startTrace(labId, deployTraceSteps, { speed: 500 });
+      }, 400);
+
       setTimeout(() => { steps[0].classList.add('active'); steps[0].children[0].textContent = '&#128260;'; }, 200);
       setTimeout(() => { steps[0].classList.replace('active','done'); steps[0].children[0].textContent = '&#9989;'; steps[1].classList.add('active'); steps[1].children[0].textContent = '&#128260;'; }, 800);
       setTimeout(() => { steps[1].classList.replace('active','done'); steps[1].children[0].textContent = '&#9989;'; steps[2].classList.add('active'); steps[2].children[0].textContent = '&#128260;'; }, 1500);
       setTimeout(() => { steps[2].classList.replace('active','done'); steps[2].children[0].textContent = '&#9989;'; }, 1900);
-      setTimeout(() => { overlay.classList.remove('show'); finalizeDeploy(labId); }, 2300);
+      setTimeout(() => { overlay.classList.remove('show'); CodeTracer.stop(); finalizeDeploy(labId); }, 2300);
     }
 
     function finalizeDeploy(labId) {
@@ -5445,7 +6309,7 @@
 
       const gasUsed = 150000 + Math.floor(Math.random() * 80000);
       const gasCostEth = (gasUsed * 20) / 1e9;
-      BlockchainEngine.currentAccount.balance -= gasCostEth;
+      BlockchainEngine.currentAccount.balance = Math.max(0, BlockchainEngine.currentAccount.balance - gasCostEth);
       BlockchainEngine.currentAccount.nonce++;
 
       updateAccountDisplay(labId);
@@ -5465,7 +6329,7 @@
       const dr = document.getElementById(labId + 'DeployResult');
       dr.className = 'deploy-result show';
       dr.style.display = 'block';
-      dr.innerHTML = '<div style="font-weight:700;">&#9989; 배포 완료!</div><div style="font-size:0.72rem;word-break:break-all;">&#128205; ' + state.contractAddress + '</div><div style="font-size:0.68rem;color:var(--text-muted);">Gas: ' + formatNumber(gasUsed) + ' | 비용: ' + gasCostEth.toFixed(8) + ' ETH</div>';
+      dr.innerHTML = '<div style="font-weight:700;">&#9989; 배포 완료!</div><div style="font-size:0.83rem;word-break:break-all;">&#128205; ' + state.contractAddress + '</div><div style="font-size:0.78rem;color:var(--text-muted);">Gas: ' + formatNumber(gasUsed) + ' | 비용: ' + gasCostEth.toFixed(8) + ' ETH</div>';
 
       buildInteractionPanel(labId);
       /* 트랜잭션 기록 */
@@ -5488,7 +6352,7 @@
       logConsole('info', '&nbsp;&nbsp;&nbsp;&#128100; From: ' + BlockchainEngine.sender, labId);
       logConsole('info', '&nbsp;&nbsp;&nbsp;&#x26d3; Block: #' + BlockchainEngine.blockNumber + ' | Chain ID: ' + BlockchainEngine.chainId, labId);
 
-      showToast('success', state.contractName + ' 배포 완료!');
+      showToast('success', state.contractName + ' 배포 완료! → 우측에서 함수를 호출해보세요');
       saveProgress(labId);
     }
 
@@ -5504,7 +6368,7 @@
       container.innerHTML = '';
 
       /* 컨트랙트 헤더 */
-      container.innerHTML += '<div style="margin-bottom:12px;padding:8px 10px;background:var(--bg-surface);border-radius:var(--radius-sm);border:1px solid var(--border);font-family:var(--font-mono);font-size:0.72rem;color:var(--neon-blue);word-break:break-all;">&#128230; <strong>' + state.contractName + '</strong><br><span style="color:var(--text-muted)">at</span> ' + state.contractAddress + '</div>';
+      container.innerHTML += '<div style="margin-bottom:12px;padding:8px 10px;background:var(--bg-surface);border-radius:var(--radius-sm);border:1px solid var(--border);font-family:var(--font-mono);font-size:0.83rem;color:var(--neon-blue);word-break:break-all;">&#128230; <strong>' + state.contractName + '</strong><br><span style="color:var(--text-muted)">at</span> ' + state.contractAddress + '</div>';
 
       /* Lab 2 Counter 시각화 */
       if (labId === 'lab2' && state.currentSubTab === 'lab2-counter') {
@@ -5519,10 +6383,10 @@
           const rid = labId + '_var_' + v.name;
           html += '<div class="func-item">';
           html += '  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">';
-          html += '    <span style="font-family:var(--font-mono);font-size:0.78rem;font-weight:600;color:var(--text-primary);">' + v.name + '</span>';
+          html += '    <span style="font-family:var(--font-mono);font-size:0.9rem;font-weight:600;color:var(--text-primary);">' + v.name + '</span>';
           html += '    <span class="func-badge getter-badge">public</span>';
           html += '    <span class="func-badge view-badge">auto-getter</span>';
-          html += '    <span style="font-size:0.62rem;color:var(--text-dim);margin-left:auto;">&#8594; ' + v.type + '</span>';
+          html += '    <span style="font-size:0.72rem;color:var(--text-dim);margin-left:auto;">&#8594; ' + v.type + '</span>';
           html += '  </div>';
           html += '  <div class="func-row">';
           html += '    <button class="func-btn view" onclick="callPublicVar(\'' + labId + '\',\'' + v.name + '\',\'' + rid + '\')">' + v.name + '</button>';
@@ -5553,9 +6417,9 @@
           }
           html += '<div class="func-item">';
           html += '  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">';
-          html += '    <span style="font-family:var(--font-mono);font-size:0.78rem;font-weight:600;color:var(--text-primary);">' + f.name + '(' + sig + ')</span>';
+          html += '    <span style="font-family:var(--font-mono);font-size:0.9rem;font-weight:600;color:var(--text-primary);">' + f.name + '(' + sig + ')</span>';
           html += '    <span class="func-badge ' + mutBadgeClass + '">' + mutTag + '</span>';
-          if (f.returnType) html += '    <span style="font-size:0.62rem;color:var(--text-dim);margin-left:auto;">&#8594; ' + f.returnType + '</span>';
+          if (f.returnType) html += '    <span style="font-size:0.72rem;color:var(--text-dim);margin-left:auto;">&#8594; ' + f.returnType + '</span>';
           html += '  </div>';
           html += '  <div class="func-row">';
           html += '    <button class="func-btn ' + mutTag + '" onclick="callFunction(\'' + labId + '\',\'' + f.name + '\',\'' + rid + '\')">' + f.name + '</button>';
@@ -5584,7 +6448,7 @@
           }
           html += '<div class="func-item">';
           html += '  <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">';
-          html += '    <span style="font-family:var(--font-mono);font-size:0.78rem;font-weight:600;color:var(--text-primary);">' + f.name + '(' + sig + ')</span>';
+          html += '    <span style="font-family:var(--font-mono);font-size:0.9rem;font-weight:600;color:var(--text-primary);">' + f.name + '(' + sig + ')</span>';
           html += '    <span class="func-badge state-badge">transact</span>';
           html += '    <span class="gas-indicator" style="margin-left:auto;">&#x26fd; 가스 소모</span>';
           html += '  </div>';
@@ -5659,8 +6523,16 @@
       const v = state.abi.publicVars.find(x => x.name === varName);
       const val = state.storage[varName] !== undefined ? state.storage[varName] : (v ? v.initialValue : '');
       const typeName = v ? v.type : 'unknown';
+
+      /* 코드 실행 추적 */
+      var trCode = document.getElementById(labId + 'Textarea');
+      if (trCode) {
+        var fnSteps = generateFunctionCallTrace(trCode.value, varName, true);
+        if (fnSteps.length > 0) CodeTracer.startTrace(labId, fnSteps);
+      }
+
       el.className = 'func-result success-result';
-      el.innerHTML = '<span style="color:var(--text-muted)">' + typeName + ':</span> <strong>' + escapeHtml(String(val)) + '</strong> <span style="color:var(--neon-green);font-size:0.68rem;">&#10024; view (무료)</span>';
+      el.innerHTML = '<span style="color:var(--text-muted)">' + typeName + ':</span> <strong>' + escapeHtml(String(val)) + '</strong> <span style="color:var(--neon-green);font-size:0.78rem;">&#10024; view (무료)</span>';
       logConsole('info', '&#128214; ' + varName + '() &#8594; ' + val + ' (view, 무료)', labId);
       markLabCompleted(labId);
     }
@@ -5682,6 +6554,24 @@
           if (val === '') { el.className = 'func-result error-result'; el.textContent = '&#9888; ' + p.name + ' (' + p.type + ') 값을 입력하세요'; return; }
           paramValues[p.name] = val;
         }
+      }
+
+      /* 코드 실행 추적 */
+      var trCode = document.getElementById(labId + 'Textarea');
+      if (trCode) {
+        var fnSteps;
+        /* Lab2 CheckNumber check(): 입력값 기반 분기 시각화 */
+        if (labId === 'lab2' && fnName === 'check' && Object.keys(paramValues).length > 0) {
+          var xVal = parseInt(Object.values(paramValues)[0]);
+          if (!isNaN(xVal)) {
+            fnSteps = generateCheckBranchTrace(trCode.value, xVal);
+          }
+        }
+        if (!fnSteps) {
+          var isVP = fn.mutability === 'view' || fn.mutability === 'pure';
+          fnSteps = generateFunctionCallTrace(trCode.value, fnName, isVP);
+        }
+        if (fnSteps && fnSteps.length > 0) CodeTracer.startTrace(labId, fnSteps);
       }
 
       /* Lab 2 특수 함수 처리 */
@@ -5717,7 +6607,7 @@
                   '<span class="type-tag">' + retType + ':</span> <strong>' + displayVal + '</strong>' +
                 '</div>' +
               '</div>' +
-              '<div style="font-size:0.68rem;margin-top:4px;color:var(--neon-green);">' +
+              '<div style="font-size:0.78rem;margin-top:4px;color:var(--neon-green);">' +
                 '&#10024; ' + fn.mutability + ' 함수 &#8594; 가스비 무료 (로컬에서 실행)' +
               '</div>';
             logConsole('success', '&#128214; ' + fnName + '() &#8594; ' + displayVal + ' (' + fn.mutability + ', 무료)', labId);
@@ -5732,7 +6622,7 @@
           el.className = 'func-result success-result';
           el.innerHTML = '' +
             '<div><span class="type-tag">string:</span> <strong>"' + escapeHtml(returnStrMatch[1]) + '"</strong></div>' +
-            '<div style="font-size:0.68rem;margin-top:4px;color:var(--neon-green);">' +
+            '<div style="font-size:0.78rem;margin-top:4px;color:var(--neon-green);">' +
               '&#10024; ' + fn.mutability + ' 함수 (무료)' +
             '</div>';
           logConsole('success', '&#128214; ' + fnName + '() &#8594; "' + returnStrMatch[1] + '"', labId);
@@ -5744,7 +6634,7 @@
         const returnNumMatch = body.match(/return\s+(-?\d+)\s*;/);
         if (returnNumMatch) {
           el.className = 'func-result success-result';
-          el.innerHTML = '<div><span class="type-tag">' + (fn.returnType || 'int') + ':</span> <strong>' + returnNumMatch[1] + '</strong></div><div style="font-size:0.68rem;margin-top:4px;color:var(--neon-green);">&#10024; ' + fn.mutability + ' 함수 (무료)</div>';
+          el.innerHTML = '<div><span class="type-tag">' + (fn.returnType || 'int') + ':</span> <strong>' + returnNumMatch[1] + '</strong></div><div style="font-size:0.78rem;margin-top:4px;color:var(--neon-green);">&#10024; ' + fn.mutability + ' 함수 (무료)</div>';
           logConsole('success', '&#128214; ' + fnName + '() &#8594; ' + returnNumMatch[1], labId);
           markLabCompleted(labId);
           return;
@@ -5754,7 +6644,7 @@
         const returnBoolMatch = body.match(/return\s+(true|false)\s*;/);
         if (returnBoolMatch) {
           el.className = 'func-result success-result';
-          el.innerHTML = '<div><span class="type-tag">bool:</span> <strong>' + returnBoolMatch[1] + '</strong></div><div style="font-size:0.68rem;margin-top:4px;color:var(--neon-green);">&#10024; ' + fn.mutability + ' 함수 (무료)</div>';
+          el.innerHTML = '<div><span class="type-tag">bool:</span> <strong>' + returnBoolMatch[1] + '</strong></div><div style="font-size:0.78rem;margin-top:4px;color:var(--neon-green);">&#10024; ' + fn.mutability + ' 함수 (무료)</div>';
           logConsole('success', '&#128214; ' + fnName + '() &#8594; ' + returnBoolMatch[1], labId);
           markLabCompleted(labId);
           return;
@@ -5830,7 +6720,28 @@
               for (const [key, val] of Object.entries(state.storage)) {
                 evalExpr = evalExpr.replace(new RegExp('\\b' + key + '\\b', 'g'), String(val));
               }
-              const computed = Function('"use strict"; return (' + evalExpr + ')')();
+              /* 안전한 산술 수식 평가기 (Function()/eval() 대신 사용) */
+              const computed = (function safeEval(expr) {
+                /* 숫자, 기본 산술 연산자, 공백만 허용 */
+                const sanitized = expr.replace(/\s+/g, '');
+                if (!/^[-+]?\d+(\.\d+)?([+\-*/%][-+]?\d+(\.\d+)?)*$/.test(sanitized)) {
+                  throw new Error('허용되지 않는 수식입니다: ' + expr);
+                }
+                /* 안전한 패턴만 통과 — 기본 산술만 계산 */
+                const tokens = sanitized.match(/[-+]?\d+(\.\d+)?|[+\-*/%]/g);
+                if (!tokens) throw new Error('수식 파싱 실패');
+                let result = parseFloat(tokens[0]);
+                for (let i = 1; i < tokens.length; i += 2) {
+                  const op = tokens[i];
+                  const num = parseFloat(tokens[i + 1]);
+                  if (op === '+') result += num;
+                  else if (op === '-') result -= num;
+                  else if (op === '*') result *= num;
+                  else if (op === '/') result = num !== 0 ? result / num : 0;
+                  else if (op === '%') result = num !== 0 ? result % num : 0;
+                }
+                return Math.round(result * 1e10) / 1e10;
+              })(evalExpr);
               state.storage[storageVar] = computed;
               changedVar = storageVar;
               logConsole('success', '&#128310; ' + fnName + '() &#8594; ' + storageVar + ' = ' + computed, labId);
@@ -5846,7 +6757,7 @@
         /* 가스 소모 및 블록체인 상태 업데이트 */
         const gasUsed = 21000 + Math.floor(Math.random() * 25000);
         const gasCost = (gasUsed * 20) / 1e9;
-        BlockchainEngine.currentAccount.balance -= gasCost;
+        BlockchainEngine.currentAccount.balance = Math.max(0, BlockchainEngine.currentAccount.balance - gasCost);
         BlockchainEngine.currentAccount.nonce++;
         BlockchainEngine.advanceBlock();
         updateAccountDisplay(labId);
@@ -5864,11 +6775,11 @@
             '<span class="tx-icon-success">&#9989;</span>' +
             '<strong>트랜잭션 성공</strong>' +
           '</div>' +
-          '<div style="font-size:0.68rem;margin-top:4px;color:var(--text-muted);">' +
+          '<div style="font-size:0.78rem;margin-top:4px;color:var(--text-muted);">' +
             '&#128293; 상태 변경 &#8594; &#x26fd; ' + formatNumber(gasUsed) + ' gas (' + gasCost.toFixed(8) + ' ETH)' +
           '</div>' +
           (changedVar ? '<div style="font-size:0.65rem;margin-top:2px;color:var(--text-dim);">' + changedVar + ' 값이 업데이트됨</div>' : '') +
-          '<div style="font-size:0.62rem;margin-top:4px;color:var(--text-dim);">Tx: ' + txHash.slice(0, 20) + '... | Block #' + BlockchainEngine.blockNumber + '</div>';
+          '<div style="font-size:0.72rem;margin-top:4px;color:var(--text-dim);">Tx: ' + txHash.slice(0, 20) + '... | Block #' + BlockchainEngine.blockNumber + '</div>';
 
         /* 트랜잭션 기록 */
         BlockchainEngine.addTransaction({
@@ -5905,13 +6816,13 @@
             '<span class="tx-icon-success">&#9989;</span>' +
             '<strong>트랜잭션 성공</strong>' +
           '</div>' +
-          '<div style="font-size:0.68rem;margin-top:4px;color:var(--text-muted);">' +
+          '<div style="font-size:0.78rem;margin-top:4px;color:var(--text-muted);">' +
             '&#128293; 상태 변경 &#8594; counter: ' + prevVal + ' &#8594; <strong style="color:var(--neon-cyan)">' + state.contractState.counter + '</strong>' +
           '</div>' +
-          '<div style="font-size:0.68rem;margin-top:2px;">' +
+          '<div style="font-size:0.78rem;margin-top:2px;">' +
             '<span class="gas-indicator">&#x26fd; ' + formatNumber(gasUsed) + ' gas</span>' +
           '</div>' +
-          '<div style="font-size:0.62rem;margin-top:4px;color:var(--text-dim);">' +
+          '<div style="font-size:0.72rem;margin-top:4px;color:var(--text-dim);">' +
             'Tx: ' + txHash.slice(0, 18) + '... | Block #' + BlockchainEngine.blockNumber + ' | From: ' + BlockchainEngine.shortAddress(BlockchainEngine.sender) +
           '</div>';
 
@@ -5942,7 +6853,7 @@
               '<span class="type-tag">uint256:</span> <strong style="font-size:1rem;">' + val + '</strong>' +
             '</div>' +
           '</div>' +
-          '<div style="font-size:0.68rem;margin-top:4px;color:var(--neon-green);">' +
+          '<div style="font-size:0.78rem;margin-top:4px;color:var(--neon-green);">' +
             '&#10024; view 함수 &#8594; 가스비 무료 (로컬에서 실행)' +
           '</div>' +
           '<div style="font-size:0.65rem;margin-top:2px;color:var(--text-dim);">' +
@@ -5967,13 +6878,13 @@
             '<span class="tx-icon-success">&#9989;</span>' +
             '<strong>카운터 리셋 성공!</strong>' +
           '</div>' +
-          '<div style="font-size:0.68rem;margin-top:4px;color:var(--text-muted);">' +
+          '<div style="font-size:0.78rem;margin-top:4px;color:var(--text-muted);">' +
             '&#128293; 상태 변경: counter ' + prev + ' &#8594; <strong style="color:var(--neon-cyan)">0</strong>' +
           '</div>' +
-          '<div style="font-size:0.68rem;margin-top:2px;">' +
+          '<div style="font-size:0.78rem;margin-top:2px;">' +
             '<span class="gas-indicator">&#x26fd; ' + formatNumber(gasUsed) + ' gas</span>' +
           '</div>' +
-          '<div style="font-size:0.62rem;margin-top:4px;color:var(--text-dim);">' +
+          '<div style="font-size:0.72rem;margin-top:4px;color:var(--text-dim);">' +
             'Tx: ' + txHash.slice(0, 18) + '... | Block #' + BlockchainEngine.blockNumber +
           '</div>';
 
@@ -6005,14 +6916,14 @@
             '<span class="tx-icon-success">&#9989;</span>' +
             '<strong>카운터 +' + n + ' 성공!</strong>' +
           '</div>' +
-          '<div style="font-size:0.68rem;margin-top:4px;color:var(--text-muted);">' +
+          '<div style="font-size:0.78rem;margin-top:4px;color:var(--text-muted);">' +
             '&#128293; 상태 변경: counter ' + prev + ' &#8594; <strong style="color:var(--neon-cyan)">' + state.contractState.counter + '</strong> (+' + n + ')' +
           '</div>' +
-          '<div style="font-size:0.68rem;margin-top:2px;">' +
+          '<div style="font-size:0.78rem;margin-top:2px;">' +
             '<span class="gas-indicator">&#x26fd; ' + formatNumber(gasUsed) + ' gas</span>' +
-            ' <span style="font-size:0.62rem;color:var(--text-dim);">(n=' + n + '으로 인해 gas가 증가)</span>' +
+            ' <span style="font-size:0.72rem;color:var(--text-dim);">(n=' + n + '으로 인해 gas가 증가)</span>' +
           '</div>' +
-          '<div style="font-size:0.62rem;margin-top:4px;color:var(--text-dim);">' +
+          '<div style="font-size:0.72rem;margin-top:4px;color:var(--text-dim);">' +
             'Tx: ' + txHash.slice(0, 18) + '... | Block #' + BlockchainEngine.blockNumber +
           '</div>';
 
@@ -6048,7 +6959,7 @@
                 '<strong style="color:var(--neon-green)">"The number is positive"</strong>' +
               '</div>' +
             '</div>' +
-            '<div style="font-size:0.68rem;margin-top:6px;color:var(--neon-green);">' +
+            '<div style="font-size:0.78rem;margin-top:6px;color:var(--neon-green);">' +
               '&#10024; pure 함수 &#8594; 가스비 무료 | 입력값: <strong>' + x + '</strong>' +
             '</div>' +
             '<div style="font-size:0.65rem;margin-top:2px;color:var(--text-dim);">' +
@@ -6067,8 +6978,8 @@
             '<div style="margin-top:6px;padding:6px 8px;background:rgba(239,68,68,0.05);border-radius:var(--radius-sm);border-left:3px solid var(--neon-red);">' +
               '<div style="color:var(--neon-red);font-weight:600;">revert("The number is negative")</div>' +
             '</div>' +
-            '<div style="font-size:0.68rem;margin-top:6px;color:var(--text-muted);">' +
-              '&#9888; 트랜잭션 실패 &#8212; 남은 가스 환불됨' +
+            '<div style="font-size:0.78rem;margin-top:6px;color:var(--text-muted);">' +
+              '&#9888; Execution reverted &#8212; pure 함수이므로 실제 가스 소모 없음' +
             '</div>' +
             '<div style="font-size:0.65rem;margin-top:2px;color:var(--text-dim);">' +
               'revert()는 에러 메시지와 함께 실행을 중단하고 남은 가스를 반환합니다' +
@@ -6093,8 +7004,8 @@
           }
 
           logConsole('error', '&#10060; check(' + x + ') &#8594; revert: "The number is negative"', labId);
-          logConsole('error', '&nbsp;&nbsp;&nbsp;Transaction reverted. 가스비 환불됨.', labId);
-          logConsole('warning', '&#9888; revert()는 남은 가스를 돌려주지만, 이미 사용된 가스는 손실됩니다', labId);
+          logConsole('error', '&nbsp;&nbsp;&nbsp;Execution reverted (pure 함수 &#8212; 실제 가스 소모 없음)', labId);
+          logConsole('warning', '&#128161; 참고: 트랜잭션 내부에서 호출 시에는 revert()가 남은 가스를 환불하고, 사용된 가스는 손실됩니다', labId);
 
         } else {
           /* 0: 중립 반환 */
@@ -6108,7 +7019,7 @@
                 '<span>"The number is zero"</span>' +
               '</div>' +
             '</div>' +
-            '<div style="font-size:0.68rem;margin-top:4px;color:var(--text-muted);">' +
+            '<div style="font-size:0.78rem;margin-top:4px;color:var(--text-muted);">' +
               '&#10024; pure 함수 &#8594; 가스비 무료 | 입력값: 0' +
             '</div>' +
             '<div style="font-size:0.65rem;margin-top:2px;color:var(--text-dim);">' +
@@ -6125,7 +7036,7 @@
       if (pubVar) {
         const val = state.contractState[fnName] !== undefined ? state.contractState[fnName] : state.storage[fnName];
         el.className = 'func-result success-result';
-        el.innerHTML = '<span style="color:var(--text-muted)">' + pubVar.type + ':</span> <strong>' + val + '</strong> <span style="color:var(--neon-green);font-size:0.68rem;">&#10024; view (무료)</span>';
+        el.innerHTML = '<span style="color:var(--text-muted)">' + pubVar.type + ':</span> <strong>' + val + '</strong> <span style="color:var(--neon-green);font-size:0.78rem;">&#10024; view (무료)</span>';
         logConsole('info', '&#128214; ' + fnName + '() &#8594; ' + val, labId);
         return;
       }
@@ -6148,7 +7059,7 @@
     function processLab2Gas(gasUsed) {
       const state = labStates.lab2;
       const ethCost = gasUsed * 0.00000002;
-      BlockchainEngine.currentAccount.balance -= ethCost;
+      BlockchainEngine.currentAccount.balance = Math.max(0, BlockchainEngine.currentAccount.balance - ethCost);
       BlockchainEngine.currentAccount.nonce++;
       BlockchainEngine.advanceBlock();
       updateAccountDisplay('lab2');
@@ -6199,6 +7110,13 @@
       bar.style.height = height + 'px';
       bar.setAttribute('data-gas', '#' + state.gasBars.length + ' ' + fnName + '(): ' + formatNumber(gasUsed) + ' gas');
       chart.appendChild(bar);
+      /* gasBars 배열 최대 크기 제한 */
+      var MAX_GAS_BARS = 50;
+      if (state.gasBars.length > MAX_GAS_BARS) {
+        state.gasBars.shift();
+        var firstBar = chart.querySelector('.gas-bar');
+        if (firstBar) firstBar.remove();
+      }
       /* 재조정 */
       const allBars = chart.querySelectorAll('.gas-bar');
       allBars.forEach((b, i) => {
@@ -6225,7 +7143,7 @@
               '<tr><td style="font-weight:600;color:var(--text-primary)">사용 시나리오</td><td>공개 데이터</td><td>캡슐화/보안</td></tr>' +
             '</tbody>' +
           '</table>' +
-          '<div style="margin-top:8px;padding:8px;background:var(--bg-deep);border-radius:var(--radius-sm);border:1px solid var(--border);font-size:0.72rem;color:var(--text-dim);line-height:1.6;">' +
+          '<div style="margin-top:8px;padding:8px;background:var(--bg-deep);border-radius:var(--radius-sm);border:1px solid var(--border);font-size:0.83rem;color:var(--text-dim);line-height:1.6;">' +
             '&#128161; <strong style="color:var(--text-secondary)">참고:</strong> ' +
             'Solidity에서 <code style="color:var(--neon-red)">private</code>은 블록체인의 다른 컨트랙트에서 접근을 차단합니다. ' +
             '하지만 블록체인 데이터는 모두 공개되므로 "진짜 비밀"은 아닙니다.' +
@@ -6240,7 +7158,7 @@
             '<br><code style="color:var(--neon-cyan);background:rgba(0,212,255,0.08);padding:1px 5px;border-radius:3px;">getNumber()</code> getter 함수와 ' +
             '<code style="color:var(--neon-orange);background:rgba(245,158,11,0.08);padding:1px 5px;border-radius:3px;">setNumber(int)</code> setter 함수를 추가해보세요!' +
           '</div>' +
-          '<div style="font-size:0.72rem;color:var(--text-dim);margin-bottom:10px;line-height:1.6;">' +
+          '<div style="font-size:0.83rem;color:var(--text-dim);margin-bottom:10px;line-height:1.6;">' +
             '&#9997;&#xfe0f; <strong>단계:</strong>' +
             '<br>1. 코드에서 <code>int public number</code>를 <code>int private _number</code>로 변경' +
             '<br>2. <code>getNumber()</code>: public view 함수로 _number 반환' +
@@ -6266,20 +7184,20 @@
               '<div class="color-legend-text">' +
                 '<strong>주황색 (transact)</strong> = state-changing 함수' +
                 '<br>블록체인 상태를 변경 &#8594; 트랜잭션 발생 &#8594; <strong style="color:var(--neon-orange)">가스비 소모</strong>' +
-                '<br><span style="color:var(--text-dim);font-size:0.68rem;">예: count(), reset(), countBy()</span>' +
+                '<br><span style="color:var(--text-dim);font-size:0.78rem;">예: count(), reset(), countBy()</span>' +
               '</div>' +
             '</div>' +
             '<div class="color-legend-item">' +
               '<div class="color-dot green"></div>' +
               '<div class="color-legend-text">' +
                 '<strong>초록색 (call)</strong> = view / pure 함수' +
-                '<br>읽기 전용 &#8594; 로컬 노드에서 실행 &#8594; <strong style="color:var(--neon-green)">가스비 무료</strong>' +
-                '<br><span style="color:var(--text-dim);font-size:0.68rem;">예: get(), counter (getter)</span>' +
+                '<br>읽기 전용 &#8594; 외부에서 호출 시 로컬 실행 &#8594; <strong style="color:var(--neon-green)">가스비 무료</strong>' +
+                '<br><span style="color:var(--text-dim);font-size:0.78rem;">예: get(), counter (getter)</span>' +
               '</div>' +
             '</div>' +
           '</div>' +
           '<div style="margin-top:10px;padding:10px;background:var(--bg-deep);border-radius:var(--radius-sm);border:1px solid var(--border);">' +
-            '<div style="font-size:0.72rem;color:var(--text-secondary);margin-bottom:4px;">&#128202; 실시간 가스비 통계:</div>' +
+            '<div style="font-size:0.83rem;color:var(--text-secondary);margin-bottom:4px;">&#128202; 실시간 가스비 통계:</div>' +
             '<div id="gasStatsDisplay" style="font-family:var(--font-mono);font-size:0.78rem;color:var(--neon-orange);line-height:1.5;">' +
               'count() 호출 <strong>0회</strong> &#215; 평균 ~43,000 gas' +
               '<br>= 총 <strong style="color:var(--neon-orange)">0 gas</strong> (약 0.000000 ETH)' +
@@ -6306,7 +7224,7 @@
               '<div class="hint-code" id="lab2Hint2">function countBy(uint n) public {\n    counter = counter + n;\n}</div>' +
             '</div>' +
           '</div>' +
-          '<div style="margin-top:10px;padding:8px;background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);font-size:0.72rem;color:var(--text-dim);line-height:1.5;">' +
+          '<div style="margin-top:10px;padding:8px;background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);font-size:0.83rem;color:var(--text-dim);line-height:1.5;">' +
             '&#9997;&#xfe0f; <strong style="color:var(--text-secondary)">방법:</strong> ' +
             '왼쪽 에디터에서 코드 수정 &#8594; 컴파일 &#8594; 배포' +
             '<br>&#10132; 새 함수가 우측 패널에 자동으로 나타납니다!' +
@@ -6340,6 +7258,7 @@
               '<tr><td style="font-weight:600;color:var(--text-primary)">실패 시</td><td>상태 롤백 + 환불</td><td>상태 롤백 + 환불</td><td>상태 롤백 (환불X)</td></tr>' +
             '</tbody>' +
           '</table>' +
+          '<div style="margin-top:6px;padding:6px 8px;background:rgba(245,158,11,0.05);border-radius:var(--radius-sm);font-size:0.7rem;color:var(--text-dim);line-height:1.5;">&#9888;&#65039; <strong style="color:var(--text-secondary);">참고:</strong> Solidity 0.8.0부터 <code style="color:var(--neon-cyan);">assert</code>도 <code>Panic(uint256)</code> 에러를 사용하며 남은 가스를 환불합니다. 위 표의 "가스 환불 X"는 0.8.0 이전 동작입니다.</div>' +
         '</div>' +
 
         /* pure vs view vs state-changing 시각화 다이어그램 */
@@ -6401,10 +7320,35 @@
             '<span>3&#xfe0f;&#x20e3;</span>' +
             '<div>음수(예: <strong>-5</strong>)를 입력 &#8594; <span style="color:var(--neon-red)">&#10060; revert 에러 + 화면 흔들림!</span></div>' +
           '</div>' +
-          '<div style="margin-top:10px;padding:8px;background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);font-size:0.72rem;color:var(--text-dim);line-height:1.5;">' +
+          '<div style="margin-top:10px;padding:8px;background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);font-size:0.83rem;color:var(--text-dim);line-height:1.5;">' +
             '&#128161; <strong style="color:var(--text-secondary);">주목하세요:</strong> ' +
             'number 변수(100)는 check() 함수에서 사용되지 않습니다.' +
             '<br>check()는 <strong>pure</strong> 함수이므로 Storage를 전혀 읽지 않습니다!' +
+          '</div>' +
+        '</div>' +
+
+        /* 도전과제 박스 */
+        '<div class="challenge-box">' +
+          '<div class="challenge-title">&#127942; 도전과제</div>' +
+          '<div class="challenge-item">' +
+            '<span>&#127919;</span>' +
+            '<div>' +
+              '<strong>도전 1:</strong> <code>check()</code> 함수를 수정하여 <strong>0도 revert</strong> 되도록 변경해보세요!' +
+              '<button class="hint-btn" onclick="toggleHint(\'checkHint1\')">&#128161; 힌트</button>' +
+              '<div class="hint-code" id="checkHint1">if (x &lt;= 0) {\n    revert("The number is zero");\n}\n// 또는 require(x &gt; 0, "Must be positive");</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="challenge-item">' +
+            '<span>&#127919;</span>' +
+            '<div>' +
+              '<strong>도전 2:</strong> <code>check()</code> 함수에 <strong>범위 제한</strong>을 추가해보세요! (-100 ~ 100 범위만 허용)' +
+              '<button class="hint-btn" onclick="toggleHint(\'checkHint2\')">&#128161; 힌트</button>' +
+              '<div class="hint-code" id="checkHint2">require(x &gt;= -100 &amp;&amp; x &lt;= 100, "Range exceeded");</div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="margin-top:10px;padding:8px;background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);font-size:0.83rem;color:var(--text-dim);line-height:1.5;">' +
+            '&#9997;&#xfe0f; <strong style="color:var(--text-secondary)">방법:</strong> ' +
+            '왼쪽 에디터에서 코드 수정 &#8594; 컴파일 &#8594; 배포하면 변경된 동작을 확인할 수 있습니다!' +
           '</div>' +
         '</div>';
     }
@@ -6526,19 +7470,108 @@
       document.getElementById('overallCompleted').textContent = completed;
       const overallFill = document.getElementById('overallProgressFill');
       if (overallFill) overallFill.style.width = Math.round((completed / 3) * 100) + '%';
+      const startBadge = document.getElementById('startBadge');
+      if (startBadge) {
+        try {
+          const data = JSON.parse(localStorage.getItem('spa_progress') || '{}');
+          startBadge.style.display = (data.lab1 && data.lab1.completed) ? 'none' : '';
+        } catch(e) {}
+      }
     }
 
     function resetAllProgress() {
-      if (!confirm('모든 Lab 진행률과 저장된 코드를 초기화할까요?')) return;
+      if (!confirm('모든 Lab 진행률을 초기화할까요?\n(코드는 유지됩니다)')) return;
       try {
+        // localStorage 초기화
         localStorage.removeItem('spa_progress');
-        Object.keys(DEFAULT_CODES).forEach(k => {
-          localStorage.removeItem('spa_lab1_' + k);
-          localStorage.removeItem('spa_lab2_' + k);
-        });
+        localStorage.removeItem('lab3_faucet_guide_progress');
       } catch(e) {}
+
+      // BlockchainEngine 상태 초기화
+      BlockchainEngine.blockNumber = 1;
+      BlockchainEngine.timestamp = Math.floor(Date.now() / 1000);
+      BlockchainEngine.accounts.forEach(function(acc) {
+        acc.balance = 100;
+        acc.nonce = 0;
+      });
+      BlockchainEngine.currentAccountIndex = 0;
+      BlockchainEngine.contracts = {};
+      BlockchainEngine.transactions = [];
+
+      // Lab 1/2 상태 초기화
+      ['lab1', 'lab2'].forEach(function(labId) {
+        var state = labStates[labId];
+        if (state) {
+          state.compiled = false;
+          state.deployed = false;
+          state.storage = {};
+          state.varVisibility = {};
+          state.abi = { publicVars: [], viewFunctions: [], writeFunctions: [] };
+          state.contractName = '';
+          state.contractAddress = '';
+          state.deployCount = 0;
+          state.completed = {};
+          if (labId === 'lab2') {
+            state.contractState = {};
+            state.callCount = 0;
+            state.totalGas = 0;
+            state.totalEthSpent = 0;
+            state.gasBars = [];
+          }
+        }
+        // UI 초기화
+        var noContract = document.getElementById(labId + 'NoContract');
+        var contractUI = document.getElementById(labId + 'ContractUI');
+        var deployCount = document.getElementById(labId + 'DeployCount');
+        var compileResult = document.getElementById(labId + 'CompileResult');
+        var deployResult = document.getElementById(labId + 'DeployResult');
+        var blockNum = document.getElementById(labId + 'BlockNum');
+        var txCount = document.getElementById(labId + 'TxCount');
+        if (noContract) noContract.classList.remove('hidden');
+        if (contractUI) { contractUI.classList.add('hidden'); contractUI.innerHTML = ''; }
+        if (deployCount) deployCount.textContent = '0개 배포됨';
+        if (compileResult) { compileResult.className = 'compile-result'; compileResult.style.display = 'none'; }
+        if (deployResult) { deployResult.className = 'deploy-result'; deployResult.style.display = 'none'; }
+        if (blockNum) blockNum.textContent = '1';
+        if (txCount) txCount.textContent = '0';
+        // 배포 버튼 비활성화
+        var deployBtn = document.getElementById(labId + 'BtnDeploy');
+        if (deployBtn) deployBtn.disabled = true;
+      });
+
+      // 계정 표시 초기화
+      initAccountSelects();
+
+      // Lab 2 가스 통계 초기화
+      var lab2Stats = ['lab2CallCount', 'lab2TotalGas', 'lab2EthSpent'];
+      lab2Stats.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = '0';
+      });
+      var avgEl = document.getElementById('lab2AvgGas');
+      if (avgEl) avgEl.textContent = '-';
+
+      // Lab 3 초기화 (resetLab3 함수가 있으면 호출)
+      if (typeof resetLab3 === 'function') {
+        resetLab3();
+      }
+
+      // 콘솔 초기화
+      clearConsole();
+
+      // 런처 진행률 UI 갱신
       updateLauncherProgress();
-      showToast('info', '진행률이 초기화되었습니다.');
+
+      // 카드 완료 배지 제거
+      if (typeof updateCardCompletionStates === 'function') {
+        updateCardCompletionStates();
+      } else {
+        // fallback: 수동 제거
+        document.querySelectorAll('.card-completed-badge').forEach(function(b) { b.remove(); });
+        document.querySelectorAll('.lab-card.completed-card').forEach(function(c) { c.classList.remove('completed-card'); });
+      }
+
+      showToast('success', '모든 진행률이 초기화되었습니다. 코드는 유지됩니다.');
     }
 
     // ===== [13] Lab 3 초기화 스텁 =====
@@ -6550,7 +7583,7 @@
    * ============================================================= */
   var LAB3_INITIAL_CODE = [
     '// SPDX-License-Identifier: MIT',
-    'pragma solidity ^0.8.0;',
+    'pragma solidity ^0.8.26;',
     '',
     'contract Faucet {',
     '    address payable public owner;',
@@ -6614,6 +7647,7 @@
   var lab3EventLogs = [];
   var lab3TxLogs = [];
   var lab3TxNonce = 0;
+  var lab3GasStats = { callCount: 0, totalGas: 0, totalEth: 0 };
 
   /* =============================================================
    *  가이드 시나리오 데이터
@@ -6625,7 +7659,7 @@
     { id: 'deposit-1eth', text: 'owner로 1 ETH를 입금하세요 (deposit)', completed: false },
     { id: 'check-tank', text: '탱크의 수위 변화를 확인하세요', completed: false },
     { id: 'switch-account2', text: 'Account 2로 전환하세요', completed: false },
-    { id: 'withdraw-first', text: 'withdraw()를 호출하세요 → 0.1 ETH 수령', completed: false },
+    { id: 'withdraw-first', text: 'withdraw()를 호출하세요 → WITHDRAWAL_AMOUNT만큼 수령', completed: false },
     { id: 'withdraw-fail', text: '즉시 다시 withdraw() → 에러 확인 (24시간 제한)', completed: false },
     { id: 'skip-time-withdraw', text: '"24시간 경과" 버튼 클릭 후 다시 withdraw() → 성공', completed: false },
     { id: 'withdrawall-fail', text: 'Account 2로 withdrawAll() 시도 → 권한 에러 확인', completed: false },
@@ -6841,27 +7875,55 @@
     if (lastEl) {
       lastEl.textContent = lastW ? lab3FormatTimestamp(lastW) + ' (' + lastW + ')' : '없음 (0)';
     }
+
+    /* 동적 상수 표시 업데이트 */
+    var amountEl = document.getElementById('lab3StateWithdrawAmount');
+    if (amountEl) {
+      amountEl.textContent = lab3Contract.storage.WITHDRAWAL_AMOUNT + ' ETH';
+    }
+    var lockEl = document.getElementById('lab3StateLockTime');
+    if (lockEl) {
+      var lt = lab3Contract.storage.LOCK_TIME;
+      var lockLabel = lt >= 86400 ? (lt / 86400) + ' day(s)' :
+                      lt >= 3600  ? (lt / 3600) + ' hour(s)' :
+                      lt >= 60    ? (lt / 60) + ' minute(s)' : lt + '초';
+      lockEl.textContent = lt + '초 (' + lockLabel + ')';
+    }
   }
 
-  /** 코드 에디터 줄번호 업데이트 */
+  /** 코드 에디터 줄번호 + 구문 하이라이팅 업데이트 */
   function lab3_updateLineNumbers() {
     var textarea = document.getElementById('lab3CodeTextarea');
     var lineNumbers = document.getElementById('lab3LineNumbers');
+    var highlightEl = document.getElementById('lab3Highlight');
     if (!textarea || !lineNumbers) return;
-    var lines = textarea.value.split('\n').length;
+    var code = textarea.value;
+    var lines = code.split('\n').length;
     var nums = '';
     for (var i = 1; i <= lines; i++) {
-      nums += i + '\n';
+      nums += '<div>' + i + '</div>';
     }
-    lineNumbers.textContent = nums;
+    lineNumbers.innerHTML = nums;
+
+    /* 구문 하이라이팅 오버레이 업데이트 */
+    if (highlightEl && typeof highlightSolidity === 'function') {
+      highlightEl.innerHTML = (typeof wrapHighlightedLines === 'function')
+        ? wrapHighlightedLines(highlightSolidity(code))
+        : highlightSolidity(code);
+    }
   }
 
   /** 코드 에디터 스크롤 동기화 */
   function lab3_syncScroll() {
     var textarea = document.getElementById('lab3CodeTextarea');
     var lineNumbers = document.getElementById('lab3LineNumbers');
+    var highlightEl = document.getElementById('lab3Highlight');
     if (textarea && lineNumbers) {
       lineNumbers.scrollTop = textarea.scrollTop;
+    }
+    if (textarea && highlightEl) {
+      highlightEl.scrollTop = textarea.scrollTop;
+      highlightEl.scrollLeft = textarea.scrollLeft;
     }
   }
 
@@ -6971,12 +8033,9 @@
       data: data
     });
 
-    /* 하단 콘솔에도 출력 */
-    addConsoleLog(
-      '[Event] ' + eventName + '(user: ' + lab3ShortAddr(data.user) + ', amount: ' + data.amount + ' ETH)',
-      'var(--neon-purple, #a78bfa)',
-      'lab3'
-    );
+    /* 하단 콘솔에도 출력 — logtype='event'를 명시하여 이벤트 탭에 표시 */
+    var msg = '[Event] ' + eventName + '(user: ' + lab3ShortAddr(data.user) + ', amount: ' + data.amount + ' ETH)';
+    logConsole('info', escapeHtml(msg), 'lab3', 'event');
   }
 
   /** 트랜잭션 로그 추가 */
@@ -7007,7 +8066,56 @@
 
     addConsoleLog(logMsg, logColor, 'lab3');
 
+    /* 모든 트랜잭션 가스 추적 (실제 EVM에서는 revert 시에도 가스 소모) */
+    lab3_trackGas(log.gas);
+    lab3_deductGas(log.gas, txData.senderAccount);
+
     return log;
+  }
+
+  /** 가스비를 계정 잔액에서 차감 */
+  function lab3_deductGas(gasUsed, targetAccount) {
+    var gasCostEth = (gasUsed * 20) / 1e9; // gasPrice 20 Gwei
+    var acc = targetAccount || lab3CurrentAccount();
+    acc.balance = Math.max(0, acc.balance - gasCostEth);
+    acc.balance = Math.round(acc.balance * 1e10) / 1e10;
+    lab3_renderAccounts();
+  }
+
+  /* =============================================================
+   *  가스비 통계 함수
+   * ============================================================= */
+
+  function lab3_trackGas(gasUsed) {
+    lab3GasStats.callCount++;
+    lab3GasStats.totalGas += gasUsed;
+    var ethCost = (gasUsed * 20) / 1e9;
+    lab3GasStats.totalEth += ethCost;
+    lab3_updateGasStats();
+  }
+
+  function lab3_updateGasStats() {
+    var el;
+    el = document.getElementById('lab3GasCallCount');
+    if (el) el.textContent = lab3GasStats.callCount;
+    el = document.getElementById('lab3GasTotalGas');
+    if (el) el.textContent = lab3GasStats.totalGas.toLocaleString();
+    el = document.getElementById('lab3GasAvgGas');
+    if (el) el.textContent = lab3GasStats.callCount > 0 ? Math.round(lab3GasStats.totalGas / lab3GasStats.callCount).toLocaleString() : '-';
+    el = document.getElementById('lab3GasEthSpent');
+    if (el) el.textContent = lab3GasStats.totalEth.toFixed(6);
+  }
+
+  /* =============================================================
+   *  Lab3 함수 호출 트레이스 헬퍼
+   * ============================================================= */
+
+  /** Lab3 함수 호출 시 해당 함수의 코드 라인을 트레이스 */
+  function lab3_traceFn(fnName) {
+    var ta = document.getElementById('lab3CodeTextarea');
+    if (!ta) return;
+    var steps = generateFunctionCallTrace(ta.value, fnName, true);
+    if (steps.length > 0) CodeTracer.startTrace('lab3', steps);
   }
 
   /* =============================================================
@@ -7026,8 +8134,16 @@
     status.innerHTML = '<span class="lab3-spinner"></span> 컴파일 중...';
     btnCompile.disabled = true;
 
+    /* 코드 실행 추적 */
+    var traceSteps = generateCompileTrace(code);
+    var traceDuration = 0;
+    for (var k = 0; k < traceSteps.length; k++) traceDuration += (traceSteps[k].duration || 700);
+    if (traceSteps.length > 0) CodeTracer.startTrace('lab3', traceSteps);
+
     setTimeout(function() {
+      CodeTracer.stop();
       var errors = [];
+      var warnings = [];
 
       if (!code.includes('contract ')) {
         errors.push('contract 키워드를 찾을 수 없습니다');
@@ -7051,6 +8167,17 @@
         errors.push('괄호 불일치: ( ' + parens + '개, ) ' + closeparens + '개');
       }
 
+      /* 핵심 함수 존재 여부 경고 (컴파일을 막지는 않음) */
+      if (!code.includes('function withdraw')) {
+        warnings.push('withdraw() 함수가 정의되지 않았습니다');
+      }
+      if (!code.includes('function deposit')) {
+        warnings.push('deposit() 함수가 정의되지 않았습니다');
+      }
+      if (!code.includes('modifier ')) {
+        warnings.push('modifier가 정의되지 않았습니다');
+      }
+
       btnCompile.disabled = false;
 
       if (errors.length > 0) {
@@ -7064,18 +8191,78 @@
         setTimeout(function() { compileIcon.textContent = '⚙️'; }, 2000);
       } else {
         var commitHash = BlockchainEngine.generateTxHash().slice(2, 10);
-        status.className = 'lab3-compile-status lab3-cs-success';
-        status.textContent = '✅ 컴파일 성공! Faucet.sol — Solidity 0.8.0 (commit: 0x' + commitHash + ')';
+        var successMsg = '✅ 컴파일 성공! Faucet.sol — Solidity 0.8.0 (commit: 0x' + commitHash + ')';
+        if (warnings.length > 0) {
+          successMsg += ' | ⚠️ 경고: ' + warnings.join(', ');
+          status.className = 'lab3-compile-status lab3-cs-success';
+          status.textContent = successMsg;
+          showToast('컴파일 성공 (경고 ' + warnings.length + '건)', 'warning');
+          addConsoleLog('⚠️ 컴파일 경고: ' + warnings.join(', '), '#f59e0b', 'lab3');
+        } else {
+          status.className = 'lab3-compile-status lab3-cs-success';
+          status.textContent = successMsg;
+          showToast('컴파일 성공!', 'success');
+        }
+        addConsoleLog('✅ Faucet.sol 컴파일 성공 (Solidity 0.8.0)', 'var(--neon-green, #22c55e)', 'lab3');
         lab3Contract.compiled = true;
         btnDeploy.disabled = false;
         compileIcon.textContent = '✅';
-        showToast('컴파일 성공!', 'success');
-        addConsoleLog('✅ Faucet.sol 컴파일 성공 (Solidity 0.8.0)', 'var(--neon-green, #22c55e)', 'lab3');
         lab3_completeGuideStep('compile');
         setTimeout(function() { compileIcon.textContent = '⚙️'; }, 2000);
       }
-    }, 700);
+    }, Math.max(800, traceDuration + 200));
   };
+
+  /** 에디터 코드에서 WITHDRAWAL_AMOUNT, LOCK_TIME 상수를 파싱 */
+  function lab3_parseConstants(code) {
+    var result = { WITHDRAWAL_AMOUNT: 0.1, LOCK_TIME: 86400 };
+
+    try {
+      // WITHDRAWAL_AMOUNT 파싱
+      var amountMatch = code.match(/WITHDRAWAL_AMOUNT\s*=\s*([^;]+)/);
+      if (amountMatch) {
+        var amountRaw = amountMatch[1].trim();
+        var etherMatch = amountRaw.match(/^([\d.]+)\s*ether$/);
+        if (etherMatch) {
+          result.WITHDRAWAL_AMOUNT = parseFloat(etherMatch[1]);
+        } else {
+          // wei 숫자값 (예: 100000000000000000)
+          var weiVal = parseFloat(amountRaw);
+          if (!isNaN(weiVal) && weiVal > 0) {
+            result.WITHDRAWAL_AMOUNT = weiVal / 1e18;
+          }
+        }
+      }
+
+      // LOCK_TIME 파싱
+      var timeMatch = code.match(/LOCK_TIME\s*=\s*([^;]+)/);
+      if (timeMatch) {
+        var timeRaw = timeMatch[1].trim();
+        var daysMatch = timeRaw.match(/^(\d+)\s*days$/);
+        var hoursMatch = timeRaw.match(/^(\d+)\s*hours$/);
+        var minutesMatch = timeRaw.match(/^(\d+)\s*minutes$/);
+        var secondsMatch = timeRaw.match(/^(\d+)\s*seconds$/);
+        if (daysMatch) {
+          result.LOCK_TIME = parseInt(daysMatch[1]) * 86400;
+        } else if (hoursMatch) {
+          result.LOCK_TIME = parseInt(hoursMatch[1]) * 3600;
+        } else if (minutesMatch) {
+          result.LOCK_TIME = parseInt(minutesMatch[1]) * 60;
+        } else if (secondsMatch) {
+          result.LOCK_TIME = parseInt(secondsMatch[1]);
+        } else {
+          var numVal = parseInt(timeRaw);
+          if (!isNaN(numVal) && numVal > 0) {
+            result.LOCK_TIME = numVal;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[Lab3] 코드 파싱 실패, 기본값 사용:', e);
+    }
+
+    return result;
+  }
 
   /** 컨트랙트 배포 */
   window.lab3_deploy = function() {
@@ -7084,8 +8271,15 @@
       return;
     }
     if (lab3Contract.deployed) {
-      showToast('이미 배포된 컨트랙트가 있습니다.', 'error');
-      return;
+      if (!confirm('기존 컨트랙트를 덮어쓰고 재배포할까요?\n(실습 가이드 진행률은 유지됩니다)')) return;
+      /* 재배포를 위한 상태 리셋 */
+      lab3Contract.deployed = false;
+      lab3Contract.address = null;
+      lab3Contract.storage.balance = 0;
+      lab3Contract.storage.lastWithdrawalTime = {};
+      lab3EventLogs = [];
+      lab3TxLogs = [];
+      lab3TxNonce = 0;
     }
 
     var deployer = lab3CurrentAccount();
@@ -7096,12 +8290,32 @@
     status.innerHTML = '<span class="lab3-spinner"></span> 배포 중... (constructor 실행)';
     btnDeploy.disabled = true;
 
+    /* 배포 시 constructor 실행 추적 */
+    var deployCode = document.getElementById('lab3CodeTextarea');
+    if (deployCode) {
+      var deployTraceSteps = generateDeployTrace(deployCode.value);
+      if (deployTraceSteps.length > 0) {
+        setTimeout(function() { CodeTracer.startTrace('lab3', deployTraceSteps, { speed: 600 }); }, 300);
+      }
+    }
+
     setTimeout(function() {
+      CodeTracer.stop();
+      /* 에디터 코드에서 상수 파싱하여 반영 */
+      var codeTextarea = document.getElementById('lab3CodeTextarea');
+      var editorCode = codeTextarea ? codeTextarea.value : '';
+      var parsed = lab3_parseConstants(editorCode);
+
       lab3Contract.address = '0xd9145CCE52D386f254917e481eB44e9943F39138';
       lab3Contract.deployed = true;
       lab3Contract.storage.owner = deployer.address;
+      lab3Contract.storage.WITHDRAWAL_AMOUNT = parsed.WITHDRAWAL_AMOUNT;
+      lab3Contract.storage.LOCK_TIME = parsed.LOCK_TIME;
       lab3Contract.storage.balance = 0;
       lab3Contract.storage.lastWithdrawalTime = {};
+
+      /* 파싱 결과 콘솔 로그 */
+      addConsoleLog('📋 코드 파싱: WITHDRAWAL_AMOUNT = ' + parsed.WITHDRAWAL_AMOUNT + ' ETH, LOCK_TIME = ' + parsed.LOCK_TIME + '초', 'var(--neon-cyan, #22d3ee)', 'lab3');
 
       /* BlockchainEngine 컨트랙트 저장소에 등록 */
       BlockchainEngine.contracts.lab3 = lab3Contract;
@@ -7113,7 +8327,8 @@
         to: '(컨트랙트 생성)',
         fn: 'constructor()',
         value: 0,
-        status: 'success'
+        status: 'success',
+        senderAccount: deployer
       });
 
       /* UI 전환 */
@@ -7136,6 +8351,12 @@
       addConsoleLog('🚀 Faucet 배포 완료! owner = ' + deployer.label + ' | 주소: ' + lab3Contract.address, 'var(--neon-cyan, #22d3ee)', 'lab3');
       showToast('컨트랙트 배포 성공! owner = ' + deployer.label, 'success');
       lab3_completeGuideStep('deploy');
+
+      // 첫 배포 시 가이드 자동 펼치기
+      var guideContent = document.getElementById('lab3GuideContent');
+      if (guideContent && guideContent.style.display === 'none') {
+        lab3_toggleGuide();
+      }
     }, 1000);
   };
 
@@ -7146,6 +8367,8 @@
   /** owner() */
   window.lab3_fnOwner = function() {
     if (!lab3Contract.deployed) return;
+    lab3_traceFn('owner');
+    lab3_updateMsgValue('0');
     var resultEl = document.getElementById('lab3ResultOwner');
     resultEl.className = 'lab3-fn-result lab3-show lab3-success';
     resultEl.innerHTML =
@@ -7158,30 +8381,42 @@
   /** WITHDRAWAL_AMOUNT() */
   window.lab3_fnWithdrawalAmount = function() {
     if (!lab3Contract.deployed) return;
+    lab3_traceFn('WITHDRAWAL_AMOUNT');
+    lab3_updateMsgValue('0');
     var resultEl = document.getElementById('lab3ResultWithdrawalAmount');
+    var amt = lab3Contract.storage.WITHDRAWAL_AMOUNT;
+    var weiVal = Math.round(amt * 1e18);
     resultEl.className = 'lab3-fn-result lab3-show lab3-success';
     resultEl.innerHTML =
-      '<strong>uint256:</strong> 100000000000000000<br>' +
-      '<small style="color:#536178;">= 0.1 ether = 10<sup>17</sup> wei<br>' +
-      'Solidity: 0.1 ether == 100000000000000000 wei</small>';
-    addConsoleLog('📖 WITHDRAWAL_AMOUNT() → 100000000000000000 (0.1 ETH)', 'var(--neon-green, #22c55e)', 'lab3');
+      '<strong>uint256:</strong> ' + weiVal + '<br>' +
+      '<small style="color:#536178;">= ' + amt + ' ether = ' + weiVal + ' wei<br>' +
+      'Solidity: ' + amt + ' ether == ' + weiVal + ' wei</small>';
+    addConsoleLog('📖 WITHDRAWAL_AMOUNT() → ' + weiVal + ' (' + amt + ' ETH)', 'var(--neon-green, #22c55e)', 'lab3');
   };
 
   /** LOCK_TIME() */
   window.lab3_fnLockTime = function() {
     if (!lab3Contract.deployed) return;
+    lab3_traceFn('LOCK_TIME');
+    lab3_updateMsgValue('0');
     var resultEl = document.getElementById('lab3ResultLockTime');
+    var lt = lab3Contract.storage.LOCK_TIME;
+    var label = lt >= 86400 ? (lt / 86400) + ' days = ' + (lt / 3600) + '시간' :
+                lt >= 3600  ? (lt / 3600) + ' hours = ' + (lt / 60) + '분' :
+                lt >= 60    ? (lt / 60) + ' minutes' : lt + ' seconds';
     resultEl.className = 'lab3-fn-result lab3-show lab3-success';
     resultEl.innerHTML =
-      '<strong>uint256:</strong> 86400<br>' +
-      '<small style="color:#536178;">= 1 days = 24시간 = 1,440분 = 86,400초<br>' +
-      'Solidity: 1 days == 86400 seconds</small>';
-    addConsoleLog('📖 LOCK_TIME() → 86400 (1 day)', 'var(--neon-green, #22c55e)', 'lab3');
+      '<strong>uint256:</strong> ' + lt + '<br>' +
+      '<small style="color:#536178;">= ' + label + ' = ' + lt.toLocaleString() + '초<br>' +
+      'Solidity 시간 단위 변환 결과</small>';
+    addConsoleLog('📖 LOCK_TIME() → ' + lt + ' (' + label + ')', 'var(--neon-green, #22c55e)', 'lab3');
   };
 
   /** lastWithdrawalTime(address) */
   window.lab3_fnLastWithdrawalTime = function() {
     if (!lab3Contract.deployed) return;
+    lab3_traceFn('lastWithdrawalTime');
+    lab3_updateMsgValue('0');
     var input = document.getElementById('lab3InputLastWithdraw');
     var resultEl = document.getElementById('lab3ResultLastWithdraw');
     var addr = input.value.trim();
@@ -7228,6 +8463,7 @@
   /** withdraw() 실행 */
   window.lab3_withdraw = function() {
     if (!lab3Contract.deployed) return;
+    lab3_traceFn('withdraw');
 
     var sender = lab3CurrentAccount();
     var resultEl = document.getElementById('lab3ResultWithdraw');
@@ -7245,17 +8481,20 @@
 
       resultEl.className = 'lab3-fn-result lab3-show lab3-error';
       resultEl.innerHTML =
-        '❌ <strong>require 실패 (Line 22~25):</strong><br>' +
-        '<span style="color:#fca5a5;">"You must wait 24 hours between withdrawals."</span><br><br>' +
-        '<small style="color:#536178;">' +
-          '검증 과정:<br>' +
-          '  block.timestamp (' + BlockchainEngine.timestamp + ')<br>' +
-          '  >= lastWithdrawalTime[msg.sender] (' + lastW + ') + LOCK_TIME (86400)<br>' +
-          '  = ' + BlockchainEngine.timestamp + ' >= ' + timeRequired + '<br>' +
-          '  → <span style="color:#ef4444;font-weight:600;">false → revert!</span><br>' +
-          '<br>' +
-          '  <strong style="color:#f59e0b;">남은 시간: ' + lab3FormatRemainingTime(remaining) + '</strong>' +
-        '</small>';
+        '❌ <strong>require 실패:</strong> ' +
+        '<span style="color:#fca5a5;">"You must wait 24 hours between withdrawals."</span>' +
+        '<div style="margin-top:6px;font-size:0.83rem;color:var(--lab3-muted);">' +
+        '  남은 시간: <strong style="color:#f59e0b;">' + lab3FormatRemainingTime(remaining) + '</strong>' +
+        '</div>' +
+        '<details style="margin-top:8px;font-size:0.83rem;">' +
+        '  <summary style="cursor:pointer;color:var(--lab3-purple);font-weight:600;">🔍 검증 과정 상세 보기</summary>' +
+        '  <div style="margin-top:6px;padding:8px;background:rgba(15,16,39,0.5);border-radius:6px;color:#536178;line-height:1.6;">' +
+        '    block.timestamp (' + BlockchainEngine.timestamp + ')<br>' +
+        '    >= lastWithdrawalTime[msg.sender] (' + lastW + ') + LOCK_TIME (' + lab3Contract.storage.LOCK_TIME + ')<br>' +
+        '    = ' + BlockchainEngine.timestamp + ' >= ' + timeRequired + '<br>' +
+        '    → <span style="color:#ef4444;font-weight:600;">false → revert!</span>' +
+        '  </div>' +
+        '</details>';
 
       lab3_animateError();
       BlockchainEngine.advanceBlock();
@@ -7266,7 +8505,8 @@
         fn: 'withdraw()',
         value: 0,
         status: 'revert',
-        error: 'You must wait 24 hours between withdrawals.'
+        error: 'You must wait 24 hours between withdrawals.',
+        senderAccount: sender
       });
 
       showToast('withdraw() revert: 24시간 제한', 'error');
@@ -7283,16 +8523,19 @@
     if (lab3Contract.storage.balance < lab3Contract.storage.WITHDRAWAL_AMOUNT) {
       resultEl.className = 'lab3-fn-result lab3-show lab3-error';
       resultEl.innerHTML =
-        '❌ <strong>require 실패 (Line 26~29):</strong><br>' +
-        '<span style="color:#fca5a5;">"Insufficient balance in the faucet."</span><br><br>' +
-        '<small style="color:#536178;">' +
-          '검증 과정:<br>' +
-          '  address(this).balance (' + lab3FormatETH(lab3Contract.storage.balance) + ' ETH)<br>' +
-          '  >= WITHDRAWAL_AMOUNT (0.1 ETH)<br>' +
-          '  → <span style="color:#ef4444;font-weight:600;">false → revert!</span><br>' +
-          '<br>' +
-          '  <strong style="color:#f59e0b;">Faucet에 ETH를 입금해야 합니다</strong>' +
-        '</small>';
+        '❌ <strong>require 실패:</strong> ' +
+        '<span style="color:#fca5a5;">"Insufficient balance in the faucet."</span>' +
+        '<div style="margin-top:6px;font-size:0.83rem;color:var(--lab3-muted);">' +
+        '  <strong style="color:#f59e0b;">Faucet에 ETH를 입금해야 합니다</strong>' +
+        '</div>' +
+        '<details style="margin-top:8px;font-size:0.83rem;">' +
+        '  <summary style="cursor:pointer;color:var(--lab3-purple);font-weight:600;">🔍 검증 과정 상세 보기</summary>' +
+        '  <div style="margin-top:6px;padding:8px;background:rgba(15,16,39,0.5);border-radius:6px;color:#536178;line-height:1.6;">' +
+        '    address(this).balance (' + lab3FormatETH(lab3Contract.storage.balance) + ' ETH)<br>' +
+        '    >= WITHDRAWAL_AMOUNT (' + lab3Contract.storage.WITHDRAWAL_AMOUNT + ' ETH)<br>' +
+        '    → <span style="color:#ef4444;font-weight:600;">false → revert!</span>' +
+        '  </div>' +
+        '</details>';
 
       lab3_animateError();
       BlockchainEngine.advanceBlock();
@@ -7303,7 +8546,8 @@
         fn: 'withdraw()',
         value: 0,
         status: 'revert',
-        error: 'Insufficient balance in the faucet.'
+        error: 'Insufficient balance in the faucet.',
+        senderAccount: sender
       });
 
       showToast('withdraw() revert: 잔액 부족', 'error');
@@ -7315,7 +8559,9 @@
     setTimeout(function() {
       lab3Contract.storage.lastWithdrawalTime[sender.address] = BlockchainEngine.timestamp;
       lab3Contract.storage.balance -= lab3Contract.storage.WITHDRAWAL_AMOUNT;
+      lab3Contract.storage.balance = Math.round(lab3Contract.storage.balance * 1e10) / 1e10;
       sender.balance += lab3Contract.storage.WITHDRAWAL_AMOUNT;
+      sender.balance = Math.round(sender.balance * 1e10) / 1e10;
 
       lab3_animateDrain(1800);
 
@@ -7335,7 +8581,8 @@
         to: lab3Contract.address,
         fn: 'withdraw()',
         value: 0,
-        status: 'success'
+        status: 'success',
+        senderAccount: sender
       });
 
       resultEl.className = 'lab3-fn-result lab3-show lab3-success';
@@ -7344,18 +8591,23 @@
         '<small style="color:#536178;">' +
           '실행 순서 (Solidity 코드 Line 30~33):<br>' +
           '  1. lastWithdrawalTime[' + lab3ShortAddr(sender.address) + '] = ' + BlockchainEngine.timestamp + ' (저장)<br>' +
-          '  2. payable(msg.sender).transfer(0.1 ETH) → ' + lab3ShortAddr(sender.address) + '에게 전송<br>' +
-          '  3. emit Withdrawal(' + lab3ShortAddr(sender.address) + ', 0.1 ETH)<br>' +
+          '  2. payable(msg.sender).transfer(' + lab3Contract.storage.WITHDRAWAL_AMOUNT + ' ETH) → ' + lab3ShortAddr(sender.address) + '에게 전송<br>' +
+          '  3. emit Withdrawal(' + lab3ShortAddr(sender.address) + ', ' + lab3Contract.storage.WITHDRAWAL_AMOUNT + ' ETH)<br>' +
           '<br>' +
           '  컨트랙트 잔액: ' + lab3FormatETH(lab3Contract.storage.balance) + ' ETH<br>' +
           '  ' + sender.label + ' 잔액: ' + lab3FormatETH(sender.balance) + ' ETH' +
-        '</small>';
+        '</small>' +
+        '<div style="margin-top:10px;padding:8px 10px;background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.15);border-radius:6px;font-size:0.83rem;color:#94a3b8;line-height:1.5;">' +
+          '&#128161; <strong style="color:#e2e8f0;">transfer() vs send()</strong><br>' +
+          '<code style="color:#10b981;">transfer()</code>: 2300 gas만 전달 (재진입 공격 방지), 실패 시 자동 <strong style="color:#ef4444;">revert</strong><br>' +
+          '<code style="color:#f59e0b;">send()</code>: 2300 gas만 전달, 실패 시 <strong style="color:#f59e0b;">false</strong> 반환 (직접 체크 필요)' +
+        '</div>';
 
       lab3_animateSuccess();
       lab3_updateTank();
       lab3_renderAccounts();
       lab3_updateStateMonitor();
-      showToast('withdraw() 성공! 0.1 ETH 수령', 'success');
+      showToast('withdraw() 성공! ' + lab3Contract.storage.WITHDRAWAL_AMOUNT + ' ETH 수령', 'success');
       btnEl.disabled = false;
 
       if (!lab3GuideFlags.firstWithdrawDone) {
@@ -7372,6 +8624,7 @@
   /** deposit() 실행 */
   window.lab3_deposit = function() {
     if (!lab3Contract.deployed) return;
+    lab3_traceFn('deposit');
 
     var sender = lab3CurrentAccount();
     var inputEl = document.getElementById('lab3InputDepositValue');
@@ -7409,10 +8662,12 @@
         fn: 'deposit()',
         value: value,
         status: 'revert',
-        error: 'Only the owner can call this function.'
+        error: 'Only the owner can call this function.',
+        senderAccount: sender
       });
 
       showToast('deposit() revert: owner만 가능', 'error');
+      lab3_updateMsgValue('0');
       return;
     }
 
@@ -7420,12 +8675,15 @@
     if (sender.balance < value) {
       resultEl.className = 'lab3-fn-result lab3-show lab3-error';
       resultEl.textContent = '❌ 잔액 부족: ' + sender.label + '의 잔액 ' + lab3FormatETH(sender.balance) + ' ETH < 입금액 ' + value + ' ETH';
+      lab3_updateMsgValue('0');
       return;
     }
 
     /* 성공 처리 */
     sender.balance -= value;
+    sender.balance = Math.round(sender.balance * 1e10) / 1e10;
     lab3Contract.storage.balance += value;
+    lab3Contract.storage.balance = Math.round(lab3Contract.storage.balance * 1e10) / 1e10;
 
     lab3_animateDeposit(2000);
 
@@ -7440,7 +8698,8 @@
       to: lab3Contract.address,
       fn: 'deposit()',
       value: value,
-      status: 'success'
+      status: 'success',
+      senderAccount: sender
     });
 
     resultEl.className = 'lab3-fn-result lab3-show lab3-success';
@@ -7460,6 +8719,7 @@
     lab3_updateStateMonitor();
     inputEl.value = '';
     showToast('deposit() 성공! ' + value + ' ETH 입금', 'success');
+    lab3_updateMsgValue('0');
 
     if (value >= 1 && !lab3GuideFlags.depositDone) {
       lab3GuideFlags.depositDone = true;
@@ -7474,6 +8734,7 @@
   /** withdrawAll() 실행 */
   window.lab3_withdrawAll = function() {
     if (!lab3Contract.deployed) return;
+    lab3_traceFn('withdrawAll');
 
     var sender = lab3CurrentAccount();
     var resultEl = document.getElementById('lab3ResultWithdrawAll');
@@ -7503,7 +8764,8 @@
         fn: 'withdrawAll()',
         value: 0,
         status: 'revert',
-        error: 'Only the owner can call this function.'
+        error: 'Only the owner can call this function.',
+        senderAccount: sender
       });
 
       showToast('withdrawAll() revert: owner만 가능', 'error');
@@ -7529,7 +8791,8 @@
         to: lab3Contract.address,
         fn: 'withdrawAll()',
         value: 0,
-        status: 'success'
+        status: 'success',
+        senderAccount: sender
       });
       showToast('withdrawAll() 실행됨 (잔액 0)', 'info');
       return;
@@ -7537,6 +8800,7 @@
 
     /* 성공 처리 */
     sender.balance += amount;
+    sender.balance = Math.round(sender.balance * 1e10) / 1e10;
     lab3Contract.storage.balance = 0;
 
     lab3_animateDrain(2500);
@@ -7552,7 +8816,8 @@
       to: lab3Contract.address,
       fn: 'withdrawAll()',
       value: 0,
-      status: 'success'
+      status: 'success',
+      senderAccount: sender
     });
 
     resultEl.className = 'lab3-fn-result lab3-show lab3-success';
@@ -7578,6 +8843,26 @@
   /** receive() — 직접 ETH 전송 */
   window.lab3_receive = function() {
     if (!lab3Contract.deployed) return;
+    lab3_traceFn('receive');
+
+    // 도전과제: receive() 함수 존재 여부 확인
+    var code = document.getElementById('lab3CodeTextarea').value;
+    if (!code.includes('receive()')) {
+      var resultEl = document.getElementById('lab3ResultReceive');
+      resultEl.className = 'lab3-fn-result lab3-show lab3-error';
+      resultEl.innerHTML =
+        '❌ <strong>트랜잭션 실패!</strong><br>' +
+        '<span style="color:#fca5a5;">컨트랙트에 receive() 함수가 정의되어 있지 않습니다.</span><br><br>' +
+        '<small style="color:#536178;">' +
+        '실제 EVM에서는 receive()나 fallback()이 없는 컨트랙트에<br>' +
+        'ETH를 직접 전송하면 트랜잭션이 revert됩니다.<br><br>' +
+        '<strong style="color:#f59e0b;">💡 도전과제 성공!</strong> receive() 함수의 역할을 확인했습니다.' +
+        '</small>';
+      lab3_animateError();
+      addConsoleLog('❌ receive() 미정의 — ETH 직접 전송 실패 (revert)', '#ef4444', 'lab3');
+      showToast('receive() 없이는 ETH를 받을 수 없습니다', 'error');
+      return;
+    }
 
     var sender = lab3CurrentAccount();
     var inputEl = document.getElementById('lab3InputReceiveValue');
@@ -7595,12 +8880,15 @@
     if (sender.balance < value) {
       resultEl.className = 'lab3-fn-result lab3-show lab3-error';
       resultEl.textContent = '❌ 잔액 부족: ' + lab3FormatETH(sender.balance) + ' ETH < ' + value + ' ETH';
+      lab3_updateMsgValue('0');
       return;
     }
 
     /* 성공 처리 */
     sender.balance -= value;
+    sender.balance = Math.round(sender.balance * 1e10) / 1e10;
     lab3Contract.storage.balance += value;
+    lab3Contract.storage.balance = Math.round(lab3Contract.storage.balance * 1e10) / 1e10;
 
     lab3_animateDeposit(1800);
 
@@ -7615,7 +8903,8 @@
       to: lab3Contract.address,
       fn: 'receive() (직접 전송)',
       value: value,
-      status: 'success'
+      status: 'success',
+      senderAccount: sender
     });
 
     resultEl.className = 'lab3-fn-result lab3-show lab3-success';
@@ -7638,13 +8927,15 @@
     lab3_updateStateMonitor();
     inputEl.value = '';
     showToast('receive() — ' + value + ' ETH 전송 완료', 'success');
+    lab3_updateMsgValue('0');
   };
 
   /* =============================================================
    *  24시간 경과
    * ============================================================= */
   window.lab3_skipTime = function() {
-    BlockchainEngine.advanceTime(86400);
+    var skipSeconds = lab3Contract.storage.LOCK_TIME;
+    BlockchainEngine.advanceTime(skipSeconds);
 
     lab3_renderAccounts();
     lab3_updateStateMonitor();
@@ -7652,8 +8943,8 @@
 
     lab3GuideFlags.timeSkipped = true;
 
-    addConsoleLog('⏩ 24시간 (86400초) 경과! block.timestamp = ' + BlockchainEngine.timestamp, '#fbbf24', 'lab3');
-    showToast('⏩ 24시간 (86400초) 경과! 블록 #' + BlockchainEngine.blockNumber, 'info', 4000);
+    addConsoleLog('⏩ LOCK_TIME (' + skipSeconds + '초) 경과! block.timestamp = ' + BlockchainEngine.timestamp, '#fbbf24', 'lab3');
+    showToast('⏩ LOCK_TIME (' + skipSeconds + '초) 경과! 블록 #' + BlockchainEngine.blockNumber, 'info', 4000);
   };
 
   /* =============================================================
@@ -7704,12 +8995,15 @@
 
     var allDone = lab3GuideStepsData.every(function(s) { return s.completed; });
     if (allDone) {
+      markLabCompleted('lab3');
+      saveProgress('lab3');
       setTimeout(function() {
         showToast('🎉 축하합니다! Faucet 실습을 모두 완료했습니다!', 'success', 6000);
         addConsoleLog('🎉 Lab 3 (Faucet) 전체 실습 완료!', 'var(--neon-green, #22c55e)', 'lab3');
       }, 500);
     }
   }
+  window.lab3_completeGuideStep = lab3_completeGuideStep;
 
   /** 가이드 진행률 업데이트 */
   function lab3_updateGuideProgress() {
@@ -7737,6 +9031,10 @@
     content.style.display = isHidden ? 'block' : 'none';
     if (icon) {
       icon.classList.toggle('lab3-expanded', isHidden);
+    }
+    var toggleBtn = document.getElementById('lab3GuideToggleBtn');
+    if (toggleBtn) {
+      toggleBtn.setAttribute('aria-expanded', String(isHidden));
     }
   };
 
@@ -7768,12 +9066,38 @@
   /* =============================================================
    *  Lab 3 초기화 함수 (외부에서 호출)
    * ============================================================= */
+  /* 이벤트 리스너 중복 등록 방지용 AbortController */
+  var lab3AbortController = null;
+
   window.initLab3 = function() {
     /* 코드 에디터 설정 */
     var textarea = document.getElementById('lab3CodeTextarea');
     if (!textarea) return;
 
-    textarea.value = LAB3_INITIAL_CODE;
+    /* 이미 배포된 상태면 UI만 업데이트하고 상태 유지 */
+    if (lab3Contract.deployed) {
+      lab3_updateTank();
+      lab3_renderAccounts();
+      lab3_updateMsgTracker();
+      lab3_updateMsgValue('0');
+      lab3_updateStateMonitor();
+      lab3_updateLineNumbers();
+      document.getElementById('lab3FunctionsContent').style.display = 'block';
+      document.getElementById('lab3NotDeployedMsg').style.display = 'none';
+      return;
+    }
+
+    /* 최초 초기화 시에만 코드 설정 */
+    if (!textarea.value || textarea.value.trim() === '') {
+      textarea.value = LAB3_INITIAL_CODE;
+    }
+
+    /* 이전 이벤트 리스너 일괄 해제 (중복 등록 방지) */
+    if (lab3AbortController) {
+      lab3AbortController.abort();
+    }
+    lab3AbortController = new AbortController();
+    var signal = lab3AbortController.signal;
 
     /* 코드 변경 시 줄번호 업데이트 */
     textarea.addEventListener('input', function() {
@@ -7785,10 +9109,10 @@
         status.className = 'lab3-compile-status lab3-cs-info';
         status.textContent = '💡 코드가 변경되었습니다. 다시 컴파일하세요.';
       }
-    });
+    }, { signal: signal });
 
     /* 스크롤 동기화 */
-    textarea.addEventListener('scroll', lab3_syncScroll);
+    textarea.addEventListener('scroll', lab3_syncScroll, { signal: signal });
 
     /* Tab 키 지원 */
     textarea.addEventListener('keydown', function(e) {
@@ -7800,7 +9124,34 @@
         this.selectionStart = this.selectionEnd = start + 4;
         lab3_updateLineNumbers();
       }
-    });
+      /* 자동 괄호 닫기 */
+      var pairs = {'{':'}', '(':')', '[':']', '"':'"', "'":"'"};
+      if (pairs[e.key]) {
+        var s = this.selectionStart;
+        var end = this.selectionEnd;
+        if (s === end) {
+          e.preventDefault();
+          this.value = this.value.substring(0, s) + e.key + pairs[e.key] + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = s + 1;
+          lab3_updateLineNumbers();
+        }
+      }
+      /* Enter 시 이전 줄 들여쓰기 유지 */
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        var s = this.selectionStart;
+        var before = this.value.substring(0, s);
+        var after = this.value.substring(this.selectionEnd);
+        var currentLine = before.split('\n').pop();
+        var indent = currentLine.match(/^(\s*)/)[1];
+        var lastChar = before.trimEnd().slice(-1);
+        var extraIndent = (lastChar === '{') ? '    ' : '';
+        var newText = '\n' + indent + extraIndent;
+        this.value = before + newText + after;
+        this.selectionStart = this.selectionEnd = s + newText.length;
+        lab3_updateLineNumbers();
+      }
+    }, { signal: signal });
 
     /* 줄번호 초기 렌더링 */
     lab3_updateLineNumbers();
@@ -7884,12 +9235,49 @@
   };
 
   /* =============================================================
+   *  복사 / 코드 초기화 함수
+   * ============================================================= */
+  window.lab3_copyCode = function() {
+    var textarea = document.getElementById('lab3CodeTextarea');
+    if (!textarea) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(textarea.value)
+        .then(function() { showToast('코드가 복사되었습니다', 'success'); })
+        .catch(function() { showToast('복사 실패', 'error'); });
+    } else {
+      textarea.select();
+      document.execCommand('copy');
+      showToast('코드가 복사되었습니다', 'success');
+    }
+  };
+
+  window.lab3_resetCode = function() {
+    if (!confirm('코드를 초기 상태로 되돌릴까요? (배포 상태는 유지됩니다)')) return;
+    var textarea = document.getElementById('lab3CodeTextarea');
+    if (!textarea) return;
+    textarea.value = LAB3_INITIAL_CODE;
+    lab3_updateLineNumbers();
+    if (lab3Contract.compiled && !lab3Contract.deployed) {
+      lab3Contract.compiled = false;
+      document.getElementById('lab3BtnDeploy').disabled = true;
+    }
+    showToast('코드가 초기화되었습니다', 'info');
+    addConsoleLog('코드가 초기 상태로 복원되었습니다', 'var(--neon-cyan)', 'lab3');
+  };
+
+  /* =============================================================
    *  Lab 3 리셋 함수 (외부에서 호출 가능)
    * ============================================================= */
   window.resetLab3 = function() {
     /* 가이드 스텝 초기화 */
     lab3GuideStepsData.forEach(function(s) { s.completed = false; });
     localStorage.removeItem('lab3_faucet_guide_progress');
+
+    /* 가스 통계 초기화 */
+    lab3GasStats.callCount = 0;
+    lab3GasStats.totalGas = 0;
+    lab3GasStats.totalEth = 0;
+    lab3_updateGasStats();
 
     /* 전체 초기화 재실행 */
     initLab3();
@@ -7913,195 +9301,7 @@
  * ========================================================
  */
 
-// ────────────────────────────────────────
-// 1. 파티클 네트워크 배경
-// ────────────────────────────────────────
-
-class ParticleNetwork {
-  /**
-   * @param {HTMLCanvasElement} canvas
-   */
-  constructor(canvas) {
-    this.canvas = canvas;
-    this.ctx = canvas.getContext('2d');
-    this.particles = [];
-    this.mouse = { x: null, y: null };
-    this.animationId = null;
-    this.lastFrameTime = 0;
-    // 30fps 제한 (약 33.3ms 간격)
-    this.frameInterval = 1000 / 30;
-    this.isRunning = false;
-
-    this._onResize = () => this.resize();
-    this._onMouseMove = (e) => {
-      this.mouse.x = e.clientX;
-      this.mouse.y = e.clientY;
-    };
-    this._onMouseLeave = () => {
-      this.mouse.x = null;
-      this.mouse.y = null;
-    };
-    this._onVisibility = () => this._handleVisibility();
-  }
-
-  /** 초기화 및 이벤트 바인딩 */
-  init() {
-    this.resize();
-    this.createParticles();
-    this.isRunning = true;
-    this.animate(0);
-
-    window.addEventListener('resize', this._onResize);
-    window.addEventListener('mousemove', this._onMouseMove);
-    document.addEventListener('mouseleave', this._onMouseLeave);
-    document.addEventListener('visibilitychange', this._onVisibility);
-  }
-
-  /** 정리 (필요 시) */
-  destroy() {
-    this.isRunning = false;
-    if (this.animationId) {
-      cancelAnimationFrame(this.animationId);
-      this.animationId = null;
-    }
-    window.removeEventListener('resize', this._onResize);
-    window.removeEventListener('mousemove', this._onMouseMove);
-    document.removeEventListener('mouseleave', this._onMouseLeave);
-    document.removeEventListener('visibilitychange', this._onVisibility);
-  }
-
-  /** 비활성 탭 시 일시정지 */
-  _handleVisibility() {
-    if (document.hidden) {
-      this.isRunning = false;
-      if (this.animationId) {
-        cancelAnimationFrame(this.animationId);
-        this.animationId = null;
-      }
-    } else {
-      this.isRunning = true;
-      this.lastFrameTime = 0;
-      this.animate(0);
-    }
-  }
-
-  /** 캔버스 크기를 화면에 맞춤 */
-  resize() {
-    const dpr = window.devicePixelRatio || 1;
-    this.canvas.width = window.innerWidth * dpr;
-    this.canvas.height = window.innerHeight * dpr;
-    this.canvas.style.width = window.innerWidth + 'px';
-    this.canvas.style.height = window.innerHeight + 'px';
-    this.ctx.scale(dpr, dpr);
-    this.width = window.innerWidth;
-    this.height = window.innerHeight;
-  }
-
-  /** 파티클 30~50개 생성 */
-  createParticles() {
-    const count = Math.floor(Math.random() * 21) + 30; // 30~50
-    this.particles = [];
-    for (let i = 0; i < count; i++) {
-      this.particles.push(this._createParticle());
-    }
-  }
-
-  /** 개별 파티클 객체 생성 */
-  _createParticle() {
-    const speed = 0.3 + Math.random() * 0.5; // 0.3~0.8
-    const angle = Math.random() * Math.PI * 2;
-    return {
-      x: Math.random() * this.width,
-      y: Math.random() * this.height,
-      radius: 2 + Math.random() * 2, // 2~4px
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-    };
-  }
-
-  /** 메인 애니메이션 루프 */
-  animate(timestamp) {
-    if (!this.isRunning) return;
-
-    this.animationId = requestAnimationFrame((t) => this.animate(t));
-
-    // 30fps 제한
-    const elapsed = timestamp - this.lastFrameTime;
-    if (elapsed < this.frameInterval) return;
-    this.lastFrameTime = timestamp - (elapsed % this.frameInterval);
-
-    this.ctx.clearRect(0, 0, this.width, this.height);
-
-    // 파티클 업데이트 및 연결선 그리기
-    const particles = this.particles;
-    const len = particles.length;
-    const maxDist = 150;
-    const mouseRepulsionRadius = 100;
-    const mouseRepulsionForce = 2;
-
-    for (let i = 0; i < len; i++) {
-      const p = particles[i];
-
-      // 마우스 반발 효과
-      if (this.mouse.x !== null && this.mouse.y !== null) {
-        const dx = p.x - this.mouse.x;
-        const dy = p.y - this.mouse.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < mouseRepulsionRadius && dist > 0) {
-          const force = (1 - dist / mouseRepulsionRadius) * mouseRepulsionForce;
-          p.x += (dx / dist) * force;
-          p.y += (dy / dist) * force;
-        }
-      }
-
-      // 이동
-      p.x += p.vx;
-      p.y += p.vy;
-
-      // 화면 밖 → 반대쪽에서 재진입
-      if (p.x < -10) p.x = this.width + 10;
-      else if (p.x > this.width + 10) p.x = -10;
-      if (p.y < -10) p.y = this.height + 10;
-      else if (p.y > this.height + 10) p.y = -10;
-
-      // 파티클 그리기
-      this.drawParticle(p);
-
-      // 연결선 (i < j 조합만)
-      for (let j = i + 1; j < len; j++) {
-        const p2 = particles[j];
-        const dx = p.x - p2.x;
-        const dy = p.y - p2.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < maxDist) {
-          const alpha = 1 - dist / maxDist;
-          this.drawLine(p, p2, alpha * 0.15);
-        }
-      }
-    }
-  }
-
-  /** 파티클 노드 그리기 */
-  drawParticle(p) {
-    this.ctx.beginPath();
-    this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-    this.ctx.fillStyle = 'rgba(0, 212, 255, 0.3)';
-    this.ctx.fill();
-  }
-
-  /** 연결선 그리기 */
-  drawLine(p1, p2, alpha) {
-    this.ctx.beginPath();
-    this.ctx.moveTo(p1.x, p1.y);
-    this.ctx.lineTo(p2.x, p2.y);
-    this.ctx.strokeStyle = `rgba(0, 212, 255, ${alpha})`;
-    this.ctx.lineWidth = 1;
-    this.ctx.stroke();
-  }
-}
-
-// 파티클 네트워크 인스턴스 (전역)
-let particleNetwork = null;
+/* ParticleNetwork 클래스 제거됨 — initBgCanvas()로 통합 */
 
 // ────────────────────────────────────────
 // 2. 마이닝 애니메이션
@@ -8115,270 +9315,14 @@ let particleNetwork = null;
  * @param {Function} callback - 완료 시 실행할 콜백 (주소 문자열을 인자로 받음)
  * @param {string} [address] - 배포된 컨트랙트 주소 (없으면 랜덤 생성)
  */
-function showMiningAnimation(callback, address) {
-  const overlay = document.getElementById('miningOverlay');
-  const progressBar = document.getElementById('miningProgressBar');
-  const progressText = document.getElementById('miningProgressText');
-  const titleEl = document.getElementById('miningTitle');
-  const blockEl = document.getElementById('miningBlock');
-  const nonceEl = document.getElementById('miningNonce');
-  const hashEl = document.getElementById('miningHash');
-  const resultEl = document.getElementById('miningResult');
-  const addressEl = document.getElementById('miningAddress');
-
-  // 초기화
-  overlay.classList.remove('hidden');
-  progressBar.style.width = '0%';
-  progressText.textContent = '0%';
-  titleEl.textContent = '블록 마이닝 중...';
-  titleEl.style.color = '';
-  blockEl.textContent = '#' + (Math.floor(Math.random() * 9000) + 1000);
-  nonceEl.textContent = '0';
-  hashEl.textContent = '0x';
-  resultEl.classList.add('hidden');
-
-  // 배포 주소 (없으면 랜덤 생성)
-  const deployAddress = address || _generateRandomAddress();
-
-  // 목표 해시 생성
-  const targetHash = _generateRandomHash();
-
-  const duration = 2000; // 2초
-  const startTime = performance.now();
-  let nonceCount = 0;
-  let hashIndex = 0;
-
-  function updateFrame() {
-    const now = performance.now();
-    const elapsed = now - startTime;
-    const progress = Math.min(elapsed / duration, 1);
-    const percent = Math.round(progress * 100);
-
-    // 프로그레스 바
-    progressBar.style.width = percent + '%';
-    progressText.textContent = percent + '%';
-
-    // Nonce 카운트업 (빠르게 증가)
-    nonceCount += Math.floor(Math.random() * 50) + 10;
-    nonceEl.textContent = nonceCount.toLocaleString();
-
-    // Hash 타이핑 효과
-    const targetLen = Math.floor(progress * targetHash.length);
-    if (targetLen > hashIndex) {
-      hashIndex = targetLen;
-      hashEl.textContent = targetHash.substring(0, hashIndex);
-    }
-
-    if (progress < 1) {
-      requestAnimationFrame(updateFrame);
-    } else {
-      // 완료 상태
-      hashEl.textContent = targetHash;
-      _showMiningComplete(titleEl, resultEl, addressEl, deployAddress, overlay, callback);
-    }
-  }
-
-  requestAnimationFrame(updateFrame);
-}
-
-/** 마이닝 완료 처리 (내부 함수) */
-function _showMiningComplete(titleEl, resultEl, addressEl, deployAddress, overlay, callback) {
-  titleEl.textContent = '마이닝 완료!';
-  titleEl.style.color = 'var(--neon-green, #10b981)';
-  resultEl.classList.remove('hidden');
-  addressEl.textContent = deployAddress;
-
-  // 콜백 실행
-  if (typeof callback === 'function') {
-    callback(deployAddress);
-  }
-
-  // 3초 후 오버레이 제거
-  setTimeout(() => {
-    overlay.style.opacity = '0';
-    setTimeout(() => {
-      overlay.classList.add('hidden');
-      overlay.style.opacity = '';
-    }, 300);
-  }, 3000);
-}
-
-/** 랜덤 이더리움 주소 생성 (내부 유틸) */
-function _generateRandomAddress() {
-  const chars = '0123456789abcdef';
-  let addr = '0x';
-  for (let i = 0; i < 40; i++) {
-    addr += chars[Math.floor(Math.random() * 16)];
-  }
-  return addr;
-}
-
-/** 랜덤 해시 생성 (내부 유틸) */
-function _generateRandomHash() {
-  const chars = '0123456789abcdef';
-  let hash = '0x';
-  for (let i = 0; i < 64; i++) {
-    hash += chars[Math.floor(Math.random() * 16)];
-  }
-  return hash;
-}
-
-// ────────────────────────────────────────
-// 3. 페이지 전환 효과
-// ────────────────────────────────────────
-// navigateTo 함수는 메인 navigate()와 중복되어 제거됨.
-// 페이지 전환은 메인 스크립트의 navigate(pageId)가 담당.
-
-// ────────────────────────────────────────
-// 4. 토스트 알림 시스템 — 메인 스크립트에서 통합 정의됨 (중복 제거)
-// ────────────────────────────────────────
-
-// ────────────────────────────────────────
-// 5. 성공/실패 효과
-// ────────────────────────────────────────
-
-/**
- * 성공 효과: 초록 펄스 + 파티클 폭발
- *
- * @param {HTMLElement} elem - 효과를 적용할 요소
- */
-function triggerSuccess(elem) {
-  if (!elem) return;
-
-  // 초록 펄스
-  elem.classList.remove('fx-pulse-green');
-  // 리플로우 트리거 (애니메이션 리셋)
-  void elem.offsetWidth;
-  elem.classList.add('fx-pulse-green');
-
-  // 파티클 폭발 (confetti)
-  _createConfettiBurst(elem);
-
-  // 애니메이션 클래스 정리
-  setTimeout(() => {
-    elem.classList.remove('fx-pulse-green');
-  }, 700);
-}
-
-/**
- * 에러/실패 효과: 흔들림 + 빨간 글로우
- *
- * @param {HTMLElement} elem - 효과를 적용할 요소
- */
-function triggerError(elem) {
-  if (!elem) return;
-
-  // shake + 빨간 펄스
-  elem.classList.remove('fx-shake', 'fx-pulse-red');
-  void elem.offsetWidth;
-  elem.classList.add('fx-shake', 'fx-pulse-red');
-
-  // 애니메이션 클래스 정리
-  setTimeout(() => {
-    elem.classList.remove('fx-shake', 'fx-pulse-red');
-  }, 700);
-}
-
-/**
- * 파티클 폭발 효과 (성공 시 confetti 느낌)
- * 요소 중앙에서 6~8개 작은 점이 퍼짐
- *
- * @param {HTMLElement} elem - 기준 요소
- */
-function _createConfettiBurst(elem) {
-  const rect = elem.getBoundingClientRect();
-  const centerX = rect.left + rect.width / 2;
-  const centerY = rect.top + rect.height / 2;
-
-  // 컨테이너 생성
-  const container = document.createElement('div');
-  container.className = 'fx-confetti-container';
-  container.style.position = 'fixed';
-  container.style.left = centerX + 'px';
-  container.style.top = centerY + 'px';
-  document.body.appendChild(container);
-
-  const colors = [
-    'var(--neon-green, #10b981)',
-    'var(--neon-cyan, #00d4ff)',
-    'var(--neon-purple, #a855f7)',
-    '#fbbf24',
-    '#f472b6',
-    '#34d399',
-  ];
-
-  // 6~8개 파티클
-  const count = 6 + Math.floor(Math.random() * 3);
-  for (let i = 0; i < count; i++) {
-    const particle = document.createElement('div');
-    particle.className = 'fx-confetti-particle';
-
-    // 방사 방향 (360도 균등 분배 + 약간의 랜덤)
-    const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
-    const distance = 30 + Math.random() * 40; // 30~70px
-
-    const dx = Math.cos(angle) * distance;
-    const dy = Math.sin(angle) * distance;
-
-    particle.style.setProperty('--fx-x', dx + 'px');
-    particle.style.setProperty('--fx-y', dy + 'px');
-    particle.style.background = colors[i % colors.length];
-    particle.style.width = (4 + Math.random() * 4) + 'px';
-    particle.style.height = particle.style.width;
-
-    container.appendChild(particle);
-  }
-
-  // 애니메이션 종료 후 제거
-  setTimeout(() => {
-    if (container.parentNode) {
-      container.parentNode.removeChild(container);
-    }
-  }, 800);
-}
-
-// ────────────────────────────────────────
-// 6. LED 카운터 범프 효과 (Lab 2 연동)
-// ────────────────────────────────────────
-
-/**
- * LED 카운터 범프 애니메이션 트리거
- *
- * @param {HTMLElement} elem - .led-counter 요소
- */
-function triggerLedBump(elem) {
-  if (!elem) return;
-  elem.classList.remove('bump');
-  void elem.offsetWidth;
-  elem.classList.add('bump');
-  setTimeout(() => {
-    elem.classList.remove('bump');
-  }, 350);
-}
-
-// ────────────────────────────────────────
-// 7. 초기화 함수
-// ────────────────────────────────────────
-
-/**
- * 모든 효과를 초기화합니다.
- * 앱 시작 시 한 번 호출하세요.
- */
-function initEffects() {
-  const canvas = document.getElementById('bgCanvas');
-  if (canvas) {
-    particleNetwork = new ParticleNetwork(canvas);
-    particleNetwork.init();
-  } else {
-    console.warn('[Effects] initEffects: bgCanvas를 찾을 수 없습니다');
-  }
-
-  // 첫 번째 active 페이지가 있으면 page-active 클래스 추가
-  const activePage = document.querySelector('.page.active');
-  if (activePage && !activePage.classList.contains('page-active')) {
-    activePage.classList.add('page-active');
-  }
-}
+/* ==========================================================
+   데드코드 정리 완료
+   - showMiningAnimation(), _showMiningComplete(),
+     _generateRandomAddress(), _generateRandomHash(),
+     triggerSuccess(), triggerError(), _createConfettiBurst(),
+     triggerLedBump(), initEffects() 제거됨
+   - 이유: 호출처 없는 미사용 함수 (ParticleNetwork 클래스는 유지)
+   ========================================================== */
 
 
 
@@ -8495,24 +9439,7 @@ function initEffects() {
 
     // ===== [13.5] 추가 유틸리티 =====
 
-    /* Lab 이동 시 네비 탭 업데이트 - 모든 Lab 페이지의 네비 탭을 갱신 */
-    function updateAllNavTabs(activePageId) {
-      document.querySelectorAll('.nav-tab').forEach(tab => {
-        const text = tab.textContent.trim().toLowerCase().replace(/\s+/g, '');
-        tab.classList.toggle('active', text === activePageId);
-      });
-    }
-
-    /* 브라우저 타이틀 업데이트 */
-    function updatePageTitle(pageId) {
-      const titles = {
-        'launcher': 'Solidity Lab Simulator',
-        'lab1': 'Lab 1: HelloWorld & HelloNumber - Solidity Lab',
-        'lab2': 'Lab 2: Counter & CheckNumber - Solidity Lab',
-        'lab3': 'Lab 3: Faucet 시뮬레이터 - Solidity Lab'
-      };
-      document.title = titles[pageId] || 'Solidity Lab Simulator';
-    }
+    /* updateAllNavTabs, updatePageTitle 제거됨 — navigate() 함수에서 동일 로직 수행 (중복 제거) */
 
     /* 숫자 파싱 유틸 */
     function parseIntSafe(value) {
@@ -8602,8 +9529,8 @@ function initEffects() {
 
     /* Solidity 제어자 설명 */
     const MUTABILITY_DESC = {
-      'view': 'Storage를 읽을 수 있지만 수정 불가. 가스비 무료.',
-      'pure': 'Storage를 읽지도 수정하지도 않음. 순수 계산. 가스비 무료.',
+      'view': 'Storage를 읽을 수 있지만 수정 불가. 외부 호출 시 가스비 무료.',
+      'pure': 'Storage를 읽지도 수정하지도 않음. 순수 계산. 외부 호출 시 가스비 무료.',
       'payable': 'ETH를 받을 수 있는 함수. msg.value로 전송된 ETH 접근.',
       '': '상태 변경 함수. 트랜잭션 발생, 가스비 소모.'
     };
@@ -8666,6 +9593,21 @@ function initEffects() {
               textarea.selectionStart = textarea.selectionEnd = s + 1;
               updateEditor(labId);
             }
+          }
+          /* Enter 시 이전 줄 들여쓰기 유지 */
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            const s = textarea.selectionStart;
+            const before = textarea.value.substring(0, s);
+            const after = textarea.value.substring(textarea.selectionEnd);
+            const currentLine = before.split('\n').pop();
+            const indent = currentLine.match(/^(\s*)/)[1];
+            const lastChar = before.trimEnd().slice(-1);
+            const extraIndent = (lastChar === '{') ? '    ' : '';
+            const newText = '\n' + indent + extraIndent;
+            textarea.value = before + newText + after;
+            textarea.selectionStart = textarea.selectionEnd = s + newText.length;
+            updateEditor(labId);
           }
         });
 
