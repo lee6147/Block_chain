@@ -2651,6 +2651,11 @@
   animation: lab3FadeInUp 0.3s ease;
 }
 .lab3-fn-result.lab3-show { display: block; }
+.lab3-fn-card.lab3-fn-active {
+  border-color: var(--lab3-cyan);
+  box-shadow: 0 0 16px rgba(0, 212, 255, 0.25);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
 .lab3-fn-result.lab3-success {
   border-left-color: var(--lab3-green);
   color: #86efac;
@@ -4521,9 +4526,13 @@
       <span class="lab3-tracker-value" id="lab3TrackerTimestamp">-</span>
     </div>
   </div>
-  <button class="lab3-time-skip-btn" onclick="lab3_skipTime()" title="블록체인 시간을 24시간 뒤로 이동합니다">
-    ⏩ 24시간 경과
+  <button class="lab3-time-skip-btn" id="lab3TimeSkipBtn" onclick="lab3_skipTime()" title="블록체인 시간을 LOCK_TIME만큼 이동합니다">
+    ⏩ LOCK_TIME 경과
   </button>
+  <span style="display:inline-flex;align-items:center;gap:4px;">
+    <input type="number" id="lab3CustomTimeInput" min="1" placeholder="초" style="width:70px;padding:5px 8px;border:1px solid var(--lab3-orange,#f59e0b);border-radius:6px;background:rgba(120,53,15,0.2);color:#fbbf24;font-size:0.78rem;font-family:var(--lab3-mono);">
+    <button class="lab3-time-skip-btn" onclick="lab3_skipCustomTime()" title="입력한 초만큼 시간 경과">⏩</button>
+  </span>
 </div>
 
 <!-- 3단 레이아웃 -->
@@ -4668,7 +4677,7 @@
           <span class="lab3-state-val" id="lab3StateLockTime">86400초 (1 day)</span>
         </div>
         <div class="lab3-state-row">
-          <span class="lab3-state-key">lastWithdrawalTime[현재계정]</span>
+          <span class="lab3-state-key" id="lab3StateLWTKey">lastWithdrawalTime[현재계정]</span>
           <span class="lab3-state-val" id="lab3StateLastWithdraw">없음</span>
         </div>
         <div class="lab3-state-row">
@@ -4698,6 +4707,11 @@
           <span class="lab3-state-key">ETH 소모</span>
           <span class="lab3-state-val" id="lab3GasEthSpent">0</span>
         </div>
+      </div>
+      <div style="margin-top:6px;padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:4px;font-size:0.72rem;color:var(--lab3-muted);line-height:1.5;">
+        💡 <strong style="color:var(--lab3-text-dim);">Mainnet 참고 가스비:</strong>
+        배포 ≈ 200,000 | withdraw ≈ 46,000 | deposit ≈ 28,000 | 직접 전송 ≈ 21,000 gas<br>
+        ※ 시뮬레이터는 함수별 고정 가스값을 사용합니다. 실제 EVM은 opcode별로 확정적(deterministic)입니다.
       </div>
     </div>
   </div>
@@ -4734,7 +4748,17 @@
               <span class="lab3-fn-badge lab3-badge-view">view</span>
               <span class="lab3-fn-badge lab3-badge-external">external</span>
             </div>
-            <div class="lab3-fn-description">컨트랙트 배포자(소유자)의 주소를 반환합니다.</div>
+            <div class="lab3-fn-description">컨트랙트 배포자(소유자)의 주소를 반환합니다.
+              <details style="margin-top:4px;font-size:0.8rem;color:#94a3b8;">
+                <summary style="cursor:pointer;color:var(--lab3-purple);font-weight:600;">💡 address payable과 가시성(visibility)</summary>
+                <div style="margin-top:4px;line-height:1.5;padding:6px;background:rgba(0,0,0,0.2);border-radius:4px;">
+                  <code>address payable public owner</code>에서:<br>
+                  • <strong>payable</strong>: 이 주소로 ETH를 전송(<code>.transfer()</code>)할 수 있음. 일반 <code>address</code>는 전송 불가.<br>
+                  • <strong>public</strong>: 자동 getter 함수 생성. <code>external</code>은 외부 호출만 가능(가스 효율적), <code>public</code>은 내부+외부 모두 가능.<br>
+                  • 이 컨트랙트의 <code>withdraw()</code>, <code>deposit()</code> 등은 <code>external</code> — 내부 호출이 불필요하므로 가스를 절약합니다.
+                </div>
+              </details>
+            </div>
             <button class="lab3-btn-fn lab3-btn-read" onclick="lab3_fnOwner()">📖 호출</button>
             <div class="lab3-fn-result" id="lab3ResultOwner"></div>
           </div>
@@ -4745,7 +4769,17 @@
               WITHDRAWAL_AMOUNT()
               <span class="lab3-fn-badge lab3-badge-view">constant</span>
             </div>
-            <div class="lab3-fn-description">1회 출금 가능 금액입니다. 코드에서 설정한 값이 적용됩니다.</div>
+            <div class="lab3-fn-description">1회 출금 가능 금액입니다. 코드에서 설정한 값이 적용됩니다.
+              <details style="margin-top:4px;font-size:0.8rem;color:#94a3b8;">
+                <summary style="cursor:pointer;color:var(--lab3-purple);font-weight:600;">💡 이벤트(Event)와 indexed</summary>
+                <div style="margin-top:4px;line-height:1.5;padding:6px;background:rgba(0,0,0,0.2);border-radius:4px;">
+                  <code>event Withdrawal(address indexed user, uint256 amount);</code><br>
+                  • <code>emit</code>은 블록체인 <strong>로그</strong>에만 기록되며 상태(storage)를 변경하지 않습니다. 가스비가 저렴합니다.<br>
+                  • <code>indexed</code> 파라미터는 <strong>필터링 가능</strong>합니다. DApp에서 특정 사용자의 출금 이벤트만 조회할 수 있습니다.<br>
+                  • 최대 3개의 <code>indexed</code> 파라미터를 사용할 수 있습니다.
+                </div>
+              </details>
+            </div>
             <button class="lab3-btn-fn lab3-btn-read" onclick="lab3_fnWithdrawalAmount()">📖 호출</button>
             <div class="lab3-fn-result" id="lab3ResultWithdrawalAmount"></div>
           </div>
@@ -4788,7 +4822,16 @@
               withdraw()
               <span class="lab3-fn-badge lab3-badge-external">external</span>
             </div>
-            <div class="lab3-fn-description">Faucet에서 WITHDRAWAL_AMOUNT만큼 ETH를 수령합니다. LOCK_TIME에 1회만 가능합니다.</div>
+            <div class="lab3-fn-description">Faucet에서 WITHDRAWAL_AMOUNT만큼 ETH를 수령합니다. LOCK_TIME에 1회만 가능합니다.
+              <details style="margin-top:4px;font-size:0.8rem;color:#94a3b8;">
+                <summary style="cursor:pointer;color:var(--lab3-purple);font-weight:600;">💡 mapping 기본값과 Sybil Attack</summary>
+                <div style="margin-top:4px;line-height:1.5;padding:6px;background:rgba(0,0,0,0.2);border-radius:4px;">
+                  <code>lastWithdrawalTime[새주소]</code>는 기본값 <strong>0</strong>을 반환합니다.<br>
+                  따라서 새 주소는 항상 <code>block.timestamp >= 0 + LOCK_TIME</code>을 만족하여 즉시 출금 가능합니다. (의도된 동작)<br><br>
+                  ⚠️ <strong>Sybil Attack:</strong> 공격자가 새 지갑 주소를 무한 생성하면 LOCK_TIME 제한을 우회할 수 있습니다. 실무에서는 KYC 인증, 캡챠, IP 제한 등 오프체인 방어가 필요합니다.
+                </div>
+              </details>
+            </div>
             <button class="lab3-btn-fn lab3-btn-write" id="lab3BtnWithdraw" onclick="lab3_withdraw()">🔸 실행</button>
             <div class="lab3-fn-result" id="lab3ResultWithdraw"></div>
           </div>
@@ -4800,7 +4843,17 @@
               <span class="lab3-fn-badge lab3-badge-payable">payable</span>
               <span class="lab3-fn-badge lab3-badge-owner">onlyOwner</span>
             </div>
-            <div class="lab3-fn-description">Owner가 Faucet에 ETH를 입금합니다. msg.value만큼 전송됩니다.</div>
+            <div class="lab3-fn-description">Owner가 Faucet에 ETH를 입금합니다. msg.value만큼 전송됩니다.
+              <details style="margin-top:4px;font-size:0.8rem;color:#94a3b8;">
+                <summary style="cursor:pointer;color:var(--lab3-purple);font-weight:600;">💡 modifier와 onlyOwner 설계</summary>
+                <div style="margin-top:4px;line-height:1.5;padding:6px;background:rgba(0,0,0,0.2);border-radius:4px;">
+                  <strong>modifier의 <code>_;</code> 동작 원리:</strong><br>
+                  <code>modifier onlyOwner() { require(...); _; }</code><br>
+                  <code>_;</code>는 "이 자리에 원래 함수 본문이 삽입된다"는 의미입니다. require()가 먼저 실행되고, 통과하면 함수 본문이 실행됩니다.<br><br>
+                  <strong>설계 의도:</strong> deposit()은 <code>onlyOwner</code>로 제한되어 있지만, <code>receive()</code>는 누구나 ETH를 보낼 수 있습니다. 실제 Faucet은 누구든 기부할 수 있어야 하므로 receive()가 그 역할을 합니다.
+                </div>
+              </details>
+            </div>
             <div class="lab3-fn-input-group">
               <input class="lab3-fn-input" id="lab3InputDepositValue" type="number" step="0.01" min="0" placeholder="VALUE (ETH 단위)">
               <button class="lab3-btn-fn lab3-btn-write" id="lab3BtnDeposit" onclick="lab3_deposit()">🔸 실행</button>
@@ -4869,7 +4922,7 @@
             <div>
               <strong>도전 1:</strong> <code>WITHDRAWAL_AMOUNT</code>를 <code>0.2 ether</code>로 변경하고 다시 컴파일/배포하여 출금 금액 변화를 확인해보세요!
               <button class="hint-btn" onclick="toggleHint('lab3Hint1')">&#128161; 힌트</button>
-              <div class="hint-code" id="lab3Hint1">uint public constant WITHDRAWAL_AMOUNT = 0.2 ether;
+              <div class="hint-code" id="lab3Hint1">uint256 public constant WITHDRAWAL_AMOUNT = 0.2 ether;
 // 배포 후 withdraw() 실행 시 0.2 ETH가 출금됩니다.</div>
             </div>
           </div>
@@ -4878,7 +4931,7 @@
             <div>
               <strong>도전 2:</strong> <code>LOCK_TIME</code>을 <code>1 hours</code>(3600초)로 변경하고, 더 짧은 시간에 재출금이 가능한지 확인해보세요!
               <button class="hint-btn" onclick="toggleHint('lab3Hint2')">&#128161; 힌트</button>
-              <div class="hint-code" id="lab3Hint2">uint public constant LOCK_TIME = 1 hours;
+              <div class="hint-code" id="lab3Hint2">uint256 public constant LOCK_TIME = 1 hours;
 // 1시간(3600초) 후 재출금이 가능해집니다.
 // 기존 24 hours(86400초)보다 훨씬 짧습니다.</div>
             </div>
@@ -4894,11 +4947,187 @@
 // deposit()은 payable이므로 여전히 동작합니다.</div>
             </div>
           </div>
+          <div class="challenge-item">
+            <span>&#127919;</span>
+            <div>
+              <strong>도전 4:</strong> <code>withdraw()</code>에서 <code>lastWithdrawalTime</code> 업데이트와 <code>transfer()</code> 호출 순서를 바꿔보세요. 왜 현재 순서(CEI 패턴)가 더 안전한지 생각해보세요!
+              <button class="hint-btn" onclick="toggleHint('lab3Hint4')">&#128161; 힌트</button>
+              <div class="hint-code" id="lab3Hint4">// CEI 패턴 (Checks-Effects-Interactions)
+// ✅ 안전한 순서 (현재 코드):
+//   1. Checks: require() 검증
+//   2. Effects: lastWithdrawalTime[msg.sender] = block.timestamp;
+//   3. Interactions: payable(msg.sender).transfer(...)
+//
+// ❌ 위험한 순서:
+//   1. Checks: require() 검증
+//   2. Interactions: payable(msg.sender).transfer(...)  ← 먼저 전송
+//   3. Effects: lastWithdrawalTime[msg.sender] = ...    ← 나중에 업데이트
+//
+// ⚠️ 현재 코드는 transfer()를 사용하므로 2,300 gas만 전달됩니다.
+// 이 가스로는 상태 변경 함수를 재호출할 수 없어 재진입이 사실상 불가능합니다.
+//
+// 그러나 call{value}()를 사용하면 가스 제한이 없으므로,
+// 수신자가 악의적 컨트랙트라면 receive()에서 다시 withdraw()를 호출할 수 있습니다.
+// 상태가 아직 업데이트되지 않았으므로 require()를 통과합니다!
+// 이것이 "재진입(Reentrancy) 공격"이며, CEI 패턴으로 방어합니다.</div>
+            </div>
+          </div>
+          <div class="challenge-item">
+            <span>&#127919;</span>
+            <div>
+              <strong>도전 5:</strong> <code>transferOwnership(address newOwner)</code> 함수를 추가하여 owner를 변경할 수 있도록 해보세요! 다른 계정으로 전환 후 deposit이 되는지 확인해보세요.
+              <button class="hint-btn" onclick="toggleHint('lab3Hint5')">&#128161; 힌트</button>
+              <div class="hint-code" id="lab3Hint5">function transferOwnership(address newOwner) external onlyOwner {
+    require(newOwner != address(0), "Invalid address");
+    owner = payable(newOwner);
+}
+
+// 실무에서는 직접 구현하지 않고
+// OpenZeppelin의 Ownable 라이브러리를 사용합니다:
+// import "@openzeppelin/contracts/access/Ownable.sol";
+// contract Faucet is Ownable { ... }</div>
+            </div>
+          </div>
+          <div class="challenge-item">
+            <span>&#127919;</span>
+            <div>
+              <strong>도전 6:</strong> <code>WITHDRAWAL_AMOUNT</code>를 <code>constant</code> 대신 <code>immutable</code>로 바꾸고, constructor에서 초기화해보세요! 두 키워드의 차이를 확인해보세요.
+              <button class="hint-btn" onclick="toggleHint('lab3Hint6')">&#128161; 힌트</button>
+              <div class="hint-code" id="lab3Hint6">// constant: 컴파일 시점에 값이 결정됨 (코드에 직접 삽입)
+uint256 public constant WITHDRAWAL_AMOUNT = 0.1 ether;
+
+// immutable: 배포 시점(constructor)에서 1회 설정 가능
+uint256 public immutable WITHDRAWAL_AMOUNT;
+constructor(uint256 _amount) {
+    owner = payable(msg.sender);
+    WITHDRAWAL_AMOUNT = _amount;  // 배포할 때 정할 수 있음
+}
+
+// constant → 가스비 가장 저렴 (bytecode에 직접 삽입)
+// immutable → 가스비 저렴 (storage 읽기 불필요)
+// 일반 변수 → 가스비 비쌈 (SLOAD 필요)</div>
+            </div>
+          </div>
           <div style="margin-top:10px;padding:8px;background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);font-size:0.83rem;color:var(--text-dim);line-height:1.5;">
             &#9997;&#65039; <strong style="color:var(--text-secondary)">방법:</strong>
             왼쪽 에디터에서 코드 수정 &#8594; 컴파일 &#8594; 배포하면 변경된 동작을 확인할 수 있습니다!
             <br>&#128161; 재배포해도 실습 가이드 진행률은 유지됩니다. 안심하고 코드를 수정해보세요!
             <br>(전체 리셋은 에디터의 "&#128260; 리셋" 버튼을 사용하세요)
+            <br>&#9888;&#65039; <strong style="color:var(--neon-orange)">시뮬레이터 안내:</strong>
+            이 시뮬레이터는 WITHDRAWAL_AMOUNT, LOCK_TIME 상수 변경과 receive() 함수 제거만 실시간 반영됩니다. 그 외 로직 변경(함수 추가, require 조건 수정 등)은 실제 Remix IDE에서 테스트해보세요!
+          </div>
+        </div>
+
+        <!-- ===== 프로덕션 고려사항 ===== -->
+        <div class="challenge-box" style="border-color:rgba(239,68,68,0.3);background:linear-gradient(135deg,rgba(239,68,68,0.05),rgba(245,158,11,0.05));">
+          <div class="challenge-title" style="color:#f87171;">&#128680; 프로덕션 vs 교육용 — 이 코드의 한계</div>
+          <div style="font-size:0.83rem;color:var(--text-secondary);line-height:1.6;margin-bottom:12px;">
+            현재 Faucet은 <strong>교육용 기본 예제</strong>입니다. 실제 운영 환경에서는 다음과 같은 보완이 필요합니다:
+          </div>
+          <div class="challenge-item">
+            <span>&#9888;&#65039;</span>
+            <div>
+              <strong style="color:#f87171;">Sybil Attack 방어:</strong>
+              새 주소를 무한 생성하면 LOCK_TIME 제한을 우회할 수 있습니다. 실무에서는 <strong>오프체인 인증(KYC, 캡챠, IP 제한)</strong>이 필수입니다.
+            </div>
+          </div>
+          <div class="challenge-item">
+            <span>&#9888;&#65039;</span>
+            <div>
+              <strong style="color:#f87171;">긴급 중단(Pausable):</strong>
+              악용 발견 시 출금을 일시 중단하는 <code>pause()/unpause()</code> 기능이 없습니다. OpenZeppelin의 <code>Pausable</code> 라이브러리를 사용해야 합니다.
+            </div>
+          </div>
+          <div class="challenge-item">
+            <span>&#9888;&#65039;</span>
+            <div>
+              <strong style="color:#f87171;">동적 파라미터:</strong>
+              <code>WITHDRAWAL_AMOUNT</code>와 <code>LOCK_TIME</code>이 <code>constant</code>로 고정되어 배포 후 변경 불가합니다. 실무에서는 <strong>owner가 setter 함수로 동적 조정</strong>해야 합니다.
+            </div>
+          </div>
+          <div class="challenge-item">
+            <span>&#9888;&#65039;</span>
+            <div>
+              <strong style="color:#f87171;">전체 출금 한도(Daily Cap):</strong>
+              개별 LOCK_TIME은 있지만, 컨트랙트 전체의 <strong>하루 최대 출금 총량 제한</strong>이 없어 빠르게 잔액이 소진될 수 있습니다.
+            </div>
+          </div>
+          <div class="challenge-item">
+            <span>&#9888;&#65039;</span>
+            <div>
+              <strong style="color:#f87171;">잔액 부족 알림:</strong>
+              잔액이 임계값 이하로 떨어졌을 때 <code>event LowBalance(uint256 remaining)</code> 같은 경고 이벤트가 없어 능동적 대응이 어렵습니다.
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== 고급 도전과제 ===== -->
+        <div class="challenge-box" style="border-color:rgba(236,72,153,0.3);background:linear-gradient(135deg,rgba(236,72,153,0.05),rgba(124,58,237,0.05));">
+          <div class="challenge-title" style="color:#f472b6;">&#128640; 고급 도전과제 (Remix IDE에서 도전!)</div>
+          <div class="challenge-item">
+            <span>&#127941;</span>
+            <div>
+              <strong>고급 1:</strong> <code>WITHDRAWAL_AMOUNT</code>와 <code>LOCK_TIME</code>을 <code>constant</code> 대신 일반 상태 변수로 바꾸고, owner만 변경할 수 있는 <code>setWithdrawalAmount()</code>, <code>setLockTime()</code> setter 함수를 추가해보세요.
+              <button class="hint-btn" onclick="toggleHint('lab3HintAdv1')">&#128161; 힌트</button>
+              <div class="hint-code" id="lab3HintAdv1">uint256 public withdrawalAmount = 0.1 ether;  // constant 제거
+uint256 public lockTime = 1 days;  // constant 제거
+
+function setWithdrawalAmount(uint256 _amount) external onlyOwner {
+    require(_amount > 0 && _amount <= 1 ether, "Invalid amount");
+    withdrawalAmount = _amount;
+}
+
+function setLockTime(uint256 _time) external onlyOwner {
+    require(_time >= 1 hours && _time <= 30 days, "Invalid time");
+    lockTime = _time;
+}</div>
+            </div>
+          </div>
+          <div class="challenge-item">
+            <span>&#127941;</span>
+            <div>
+              <strong>고급 2:</strong> OpenZeppelin의 <code>Pausable</code> 패턴을 직접 구현해보세요. <code>bool public paused</code> 상태 변수와 <code>whenNotPaused</code> modifier를 만들어 <code>withdraw()</code>에 적용해보세요.
+              <button class="hint-btn" onclick="toggleHint('lab3HintAdv2')">&#128161; 힌트</button>
+              <div class="hint-code" id="lab3HintAdv2">bool public paused;
+
+modifier whenNotPaused() {
+    require(!paused, "Contract is paused");
+    _;
+}
+
+function pause() external onlyOwner { paused = true; }
+function unpause() external onlyOwner { paused = false; }
+
+function withdraw() external whenNotPaused {
+    // ... 기존 로직 ...
+}</div>
+            </div>
+          </div>
+          <div class="challenge-item">
+            <span>&#127941;</span>
+            <div>
+              <strong>고급 3:</strong> 하루 최대 출금 총량(<code>dailyCap</code>)을 구현해보세요. <code>mapping(uint256 => uint256)</code>으로 날짜별 출금 총량을 추적하고, 한도를 초과하면 revert하도록 만들어보세요.
+              <button class="hint-btn" onclick="toggleHint('lab3HintAdv3')">&#128161; 힌트</button>
+              <div class="hint-code" id="lab3HintAdv3">uint256 public dailyCap = 10 ether;
+mapping(uint256 => uint256) public dailyWithdrawn;
+
+function _today() internal view returns (uint256) {
+    return block.timestamp / 1 days;
+}
+
+function withdraw() external {
+    // ... 기존 require 검증 ...
+    require(
+        dailyWithdrawn[_today()] + WITHDRAWAL_AMOUNT <= dailyCap,
+        "Daily withdrawal cap reached"
+    );
+    dailyWithdrawn[_today()] += WITHDRAWAL_AMOUNT;
+    // ... 기존 로직 ...
+}</div>
+            </div>
+          </div>
+          <div style="margin-top:10px;padding:8px;background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);font-size:0.83rem;color:var(--text-dim);line-height:1.5;">
+            &#128218; 고급 도전과제는 이 시뮬레이터에서 동작하지 않습니다. <a href="https://remix.ethereum.org" target="_blank" style="color:var(--neon-cyan);">Remix IDE</a>에서 직접 컴파일/배포하여 테스트해보세요!
           </div>
         </div>
 
@@ -5310,7 +5539,7 @@
         }
       });
       /* 이벤트 탭 전환 시 가이드 12단계(check-events) 완료 */
-      if (tab === 'event' && typeof window.lab3_completeGuideStep === 'function') {
+      if (tab === 'event' && currentPage === 'lab3' && typeof window.lab3_completeGuideStep === 'function') {
         window.lab3_completeGuideStep('check-events');
       }
     }
@@ -7591,6 +7820,8 @@
     '    uint256 public constant LOCK_TIME = 1 days;',
     '    mapping(address => uint256) public lastWithdrawalTime;',
     '    event Withdrawal(address indexed user, uint256 amount);',
+    '    event Deposit(address indexed sender, uint256 amount);',
+    '    event WithdrawAll(address indexed owner, uint256 amount);',
     '',
     '    modifier onlyOwner() {',
     '        require(msg.sender == owner, "Only the owner can call this function.");',
@@ -7615,13 +7846,21 @@
     '        emit Withdrawal(msg.sender, WITHDRAWAL_AMOUNT);',
     '    }',
     '',
-    '    function deposit() external payable onlyOwner {}',
-    '',
-    '    function withdrawAll() external onlyOwner {',
-    '        owner.transfer(address(this).balance);',
+    '    function deposit() external payable onlyOwner {',
+    '        require(msg.value > 0, "Send ETH to deposit.");',
+    '        emit Deposit(msg.sender, msg.value);',
     '    }',
     '',
-    '    receive() external payable {}',
+    '    function withdrawAll() external onlyOwner {',
+    '        uint256 amount = address(this).balance;',
+    '        require(amount > 0, "Nothing to withdraw.");',
+    '        owner.transfer(amount);',
+    '        emit WithdrawAll(msg.sender, amount);',
+    '    }',
+    '',
+    '    receive() external payable {',
+    '        emit Deposit(msg.sender, msg.value);',
+    '    }',
     '}'
   ].join('\n');
 
@@ -7730,6 +7969,16 @@
     return acc ? acc.label : lab3ShortAddr(addr);
   }
 
+  /** 함수 카드 실행 하이라이트 효과 */
+  function lab3_highlightCard(cardId) {
+    var card = document.getElementById(cardId);
+    if (!card) return;
+    card.classList.remove('lab3-fn-active');
+    void card.offsetWidth;
+    card.classList.add('lab3-fn-active');
+    setTimeout(function() { card.classList.remove('lab3-fn-active'); }, 1500);
+  }
+
   /** 특정 요소에 하이라이트 플래시 효과 */
   function lab3FlashElement(elementId) {
     var el = document.getElementById(elementId);
@@ -7769,8 +8018,23 @@
 
     if (bal < 0.1 && lab3Contract.deployed) {
       tankEl.classList.add('lab3-empty');
+      /* 탱크 비어있을 때 충전 안내 표시 */
+      var emptyHint = document.getElementById('lab3TankEmptyHint');
+      if (!emptyHint) {
+        emptyHint = document.createElement('div');
+        emptyHint.id = 'lab3TankEmptyHint';
+        emptyHint.style.cssText = 'text-align:center;margin-top:8px;padding:8px 12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:8px;font-size:0.78rem;color:#fca5a5;line-height:1.5;animation:fadeInUp 0.5s ease;';
+        emptyHint.innerHTML = '⚠️ <strong>탱크가 비어있습니다!</strong><br>' +
+          '<span style="color:#94a3b8;">withdraw()를 체험하려면 먼저 ETH를 충전하세요:</span><br>' +
+          '<span style="color:#10b981;">Owner → deposit()</span> 또는 <span style="color:#60a5fa;">누구나 → receive(직접 전송)</span>';
+        var container = document.getElementById('lab3TankContainer');
+        if (container) container.appendChild(emptyHint);
+      }
+      emptyHint.style.display = 'block';
     } else {
       tankEl.classList.remove('lab3-empty');
+      var emptyHint = document.getElementById('lab3TankEmptyHint');
+      if (emptyHint) emptyHint.style.display = 'none';
     }
 
     stateBalEl.classList.remove('lab3-changed');
@@ -7849,7 +8113,11 @@
     var senderEl = document.getElementById('lab3TrackerSender');
     var tsEl = document.getElementById('lab3TrackerTimestamp');
     if (senderEl) senderEl.textContent = lab3ShortAddr(acc.address);
-    if (tsEl) tsEl.textContent = BlockchainEngine.timestamp;
+    if (tsEl) {
+      var ts = BlockchainEngine.timestamp;
+      tsEl.textContent = ts + ' (' + lab3FormatTimestamp(ts) + ')';
+      tsEl.title = 'Unix timestamp: ' + ts;
+    }
   }
 
   /** msg.value 트래커 업데이트 */
@@ -7888,6 +8156,23 @@
                       lt >= 3600  ? (lt / 3600) + ' hour(s)' :
                       lt >= 60    ? (lt / 60) + ' minute(s)' : lt + '초';
       lockEl.textContent = lt + '초 (' + lockLabel + ')';
+    }
+
+    /* lastWithdrawalTime 라벨 동적 업데이트 */
+    var lwtKeyEl = document.getElementById('lab3StateLWTKey');
+    if (lwtKeyEl) {
+      lwtKeyEl.textContent = 'lastWithdrawalTime[' + lab3GetAccountLabel(acc.address) + ']';
+    }
+
+    /* "시간 경과" 버튼 라벨 동적 업데이트 */
+    var skipBtn = document.getElementById('lab3TimeSkipBtn');
+    if (skipBtn) {
+      var slt = lab3Contract.storage.LOCK_TIME;
+      var skipLabel = slt >= 86400 ? (slt / 86400) + '일' :
+                      slt >= 3600  ? (slt / 3600) + '시간' :
+                      slt >= 60    ? (slt / 60) + '분' : slt + '초';
+      skipBtn.textContent = '⏩ ' + skipLabel + ' 경과';
+      skipBtn.title = '블록체인 시간을 LOCK_TIME(' + slt + '초)만큼 이동합니다';
     }
   }
 
@@ -8048,7 +8333,7 @@
       to: txData.to,
       fn: txData.fn,
       value: txData.value || 0,
-      gas: Math.floor(Math.random() * 30000) + 21000,
+      gas: txData.gasEstimate || 45000,
       status: txData.status,
       error: txData.error || null,
       nonce: lab3TxNonce
@@ -8306,7 +8591,7 @@
       var editorCode = codeTextarea ? codeTextarea.value : '';
       var parsed = lab3_parseConstants(editorCode);
 
-      lab3Contract.address = '0xd9145CCE52D386f254917e481eB44e9943F39138';
+      lab3Contract.address = BlockchainEngine.generateAddress();
       lab3Contract.deployed = true;
       lab3Contract.storage.owner = deployer.address;
       lab3Contract.storage.WITHDRAWAL_AMOUNT = parsed.WITHDRAWAL_AMOUNT;
@@ -8328,7 +8613,8 @@
         fn: 'constructor()',
         value: 0,
         status: 'success',
-        senderAccount: deployer
+        senderAccount: deployer,
+        gasEstimate: 198520
       });
 
       /* UI 전환 */
@@ -8350,6 +8636,9 @@
 
       addConsoleLog('🚀 Faucet 배포 완료! owner = ' + deployer.label + ' | 주소: ' + lab3Contract.address, 'var(--neon-cyan, #22d3ee)', 'lab3');
       showToast('컨트랙트 배포 성공! owner = ' + deployer.label, 'success');
+      setTimeout(function() {
+        showToast('💡 다음 단계: deposit()으로 ETH를 충전하면 withdraw()를 체험할 수 있습니다!', 'info', 5000);
+      }, 1500);
       lab3_completeGuideStep('deploy');
 
       // 첫 배포 시 가이드 자동 펼치기
@@ -8463,6 +8752,7 @@
   /** withdraw() 실행 */
   window.lab3_withdraw = function() {
     if (!lab3Contract.deployed) return;
+    lab3_highlightCard('lab3CardWithdraw');
     lab3_traceFn('withdraw');
 
     var sender = lab3CurrentAccount();
@@ -8479,10 +8769,14 @@
     if (BlockchainEngine.timestamp < timeRequired) {
       var remaining = timeRequired - BlockchainEngine.timestamp;
 
+      var lockLabel = lab3Contract.storage.LOCK_TIME >= 86400 ? (lab3Contract.storage.LOCK_TIME / 86400) + ' day(s)' :
+                      lab3Contract.storage.LOCK_TIME >= 3600  ? (lab3Contract.storage.LOCK_TIME / 3600) + ' hour(s)' :
+                      lab3Contract.storage.LOCK_TIME >= 60    ? (lab3Contract.storage.LOCK_TIME / 60) + ' minute(s)' : lab3Contract.storage.LOCK_TIME + ' seconds';
+
       resultEl.className = 'lab3-fn-result lab3-show lab3-error';
       resultEl.innerHTML =
         '❌ <strong>require 실패:</strong> ' +
-        '<span style="color:#fca5a5;">"You must wait 24 hours between withdrawals."</span>' +
+        '<span style="color:#fca5a5;">"You must wait ' + lockLabel + ' between withdrawals."</span>' +
         '<div style="margin-top:6px;font-size:0.83rem;color:var(--lab3-muted);">' +
         '  남은 시간: <strong style="color:#f59e0b;">' + lab3FormatRemainingTime(remaining) + '</strong>' +
         '</div>' +
@@ -8506,7 +8800,8 @@
         value: 0,
         status: 'revert',
         error: 'You must wait 24 hours between withdrawals.',
-        senderAccount: sender
+        senderAccount: sender,
+        gasEstimate: 24835
       });
 
       showToast('withdraw() revert: 24시간 제한', 'error');
@@ -8547,7 +8842,8 @@
         value: 0,
         status: 'revert',
         error: 'Insufficient balance in the faucet.',
-        senderAccount: sender
+        senderAccount: sender,
+        gasEstimate: 25102
       });
 
       showToast('withdraw() revert: 잔액 부족', 'error');
@@ -8556,8 +8852,9 @@
     }
 
     /* 3단계: 성공 처리 */
+    var capturedTimestamp = BlockchainEngine.timestamp;
     setTimeout(function() {
-      lab3Contract.storage.lastWithdrawalTime[sender.address] = BlockchainEngine.timestamp;
+      lab3Contract.storage.lastWithdrawalTime[sender.address] = capturedTimestamp;
       lab3Contract.storage.balance -= lab3Contract.storage.WITHDRAWAL_AMOUNT;
       lab3Contract.storage.balance = Math.round(lab3Contract.storage.balance * 1e10) / 1e10;
       sender.balance += lab3Contract.storage.WITHDRAWAL_AMOUNT;
@@ -8582,14 +8879,15 @@
         fn: 'withdraw()',
         value: 0,
         status: 'success',
-        senderAccount: sender
+        senderAccount: sender,
+        gasEstimate: 46284
       });
 
       resultEl.className = 'lab3-fn-result lab3-show lab3-success';
       resultEl.innerHTML =
         '✅ <strong>트랜잭션 성공!</strong><br><br>' +
         '<small style="color:#536178;">' +
-          '실행 순서 (Solidity 코드 Line 30~33):<br>' +
+          '실행 순서 (CEI 패턴 — Checks-Effects-Interactions):<br>' +
           '  1. lastWithdrawalTime[' + lab3ShortAddr(sender.address) + '] = ' + BlockchainEngine.timestamp + ' (저장)<br>' +
           '  2. payable(msg.sender).transfer(' + lab3Contract.storage.WITHDRAWAL_AMOUNT + ' ETH) → ' + lab3ShortAddr(sender.address) + '에게 전송<br>' +
           '  3. emit Withdrawal(' + lab3ShortAddr(sender.address) + ', ' + lab3Contract.storage.WITHDRAWAL_AMOUNT + ' ETH)<br>' +
@@ -8598,9 +8896,12 @@
           '  ' + sender.label + ' 잔액: ' + lab3FormatETH(sender.balance) + ' ETH' +
         '</small>' +
         '<div style="margin-top:10px;padding:8px 10px;background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.15);border-radius:6px;font-size:0.83rem;color:#94a3b8;line-height:1.5;">' +
-          '&#128161; <strong style="color:#e2e8f0;">transfer() vs send()</strong><br>' +
+          '&#128161; <strong style="color:#e2e8f0;">transfer() vs send() vs call()</strong><br>' +
           '<code style="color:#10b981;">transfer()</code>: 2300 gas만 전달 (재진입 공격 방지), 실패 시 자동 <strong style="color:#ef4444;">revert</strong><br>' +
-          '<code style="color:#f59e0b;">send()</code>: 2300 gas만 전달, 실패 시 <strong style="color:#f59e0b;">false</strong> 반환 (직접 체크 필요)' +
+          '<code style="color:#f59e0b;">send()</code>: 2300 gas만 전달, 실패 시 <strong style="color:#f59e0b;">false</strong> 반환 (직접 체크 필요)<br>' +
+          '<code style="color:#60a5fa;">call{value: amount}("")</code>: gas 제한 없음 (전체 전달), <strong style="color:#60a5fa;">(bool success, )</strong> 반환 → Solidity 0.8+ 권장 방식<br>' +
+          '<br>💡 실무 권장: <strong style="color:#e2e8f0;">call</strong> + <strong style="color:#e2e8f0;">CEI 패턴</strong> (Checks-Effects-Interactions)<br>' +
+          '📌 <span style="color:#94a3b8;">이 코드는 교육 목적으로 <code style="color:#10b981;">transfer()</code>를 사용합니다. transfer()는 2,300 gas만 전달하여 재진입을 방지하므로 학습용으로 안전합니다. 실무에서는 call()로 전환하되 반드시 CEI 패턴을 함께 적용하세요.</span>' +
         '</div>';
 
       lab3_animateSuccess();
@@ -8624,6 +8925,7 @@
   /** deposit() 실행 */
   window.lab3_deposit = function() {
     if (!lab3Contract.deployed) return;
+    lab3_highlightCard('lab3CardDeposit');
     lab3_traceFn('deposit');
 
     var sender = lab3CurrentAccount();
@@ -8663,7 +8965,8 @@
         value: value,
         status: 'revert',
         error: 'Only the owner can call this function.',
-        senderAccount: sender
+        senderAccount: sender,
+        gasEstimate: 24120
       });
 
       showToast('deposit() revert: owner만 가능', 'error');
@@ -8675,6 +8978,17 @@
     if (sender.balance < value) {
       resultEl.className = 'lab3-fn-result lab3-show lab3-error';
       resultEl.textContent = '❌ 잔액 부족: ' + sender.label + '의 잔액 ' + lab3FormatETH(sender.balance) + ' ETH < 입금액 ' + value + ' ETH';
+      BlockchainEngine.advanceBlock();
+      lab3_addTxLog({
+        from: sender.address,
+        to: lab3Contract.address,
+        fn: 'deposit()',
+        value: value,
+        status: 'revert',
+        error: '잔액 부족 (계정 잔액 < msg.value)',
+        senderAccount: sender,
+        gasEstimate: 21000
+      });
       lab3_updateMsgValue('0');
       return;
     }
@@ -8693,13 +9007,19 @@
 
     BlockchainEngine.advanceBlock();
 
+    lab3_addEventLog('Deposit', {
+      user: sender.address,
+      amount: value
+    });
+
     lab3_addTxLog({
       from: sender.address,
       to: lab3Contract.address,
       fn: 'deposit()',
       value: value,
       status: 'success',
-      senderAccount: sender
+      senderAccount: sender,
+      gasEstimate: 28136
     });
 
     resultEl.className = 'lab3-fn-result lab3-show lab3-success';
@@ -8734,6 +9054,7 @@
   /** withdrawAll() 실행 */
   window.lab3_withdrawAll = function() {
     if (!lab3Contract.deployed) return;
+    lab3_highlightCard('lab3CardWithdrawAll');
     lab3_traceFn('withdrawAll');
 
     var sender = lab3CurrentAccount();
@@ -8765,7 +9086,8 @@
         value: 0,
         status: 'revert',
         error: 'Only the owner can call this function.',
-        senderAccount: sender
+        senderAccount: sender,
+        gasEstimate: 24098
       });
 
       showToast('withdrawAll() revert: owner만 가능', 'error');
@@ -8780,21 +9102,25 @@
     /* 잔액 확인 */
     var amount = lab3Contract.storage.balance;
     if (amount === 0) {
-      resultEl.className = 'lab3-fn-result lab3-show lab3-info';
+      resultEl.className = 'lab3-fn-result lab3-show lab3-error';
       resultEl.innerHTML =
-        'ℹ️ 컨트랙트 잔액이 <strong>0 ETH</strong>입니다.<br>' +
-        '<small style="color:#536178;">owner.transfer(0)가 실행되지만, 전송할 금액이 없습니다.</small>';
+        '❌ <strong>require 실패:</strong> ' +
+        '<span style="color:#fca5a5;">"Nothing to withdraw."</span><br>' +
+        '<small style="color:#536178;">address(this).balance = 0 → require(amount > 0) 실패</small>';
 
+      lab3_animateError();
       BlockchainEngine.advanceBlock();
       lab3_addTxLog({
         from: sender.address,
         to: lab3Contract.address,
         fn: 'withdrawAll()',
         value: 0,
-        status: 'success',
-        senderAccount: sender
+        status: 'revert',
+        error: 'Nothing to withdraw.',
+        senderAccount: sender,
+        gasEstimate: 24050
       });
-      showToast('withdrawAll() 실행됨 (잔액 0)', 'info');
+      showToast('withdrawAll() revert: 잔액 없음', 'error');
       return;
     }
 
@@ -8811,13 +9137,19 @@
 
     BlockchainEngine.advanceBlock();
 
+    lab3_addEventLog('WithdrawAll', {
+      user: sender.address,
+      amount: amount
+    });
+
     lab3_addTxLog({
       from: sender.address,
       to: lab3Contract.address,
       fn: 'withdrawAll()',
       value: 0,
       status: 'success',
-      senderAccount: sender
+      senderAccount: sender,
+      gasEstimate: 30185
     });
 
     resultEl.className = 'lab3-fn-result lab3-show lab3-success';
@@ -8843,6 +9175,7 @@
   /** receive() — 직접 ETH 전송 */
   window.lab3_receive = function() {
     if (!lab3Contract.deployed) return;
+    lab3_highlightCard('lab3CardReceive');
     lab3_traceFn('receive');
 
     // 도전과제: receive() 함수 존재 여부 확인
@@ -8880,6 +9213,17 @@
     if (sender.balance < value) {
       resultEl.className = 'lab3-fn-result lab3-show lab3-error';
       resultEl.textContent = '❌ 잔액 부족: ' + lab3FormatETH(sender.balance) + ' ETH < ' + value + ' ETH';
+      BlockchainEngine.advanceBlock();
+      lab3_addTxLog({
+        from: sender.address,
+        to: lab3Contract.address,
+        fn: 'receive() (직접 전송)',
+        value: value,
+        status: 'revert',
+        error: '잔액 부족 (계정 잔액 < 전송액)',
+        senderAccount: sender,
+        gasEstimate: 21000
+      });
       lab3_updateMsgValue('0');
       return;
     }
@@ -8898,13 +9242,19 @@
 
     BlockchainEngine.advanceBlock();
 
+    lab3_addEventLog('Deposit', {
+      user: sender.address,
+      amount: value
+    });
+
     lab3_addTxLog({
       from: sender.address,
       to: lab3Contract.address,
       fn: 'receive() (직접 전송)',
       value: value,
       status: 'success',
-      senderAccount: sender
+      senderAccount: sender,
+      gasEstimate: 23580
     });
 
     resultEl.className = 'lab3-fn-result lab3-show lab3-success';
@@ -8919,7 +9269,16 @@
         '  <br>' +
         '  컨트랙트 잔액: ' + lab3FormatETH(lab3Contract.storage.balance) + ' ETH<br>' +
         '  ' + sender.label + ' 잔액: ' + lab3FormatETH(sender.balance) + ' ETH' +
-      '</small>';
+      '</small>' +
+      '<div style="margin-top:10px;padding:8px 10px;background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.15);border-radius:6px;font-size:0.83rem;color:#94a3b8;line-height:1.5;">' +
+        '&#128161; <strong style="color:#e2e8f0;">receive() vs fallback()</strong><br>' +
+        '<code style="color:#10b981;">receive() external payable</code>: msg.data가 비어있을 때 호출 (순수 ETH 전송)<br>' +
+        '<code style="color:#f59e0b;">fallback() external [payable]</code>: msg.data가 있지만 매칭 함수가 없을 때 호출 <span style="color:#64748b;">(이 컨트랙트에는 없음)</span><br>' +
+        '<span style="color:#ef4444;">둘 다 없으면</span> → ETH 전송 시 트랜잭션 <strong style="color:#ef4444;">revert</strong> (도전과제 3에서 체험 가능)<br><br>' +
+        '&#128214; <strong style="color:#e2e8f0;">receive()와 deposit()의 차이</strong><br>' +
+        '<code style="color:#10b981;">receive()</code>는 <code>msg.data</code> 없이 ETH만 보낼 때 자동 호출됩니다. <code>onlyOwner</code> 제한이 없어 <strong>누구나</strong> 전송 가능합니다.<br>' +
+        '<code style="color:#f59e0b;">deposit()</code>은 <code>onlyOwner</code> 제한이 있어 Owner만 호출 가능합니다. 두 함수 모두 <code>Deposit</code> 이벤트를 emit합니다.' +
+      '</div>';
 
     lab3_animateSuccess();
     lab3_updateTank();
@@ -8945,6 +9304,24 @@
 
     addConsoleLog('⏩ LOCK_TIME (' + skipSeconds + '초) 경과! block.timestamp = ' + BlockchainEngine.timestamp, '#fbbf24', 'lab3');
     showToast('⏩ LOCK_TIME (' + skipSeconds + '초) 경과! 블록 #' + BlockchainEngine.blockNumber, 'info', 4000);
+  };
+
+  /** 사용자 지정 시간 경과 */
+  window.lab3_skipCustomTime = function() {
+    var input = document.getElementById('lab3CustomTimeInput');
+    var seconds = parseInt(input.value, 10);
+    if (isNaN(seconds) || seconds <= 0) {
+      showToast('경과할 시간(초)을 입력하세요', 'error');
+      return;
+    }
+    BlockchainEngine.advanceTime(seconds);
+    lab3_renderAccounts();
+    lab3_updateStateMonitor();
+    lab3_updateMsgTracker();
+    lab3GuideFlags.timeSkipped = true;
+    input.value = '';
+    addConsoleLog('⏩ ' + seconds + '초 경과! block.timestamp = ' + BlockchainEngine.timestamp, '#fbbf24', 'lab3');
+    showToast('⏩ ' + seconds + '초 경과! 블록 #' + BlockchainEngine.blockNumber, 'info', 4000);
   };
 
   /* =============================================================
@@ -9102,7 +9479,7 @@
     /* 코드 변경 시 줄번호 업데이트 */
     textarea.addEventListener('input', function() {
       lab3_updateLineNumbers();
-      if (lab3Contract.compiled && !lab3Contract.deployed) {
+      if (lab3Contract.compiled) {
         lab3Contract.compiled = false;
         document.getElementById('lab3BtnDeploy').disabled = true;
         var status = document.getElementById('lab3CompileStatus');
@@ -9278,6 +9655,10 @@
     lab3GasStats.totalGas = 0;
     lab3GasStats.totalEth = 0;
     lab3_updateGasStats();
+
+    /* 계정 잔액 100 ETH 초기화 */
+    BlockchainEngine.accounts.forEach(function(a) { a.balance = 100; a.nonce = 0; });
+    BlockchainEngine.currentAccountIndex = 0;
 
     /* 전체 초기화 재실행 */
     initLab3();
