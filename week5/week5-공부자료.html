@@ -1,0 +1,5086 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5주차 - Solidity 기초 & 스마트 컨트랙트</title>
+<style>
+/* ========== CSS Reset & 기본 스타일 ========== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --sidebar-width: 260px;
+  --bg-gradient-start: #f5f7fa;
+  --bg-gradient-end: #c3cfe2;
+  --code-bg: #282c34;
+  --analogy-bg: #fff3cd;
+  --analogy-border: #ffc107;
+  --formal-bg: #d1ecf1;
+  --formal-border: #17a2b8;
+  --accent: #4f46e5;
+  --accent-light: #818cf8;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --card-bg: #ffffff;
+  --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+  --radius: 12px;
+  --green: #22c55e;
+  --red: #ef4444;
+  --orange: #f97316;
+  --blue: #3b82f6;
+  --purple: #a855f7;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif;
+  background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+  color: var(--text-primary);
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* ========== 사이드바 ========== */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(10px);
+  border-right: 1px solid rgba(0,0,0,0.08);
+  overflow-y: auto;
+  z-index: 1000;
+  padding: 24px 0;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-header {
+  padding: 0 20px 20px;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  margin-bottom: 12px;
+}
+
+.sidebar-header h2 {
+  font-size: 1.1rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.sidebar-header p {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.toc-list {
+  list-style: none;
+  padding: 0 12px;
+}
+
+.toc-list li {
+  margin-bottom: 2px;
+}
+
+.toc-list a {
+  display: block;
+  padding: 8px 12px;
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.toc-list a:hover {
+  background: rgba(79,70,229,0.06);
+  color: var(--accent);
+}
+
+.toc-list a.active {
+  background: rgba(79,70,229,0.1);
+  color: var(--accent);
+  font-weight: 600;
+  border-left-color: var(--accent);
+}
+
+.toc-list .sub-item a {
+  padding-left: 28px;
+  font-size: 0.8rem;
+}
+
+/* 모바일 햄버거 */
+.menu-toggle {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1100;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  font-size: 1.4rem;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+/* ========== 메인 콘텐츠 ========== */
+.main-content {
+  margin-left: var(--sidebar-width);
+  padding: 40px 48px;
+  max-width: 960px;
+}
+
+/* ========== 히어로 헤더 ========== */
+.hero {
+  text-align: center;
+  padding: 60px 20px 40px;
+  margin-bottom: 48px;
+}
+
+.hero-badge {
+  display: inline-block;
+  background: var(--accent);
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 16px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+}
+
+.hero h1 {
+  font-size: 2.4rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 12px;
+}
+
+.hero p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ========== 섹션 ========== */
+.section {
+  margin-bottom: 64px;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  /* 폴백: JS 실패 시 3초 후 자동 표시 */
+  animation: sectionFallback 0s ease 3s forwards;
+}
+
+@keyframes sectionFallback {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.section.visible {
+  opacity: 1;
+  transform: translateY(0);
+  /* visible 클래스가 추가되면 폴백 애니메이션 취소 */
+  animation: none;
+}
+
+.section-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-title .num {
+  background: var(--accent);
+  color: white;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.section-subtitle {
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  padding-left: 54px;
+  font-size: 0.95rem;
+}
+
+/* ========== 카드 ========== */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 28px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+.card h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.card h4 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  margin-top: 16px;
+  color: var(--text-primary);
+}
+
+/* ========== 비유 & 정석 박스 ========== */
+.analogy-box {
+  background: var(--analogy-bg);
+  border-left: 4px solid var(--analogy-border);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 20px 24px;
+  margin: 16px 0;
+}
+
+.analogy-box .label {
+  font-weight: 700;
+  color: #856404;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}
+
+.formal-box {
+  background: var(--formal-bg);
+  border-left: 4px solid var(--formal-border);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 20px 24px;
+  margin: 16px 0;
+}
+
+.formal-box .label {
+  font-weight: 700;
+  color: #0c5460;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}
+
+/* ========== 코드 블록 ========== */
+.code-block {
+  background: var(--code-bg);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin: 16px 0;
+  overflow-x: auto;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: #abb2bf;
+  position: relative;
+}
+
+.code-block .line-num {
+  color: #636d83;
+  user-select: none;
+  display: inline-block;
+  width: 32px;
+  text-align: right;
+  margin-right: 16px;
+}
+
+.code-block .comment { color: #7f848e; font-style: italic; }
+.code-block .keyword { color: #c678dd; }
+.code-block .type { color: #e5c07b; }
+.code-block .string { color: #98c379; }
+.code-block .number { color: #d19a66; }
+.code-block .function { color: #61afef; }
+.code-block .operator { color: #56b6c2; }
+.code-block .variable { color: #e06c75; }
+
+.code-label {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 0.7rem;
+  color: #636d83;
+  background: rgba(255,255,255,0.05);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* ========== 인터랙티브 영역 ========== */
+.interactive-area {
+  background: linear-gradient(135deg, #f8fafc, #eef2ff);
+  border: 2px dashed var(--accent-light);
+  border-radius: var(--radius);
+  padding: 32px;
+  margin: 24px 0;
+  text-align: center;
+}
+
+.interactive-area h4 {
+  color: var(--accent);
+  margin-bottom: 16px;
+  font-size: 1.05rem;
+}
+
+/* ========== 버튼 ========== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+}
+
+.btn-orange {
+  background: var(--orange);
+  color: white;
+}
+
+.btn-green {
+  background: var(--green);
+  color: white;
+}
+
+.btn-red {
+  background: var(--red);
+  color: white;
+}
+
+.btn-blue {
+  background: var(--blue);
+  color: white;
+}
+
+.btn-purple {
+  background: var(--purple);
+  color: white;
+}
+
+.btn-sm {
+  padding: 6px 14px;
+  font-size: 0.82rem;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+}
+
+/* ========== 표 ========== */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 0.9rem;
+}
+
+.data-table th {
+  background: var(--accent);
+  color: white;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.data-table th:first-child {
+  border-radius: 8px 0 0 0;
+}
+
+.data-table th:last-child {
+  border-radius: 0 8px 0 0;
+}
+
+.data-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.data-table tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+.data-table tr:hover {
+  background: #eef2ff;
+}
+
+/* ========== 애니메이션 요소 ========== */
+.flow-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  flex-wrap: wrap;
+  padding: 20px 0;
+}
+
+.flow-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.5s ease;
+}
+
+.flow-step.show {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.flow-step .icon-box {
+  width: 80px;
+  height: 80px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow);
+}
+
+.flow-step .step-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: center;
+  max-width: 100px;
+}
+
+.flow-arrow {
+  font-size: 1.5rem;
+  color: var(--accent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  margin: 0 8px;
+}
+
+.flow-arrow.show {
+  opacity: 1;
+}
+
+/* ========== Remix 다이어그램 ========== */
+.remix-diagram {
+  display: grid;
+  grid-template-columns: 200px 1fr 240px;
+  gap: 12px;
+  min-height: 360px;
+  margin: 16px 0;
+}
+
+.remix-panel {
+  background: #1e1e2e;
+  border-radius: 8px;
+  padding: 16px;
+  color: #cdd6f4;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  position: relative;
+}
+
+.remix-panel:hover,
+.remix-panel.active {
+  border-color: var(--accent-light);
+  box-shadow: 0 0 20px rgba(79,70,229,0.2);
+}
+
+.remix-panel .panel-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-light);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.remix-panel .panel-content {
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.remix-tooltip {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 12px;
+  box-shadow: var(--shadow-lg);
+  font-size: 0.88rem;
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.remix-tooltip.visible {
+  display: block;
+}
+
+/* ========== 버전 슬라이더 ========== */
+.version-slider-container {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.version-bar {
+  width: 100%;
+  height: 40px;
+  background: #e2e8f0;
+  border-radius: 8px;
+  position: relative;
+  margin: 20px 0 12px;
+  overflow: hidden;
+}
+
+.version-bar .compatible-range {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: rgba(34,197,94,0.3);
+  border-left: 2px solid var(--green);
+  border-right: 2px solid var(--green);
+  transition: all 0.3s ease;
+}
+
+.version-bar .slider-thumb {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  background: var(--accent);
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: var(--shadow);
+  transition: left 0.1s ease;
+}
+
+.version-slider {
+  width: 100%;
+  margin: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  background: transparent;
+  outline: none;
+}
+
+.version-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: var(--accent);
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+
+.version-display {
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.version-status {
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  margin-top: 12px;
+  transition: all 0.3s ease;
+}
+
+.version-status.compatible {
+  background: rgba(34,197,94,0.15);
+  color: #16a34a;
+}
+
+.version-status.incompatible {
+  background: rgba(239,68,68,0.15);
+  color: #dc2626;
+}
+
+/* ========== 데이터 저장소 드래그앤드롭 ========== */
+.storage-sim {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.storage-box {
+  width: 180px;
+  min-height: 180px;
+  border: 3px dashed #94a3b8;
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.storage-box.drag-over {
+  border-color: var(--accent);
+  background: rgba(79,70,229,0.05);
+  transform: scale(1.03);
+}
+
+.storage-box .box-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.storage-box .box-icon {
+  font-size: 2rem;
+  margin-bottom: 4px;
+}
+
+.storage-box .gas-info {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  padding: 6px;
+  border-radius: 6px;
+  background: rgba(0,0,0,0.04);
+}
+
+.draggable-vars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.drag-item {
+  background: var(--accent);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: grab;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.drag-item:active {
+  cursor: grabbing;
+  transform: scale(1.05);
+}
+
+.drag-item.dragging {
+  opacity: 0.5;
+}
+
+.dropped-item {
+  background: var(--accent-light);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  margin: 4px 2px;
+  display: inline-block;
+}
+
+/* ========== 수정자 시뮬레이션 ========== */
+.modifier-sim {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.modifier-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.modifier-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.modifier-card.selected {
+  border-color: var(--accent);
+}
+
+.modifier-card .mod-icon {
+  font-size: 2.4rem;
+  margin-bottom: 8px;
+}
+
+.modifier-card .mod-name {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.modifier-card .mod-desc {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.modifier-result {
+  background: var(--code-bg);
+  color: #abb2bf;
+  padding: 20px;
+  border-radius: var(--radius);
+  margin-top: 16px;
+  font-family: 'Consolas', monospace;
+  font-size: 0.88rem;
+  min-height: 60px;
+  transition: all 0.3s ease;
+}
+
+/* ========== 카운터 시뮬레이션 ========== */
+.counter-sim {
+  text-align: center;
+  padding: 20px;
+}
+
+.counter-display {
+  font-size: 5rem;
+  font-weight: 800;
+  color: var(--accent);
+  transition: all 0.3s ease;
+  position: relative;
+  display: inline-block;
+}
+
+.counter-display.bump {
+  animation: bump 0.3s ease;
+}
+
+@keyframes bump {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.counter-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin: 24px 0 16px;
+  flex-wrap: wrap;
+}
+
+.counter-log {
+  background: var(--code-bg);
+  color: #98c379;
+  padding: 16px;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 0.82rem;
+  text-align: left;
+  max-height: 150px;
+  overflow-y: auto;
+  margin-top: 16px;
+}
+
+/* ========== Faucet 시뮬레이션 ========== */
+.faucet-sim {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin: 16px 0;
+}
+
+.faucet-tank {
+  background: linear-gradient(180deg, #1e293b, #0f172a);
+  border-radius: var(--radius);
+  padding: 24px;
+  text-align: center;
+  position: relative;
+  min-height: 320px;
+  overflow: hidden;
+}
+
+.tank-label {
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 2;
+}
+
+.tank-visual {
+  width: 120px;
+  height: 200px;
+  border: 3px solid #475569;
+  border-radius: 0 0 12px 12px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  background: rgba(255,255,255,0.03);
+}
+
+.tank-water {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(180deg, #60a5fa, #3b82f6);
+  transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 0 0 9px 9px;
+}
+
+.tank-water::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: rgba(255,255,255,0.3);
+  animation: wave 2s ease-in-out infinite;
+  border-radius: 50%;
+}
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(1) translateX(0); }
+  50% { transform: scaleY(1.5) translateX(2px); }
+}
+
+.tank-amount {
+  color: white;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-top: 12px;
+  position: relative;
+  z-index: 2;
+}
+
+.faucet-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+}
+
+.faucet-info {
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  padding: 12px;
+  color: #94a3b8;
+  font-size: 0.82rem;
+}
+
+.faucet-info .info-label {
+  color: #64748b;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.faucet-info .info-value {
+  color: white;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.faucet-log {
+  grid-column: 1 / -1;
+  background: var(--code-bg);
+  color: #abb2bf;
+  padding: 16px;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 0.82rem;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.faucet-msg {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  text-align: center;
+  margin: 8px 0;
+  animation: fadeIn 0.3s ease;
+}
+
+.faucet-msg.success {
+  background: rgba(34,197,94,0.15);
+  color: #16a34a;
+}
+
+.faucet-msg.error {
+  background: rgba(239,68,68,0.15);
+  color: #dc2626;
+}
+
+/* ========== 배포 흐름 애니메이션 ========== */
+.deploy-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  flex-wrap: wrap;
+  padding: 24px 0;
+}
+
+.deploy-step {
+  text-align: center;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.5s ease;
+}
+
+.deploy-step.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.deploy-step .step-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  margin: 0 auto 8px;
+  box-shadow: var(--shadow);
+}
+
+.deploy-step .step-text {
+  font-size: 0.78rem;
+  font-weight: 600;
+  max-width: 80px;
+}
+
+.deploy-arrow {
+  font-size: 1.2rem;
+  color: var(--accent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  margin: 0 6px;
+  padding-bottom: 28px;
+}
+
+.deploy-arrow.show {
+  opacity: 1;
+}
+
+/* ========== 보안 방패 ========== */
+.security-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.security-item {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+  border-left: 4px solid var(--green);
+}
+
+.security-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.security-item .shield {
+  font-size: 1.6rem;
+  margin-bottom: 8px;
+}
+
+.security-item h5 {
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+}
+
+.security-item p {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+/* ========== 마인드맵 ========== */
+.mindmap {
+  position: relative;
+  min-height: 500px;
+  margin: 24px 0;
+}
+
+.mindmap-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--accent);
+  color: white;
+  padding: 16px 28px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  z-index: 2;
+  box-shadow: var(--shadow-lg);
+}
+
+.mindmap-branch {
+  position: absolute;
+  background: var(--card-bg);
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  z-index: 2;
+}
+
+.mindmap-branch:hover {
+  transform: scale(1.05);
+  border-color: var(--accent-light);
+}
+
+.mindmap-line {
+  position: absolute;
+  background: var(--accent-light);
+  z-index: 1;
+}
+
+/* ========== 유틸리티 ========== */
+.text-accent { color: var(--accent); }
+.text-green { color: var(--green); }
+.text-red { color: var(--red); }
+.text-orange { color: var(--orange); }
+.fw-bold { font-weight: 700; }
+.mt-8 { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-16 { margin-bottom: 16px; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.gap-8 { gap: 8px; }
+.gap-16 { gap: 16px; }
+.text-center { text-align: center; }
+.text-sm { font-size: 0.85rem; }
+
+.tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.tag-green { background: rgba(34,197,94,0.15); color: #16a34a; }
+.tag-red { background: rgba(239,68,68,0.15); color: #dc2626; }
+.tag-blue { background: rgba(59,130,246,0.15); color: #2563eb; }
+.tag-orange { background: rgba(249,115,22,0.15); color: #ea580c; }
+.tag-purple { background: rgba(168,85,247,0.15); color: #9333ea; }
+
+.divider {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #cbd5e1, transparent);
+  margin: 32px 0;
+}
+
+/* ========== 애니메이션 키프레임 ========== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(79,70,229,0.3); }
+  50% { box-shadow: 0 0 20px rgba(79,70,229,0.6); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+.animate-pulse { animation: pulse 2s infinite; }
+.animate-float { animation: float 3s ease-in-out infinite; }
+.animate-glow { animation: glow 2s infinite; }
+
+/* ========== 비교 표 (require/assert/revert) ========== */
+.compare-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.compare-card {
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  border-top: 4px solid;
+}
+
+.compare-card h4 {
+  margin-top: 0;
+}
+
+/* ========== 반응형 ========== */
+@media (max-width: 900px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .main-content {
+    margin-left: 0;
+    padding: 24px 20px;
+    padding-top: 70px;
+  }
+
+  .hero h1 {
+    font-size: 1.6rem;
+  }
+
+  .remix-diagram {
+    grid-template-columns: 1fr;
+  }
+
+  .faucet-sim {
+    grid-template-columns: 1fr;
+  }
+
+  .flow-container {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .flow-arrow, .deploy-arrow {
+    transform: rotate(90deg);
+  }
+
+  .storage-sim {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .modifier-sim {
+    grid-template-columns: 1fr;
+  }
+
+  .compare-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .security-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========== 스크롤바 스타일 ========== */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* ========== 코드 하이라이팅 라인 ========== */
+.code-line {
+  display: block;
+  padding: 1px 0;
+  transition: background 0.2s;
+}
+
+.code-line:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.code-line.highlight {
+  background: rgba(79,70,229,0.15);
+  border-left: 3px solid var(--accent);
+  padding-left: 8px;
+  margin-left: -8px;
+}
+
+/* ========== 진행 바 ========== */
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: #e2e8f0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2000;
+}
+
+.progress-bar .bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--purple));
+  width: 0%;
+  transition: width 0.2s ease;
+}
+
+/* ========== 오버레이 (모바일 사이드바) ========== */
+.overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 999;
+}
+
+.overlay.active {
+  display: block;
+}
+
+/* ========== 비교 박스 시각화 ========== */
+.visual-compare {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 24px 0;
+}
+
+.visual-compare-item {
+  text-align: center;
+  padding: 20px;
+  border-radius: var(--radius);
+  background: var(--card-bg);
+  box-shadow: var(--shadow);
+  width: 140px;
+  transition: all 0.3s ease;
+}
+
+.visual-compare-item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.visual-compare-item .vc-icon {
+  font-size: 2.4rem;
+  margin-bottom: 8px;
+}
+
+.visual-compare-item .vc-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.visual-compare-item .vc-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* ========== 가스비 계산기 시뮬레이션 ========== */
+.sim-gas-panel {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 24px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.sim-gas-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.sim-gas-option {
+  padding: 16px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: var(--radius);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--card-bg);
+}
+
+.sim-gas-option:hover {
+  border-color: var(--accent-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.sim-gas-option.active {
+  border-color: var(--accent);
+  background: rgba(79,70,229,0.06);
+}
+
+.sim-gas-option .gas-opt-icon {
+  font-size: 2rem;
+  margin-bottom: 6px;
+}
+
+.sim-gas-option .gas-opt-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.sim-gas-option .gas-opt-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.sim-gas-bar-container {
+  margin: 20px 0;
+}
+
+.sim-gas-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.sim-gas-bar-label {
+  width: 90px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.sim-gas-bar-track {
+  flex: 1;
+  height: 28px;
+  background: #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.sim-gas-bar-fill {
+  height: 100%;
+  border-radius: 8px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: white;
+  min-width: 0;
+}
+
+.sim-gas-bar-value {
+  width: 100px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.sim-gas-cost-display {
+  text-align: center;
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, #f8fafc, #eef2ff);
+  border: 1px solid #e2e8f0;
+}
+
+.sim-gas-cost-display .cost-title {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.sim-gas-cost-display .cost-amount {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.sim-gas-cost-display .cost-usd {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.sim-gas-opcodes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.sim-gas-opcode {
+  background: var(--code-bg);
+  color: #abb2bf;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 0.78rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.sim-gas-opcode.highlight {
+  border: 1px solid var(--accent-light);
+  background: rgba(79,70,229,0.15);
+}
+
+.sim-gas-opcode .opcode-name {
+  color: #c678dd;
+  font-weight: 600;
+}
+
+.sim-gas-opcode .opcode-cost {
+  color: #e5c07b;
+  font-weight: 700;
+}
+
+/* ========== mapping 시각화 시뮬레이션 ========== */
+.sim-mapping-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.sim-mapping-input {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sim-mapping-input label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.sim-mapping-input input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 0.85rem;
+  transition: border-color 0.2s;
+}
+
+.sim-mapping-input input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.sim-mapping-table {
+  background: var(--code-bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  min-height: 200px;
+  overflow-y: auto;
+  max-height: 320px;
+}
+
+.sim-mapping-table .table-header {
+  display: grid;
+  grid-template-columns: 40px 1fr 80px;
+  gap: 8px;
+  color: var(--accent-light);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #3a3f4b;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.sim-mapping-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 80px;
+  gap: 8px;
+  padding: 6px 0;
+  font-family: monospace;
+  font-size: 0.78rem;
+  color: #abb2bf;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  animation: fadeIn 0.3s ease;
+}
+
+.sim-mapping-row .slot-idx {
+  color: #636d83;
+}
+
+.sim-mapping-row .slot-key {
+  color: #e06c75;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sim-mapping-row .slot-val {
+  color: #98c379;
+  text-align: right;
+  font-weight: 600;
+}
+
+.sim-mapping-row.highlight-new {
+  background: rgba(79,70,229,0.2);
+  border-radius: 4px;
+}
+
+.sim-mapping-hash-display {
+  grid-column: 1 / -1;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  padding: 12px;
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: #7f848e;
+  margin-top: 12px;
+  word-break: break-all;
+  min-height: 48px;
+}
+
+.sim-mapping-hash-display .hash-label {
+  color: var(--accent-light);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.sim-mapping-query-result {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  animation: fadeIn 0.3s ease;
+  text-align: center;
+}
+
+/* ========== require/revert/assert 시뮬레이터 ========== */
+.sim-error-panel {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.sim-error-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.sim-error-type-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--card-bg);
+  text-align: center;
+}
+
+.sim-error-type-btn:hover {
+  border-color: var(--accent-light);
+  transform: translateY(-1px);
+}
+
+.sim-error-type-btn.active-require {
+  border-color: var(--blue);
+  background: rgba(59,130,246,0.06);
+}
+
+.sim-error-type-btn.active-assert {
+  border-color: var(--red);
+  background: rgba(239,68,68,0.06);
+}
+
+.sim-error-type-btn.active-revert {
+  border-color: var(--orange);
+  background: rgba(249,115,22,0.06);
+}
+
+.sim-error-type-btn .err-icon {
+  font-size: 1.8rem;
+}
+
+.sim-error-type-btn .err-label {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.sim-error-type-btn .err-desc {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.sim-error-scenario-box {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+.sim-error-scenario-box label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.sim-error-result {
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-top: 16px;
+}
+
+.sim-error-result-header {
+  padding: 12px 16px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: white;
+}
+
+.sim-error-result-body {
+  background: var(--code-bg);
+  padding: 16px;
+  font-family: monospace;
+  font-size: 0.82rem;
+  color: #abb2bf;
+  line-height: 1.6;
+}
+
+.sim-error-gas-compare {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.sim-error-gas-item {
+  text-align: center;
+  padding: 16px 12px;
+  border-radius: var(--radius);
+  background: var(--card-bg);
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+  border-top: 3px solid transparent;
+}
+
+.sim-error-gas-item.active-item {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-lg);
+}
+
+.sim-error-gas-item .gas-type {
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+}
+
+.sim-error-gas-item .gas-used {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+
+.sim-error-gas-item .gas-refund {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* ========== 트랜잭션 라이프사이클 시뮬레이션 ========== */
+.sim-tx-lifecycle {
+  position: relative;
+  padding: 24px 0;
+}
+
+.sim-tx-steps {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  flex-wrap: wrap;
+}
+
+.sim-tx-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  opacity: 0.3;
+  transform: scale(0.9);
+  transition: all 0.5s ease;
+  position: relative;
+}
+
+.sim-tx-step.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.sim-tx-step.completed {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.sim-tx-step .tx-step-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow);
+  transition: all 0.5s ease;
+  position: relative;
+}
+
+.sim-tx-step.active .tx-step-circle {
+  animation: pulse 1.5s infinite;
+}
+
+.sim-tx-step.completed .tx-step-circle::after {
+  content: '\2713';
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 22px;
+  height: 22px;
+  background: var(--green);
+  color: white;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.sim-tx-step .tx-step-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  max-width: 90px;
+  line-height: 1.3;
+}
+
+.sim-tx-step .tx-step-detail {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  max-width: 90px;
+  margin-top: 4px;
+  min-height: 28px;
+}
+
+.sim-tx-arrow {
+  font-size: 1.2rem;
+  color: #94a3b8;
+  margin: 20px 8px 0;
+  transition: color 0.3s ease;
+}
+
+.sim-tx-arrow.active {
+  color: var(--accent);
+}
+
+.sim-tx-info-box {
+  background: var(--code-bg);
+  color: #abb2bf;
+  padding: 16px;
+  border-radius: var(--radius);
+  font-family: monospace;
+  font-size: 0.82rem;
+  margin-top: 20px;
+  min-height: 80px;
+  transition: all 0.3s ease;
+}
+
+.sim-tx-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  margin-top: 16px;
+  overflow: hidden;
+}
+
+.sim-tx-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  border-radius: 3px;
+  transition: width 0.5s ease;
+  width: 0%;
+}
+
+/* ========== 새 시뮬레이션 반응형 ========== */
+@media (max-width: 900px) {
+  .sim-tx-steps {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .sim-tx-arrow {
+    transform: rotate(90deg);
+    margin: 4px 0;
+  }
+  .sim-mapping-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .sim-gas-selector {
+    grid-template-columns: 1fr;
+  }
+  .sim-error-selector {
+    grid-template-columns: 1fr;
+  }
+  .sim-error-gas-compare {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- 진행 바 -->
+<div class="progress-bar"><div class="bar" id="progressBar"></div></div>
+
+<!-- 모바일 오버레이 -->
+<div class="overlay" id="overlay"></div>
+
+<!-- 모바일 메뉴 버튼 -->
+<button class="menu-toggle" id="menuToggle" aria-label="메뉴 열기">&#9776;</button>
+
+<!-- ========== 사이드바 ========== -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h2>&#128214; 5주차 학습 가이드</h2>
+    <p>Solidity 기초 & 스마트 컨트랙트</p>
+  </div>
+  <ul class="toc-list">
+    <li><a href="#sec0" data-section="sec0">&#128640; 시작하기 전에</a></li>
+    <li><a href="#sec1" data-section="sec1">1. Solidity란? <small style='opacity:0.6;display:block;font-size:0.7rem;'>블록체인 프로그래밍 언어</small></a></li>
+    <li class="sub-item"><a href="#sec1-flow" data-section="sec1">&#8627; 컴파일 흐름</a></li>
+    <li class="sub-item"><a href="#sim-tx-lifecycle" data-section="sec1">&#8627; 트랜잭션 라이프사이클</a></li>
+    <li><a href="#sec2" data-section="sec2">2. Remix IDE <small style='opacity:0.6;display:block;font-size:0.7rem;'>코딩 도구</small></a></li>
+    <li class="sub-item"><a href="#sec2-diagram" data-section="sec2">&#8627; 인터랙티브 다이어그램</a></li>
+    <li><a href="#sec3" data-section="sec3">3. HelloWorld.sol <small style='opacity:0.6;display:block;font-size:0.7rem;'>첫 코드 작성</small></a></li>
+    <li class="sub-item"><a href="#sec3-spdx" data-section="sec3">&#8627; SPDX 라이선스</a></li>
+    <li class="sub-item"><a href="#sec3-pragma" data-section="sec3">&#8627; pragma solidity</a></li>
+    <li class="sub-item"><a href="#sec3-contract" data-section="sec3">&#8627; contract 키워드</a></li>
+    <li class="sub-item"><a href="#sec3-storage" data-section="sec3">&#8627; 데이터 위치</a></li>
+    <li class="sub-item"><a href="#sec3-modifiers" data-section="sec3">&#8627; 수정자</a></li>
+    <li class="sub-item"><a href="#sim-gas-calc" data-section="sec3">&#8627; 가스비 계산기</a></li>
+    <li class="sub-item"><a href="#sec3-hellonumber" data-section="sec3">&#8627; HelloNumber.sol</a></li>
+    <li><a href="#sec4" data-section="sec4">4. Counter.sol <small style='opacity:0.6;display:block;font-size:0.7rem;'>숫자 세기 &amp; 생성자</small></a></li>
+    <li class="sub-item"><a href="#sec4-sim" data-section="sec4">&#8627; 카운터 시뮬레이션</a></li>
+    <li class="sub-item"><a href="#sec4-checknumber" data-section="sec4">&#8627; CheckNumber.sol</a></li>
+    <li><a href="#sec5" data-section="sec5">5. Faucet.sol <small style='opacity:0.6;display:block;font-size:0.7rem;'>ETH 나눠주기</small></a></li>
+    <li class="sub-item"><a href="#sec5-concepts" data-section="sec5">&#8627; 핵심 개념들</a></li>
+    <li class="sub-item"><a href="#sim-mapping-viz" data-section="sec5">&#8627; mapping 시각화</a></li>
+    <li class="sub-item"><a href="#sec5-sim" data-section="sec5">&#8627; Faucet 시뮬레이션</a></li>
+    <li class="sub-item"><a href="#sec5-security" data-section="sec5">&#8627; 보안 기능</a></li>
+    <li><a href="#sec6" data-section="sec6">6. 에러 처리 <small style='opacity:0.6;display:block;font-size:0.7rem;'>require / assert / revert</small></a></li>
+    <li class="sub-item"><a href="#sim-error-handler" data-section="sec6">&#8627; 에러 처리 시뮬레이터</a></li>
+    <li><a href="#sec7" data-section="sec7">7. 핵심 요약 <small style='opacity:0.6;display:block;font-size:0.7rem;'>전체 정리</small></a></li>
+  </ul>
+</nav>
+
+<!-- ========== 메인 콘텐츠 ========== -->
+<main class="main-content">
+
+<!-- 히어로 -->
+<header class="hero section" id="hero">
+  <span class="hero-badge">Week 5</span>
+  <h1>Solidity 기초 &amp; 스마트 컨트랙트</h1>
+  <p>이더리움 스마트 컨트랙트의 핵심 언어 Solidity를 비유와 시뮬레이션으로 완벽히 이해하기</p>
+  <div style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:12px;padding:16px 20px;margin:16px auto;max-width:600px;text-align:center;">
+    <p style="margin:0;font-size:0.9rem;color:var(--text-secondary,#64748b);">
+      🔰 <strong>처음이라면</strong> → <a href="#sec0" style="color:var(--accent,#3b82f6);">'시작하기 전에'</a>부터 읽으세요<br>
+      🚀 <strong>블록체인을 이미 아신다면</strong> → 바로 <a href="#sec1" style="color:var(--accent,#3b82f6);">섹션 1</a>로 넘어가세요
+    </p>
+  </div>
+</header>
+
+<!-- ==================== 섹션 0: 시작하기 전에 ==================== -->
+<section class="section fade-in" id="sec0">
+  <h2 id="sec0-heading">&#128640; 시작하기 전에 &mdash; 블록체인 기초 3분 요약</h2>
+  <p>이 자료를 읽기 전에 알아야 할 기본 개념을 간단히 정리합니다. 이미 알고 있다면 건너뛰세요.</p>
+
+  <div class="card">
+    <h3>블록체인이란?</h3>
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유로 이해하기</div>
+      <p><strong>블록체인은 모두가 함께 쓰는 공유 장부입니다.</strong> 한 명이 기록을 바꾸면 나머지 참여자들이 "아닌데?"라고 거부합니다. 그래서 위조가 불가능합니다. 이 장부에 기록하려면 수수료(가스비)를 내야 합니다.</p>
+    </div>
+    <div class="formal-box">
+      <div class="label">&#128218; 정석 설명</div>
+      <p><strong>블록체인</strong>은 여러 컴퓨터(노드)가 동일한 거래 기록을 공유하는 <strong>분산 원장 기술</strong>입니다. 거래 기록은 "블록" 단위로 묶이고, 각 블록이 이전 블록과 연결되어 "체인"을 형성합니다. 한번 기록되면 수정할 수 없습니다(불변성).</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>이더리움과 ETH</h3>
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유로 이해하기</div>
+      <p><strong>이더리움은 "프로그램을 실행할 수 있는 블록체인"</strong>입니다. 비트코인이 계산기라면, 이더리움은 스마트폰 &mdash; 앱(스마트 컨트랙트)을 설치하고 실행할 수 있습니다. <strong>ETH</strong>는 이더리움 네트워크의 화폐로, 수수료를 내거나 송금할 때 사용합니다.</p>
+    </div>
+    <div class="formal-box">
+      <div class="label">&#128218; 정석 설명</div>
+      <p><strong>이더리움(Ethereum)</strong>은 스마트 컨트랙트를 실행할 수 있는 분산 컴퓨팅 플랫폼입니다. <strong>ETH(이더)</strong>는 이더리움의 기본 암호화폐로, 1 ETH = 10<sup>18</sup> wei (가장 작은 단위)입니다.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>스마트 컨트랙트란?</h3>
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유로 이해하기</div>
+      <p><strong>블록체인 위의 자동 실행 프로그램</strong>입니다. 일반 앱은 회사 서버에 있어서 회사가 마음대로 바꿀 수 있지만, 스마트 컨트랙트는 블록체인에 올라가면 <strong>작성자도 수정할 수 없고, 조건이 맞으면 자동으로 실행</strong>됩니다.</p>
+    </div>
+    <div class="formal-box">
+      <div class="label">&#128218; 정석 설명</div>
+      <p><strong>스마트 컨트랙트</strong>는 블록체인에 배포된 코드와 데이터의 묶음으로, 미리 정해진 조건에 따라 자동으로 실행됩니다. 중개자 없이 신뢰를 보장합니다.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>가스비(Gas Fee)란?</h3>
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유로 이해하기</div>
+      <p><strong>택시 미터기</strong>와 같습니다. 택시를 타면 거리에 따라 요금이 나오듯, 블록체인에서 코드를 실행하면 연산량에 따라 수수료(가스비)가 부과됩니다. 복잡한 연산 = 긴 거리 = 비싼 요금.</p>
+    </div>
+    <div class="formal-box">
+      <div class="label">&#128218; 정석 설명</div>
+      <p><strong>가스(Gas)</strong>는 이더리움에서 연산을 수행하는 데 필요한 비용 단위입니다. 모든 트랜잭션은 가스를 소모하며, 사용자가 ETH로 지불합니다. 데이터를 저장(SSTORE)하는 연산이 가장 비쌉니다.</p>
+      <ul style="margin-top:8px;padding-left:20px;">
+        <li><strong>view/pure 함수</strong> (읽기만): 가스비 <strong>무료</strong> (외부 호출 시)</li>
+        <li><strong>상태 변경 함수</strong> (쓰기): 가스비 <strong>유료</strong> (ETH 지불)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>지갑과 주소</h3>
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유로 이해하기</div>
+      <p><strong>주소(Address)</strong>는 은행 계좌번호, <strong>개인키(Private Key)</strong>는 비밀번호입니다. 주소는 누구에게나 공개해도 되지만, 개인키는 절대 노출하면 안 됩니다. 개인키가 있으면 해당 주소의 모든 자산을 통제할 수 있습니다.</p>
+    </div>
+    <div class="formal-box">
+      <div class="label">&#128218; 정석 설명</div>
+      <p>이더리움 <strong>주소</strong>는 20바이트(40자리 16진수, 예: 0x5B38Da...)로 표현됩니다. <strong>EOA(사람이 개인키로 직접 제어하는 일반 지갑 계정)</strong>는 개인키로 제어하고, <strong>컨트랙트 계정</strong>은 코드로 제어됩니다.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ==================== 섹션 1: Solidity란? ==================== -->
+<section class="section" id="sec1">
+  <h2 class="section-title"><span class="num">1</span> Solidity란?</h2>
+  <p class="section-subtitle">이더리움 스마트 컨트랙트를 작성하는 프로그래밍 언어</p>
+
+  <div class="card">
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유로 이해하기</div>
+      <p><strong>Solidity는 자판기의 프로그래밍 언어다.</strong></p>
+      <p>동전(ETH)을 넣고 버튼(함수)을 누르면 자동으로 음료(결과)가 나오는 <strong>자판기(스마트 컨트랙트)</strong>를 만드는 언어입니다. 자판기는 한 번 설치하면 사람 없이도 24시간 동작하고, 규칙을 바꾸려면 아예 새 자판기를 설치해야 합니다.</p>
+    </div>
+
+    <div class="formal-box">
+      <div class="label">&#128218; 정석 설명</div>
+      <p>Solidity는 <strong>EVM(이더리움 가상머신 — 코드를 실행하는 엔진)</strong> 위에서 실행되는 <strong>정적 타입(변수의 종류를 미리 정해야 하는 방식)</strong> 고급 프로그래밍 언어입니다. 스마트 컨트랙트 작성에 특화되어 있으며, JavaScript, Python, C++에서 영향을 받았습니다.</p>
+      <ul style="margin-top: 8px; padding-left: 20px;">
+        <li><strong>정적 타입:</strong> 변수의 타입을 컴파일(사람이 작성한 코드를 기계가 이해하는 언어로 번역) 시점에 결정 (uint256, string, address 등)</li>
+        <li><strong>고급 언어:</strong> 사람이 읽기 쉬운 코드 &rarr; 기계가 읽는 바이트코드(기계가 실행하는 저수준 코드)로 변환</li>
+        <li><strong>EVM 타겟:</strong> 이더리움, Polygon, BSC 등 EVM 호환 체인에서 실행</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 컴파일 흐름 애니메이션 -->
+  <div class="card" id="sec1-flow">
+    <h3>&#9889; Solidity 코드의 여정: 작성부터 블록체인 배포까지</h3>
+    <p class="text-sm mb-16" style="color: var(--text-secondary);">아래 "재생" 버튼을 눌러 흐름을 확인하세요.</p>
+
+    <div class="flow-container" id="compileFlow">
+      <div class="flow-step" id="flow-1">
+        <div class="icon-box" style="background: linear-gradient(135deg, #818cf8, #6366f1);">&#128221;</div>
+        <span class="step-label">Solidity 코드 작성</span>
+      </div>
+      <span class="flow-arrow" id="arrow-1">&rarr;</span>
+      <div class="flow-step" id="flow-2">
+        <div class="icon-box" style="background: linear-gradient(135deg, #fb923c, #f97316);">&#9881;&#65039;</div>
+        <span class="step-label">solc 컴파일러</span>
+      </div>
+      <span class="flow-arrow" id="arrow-2">&rarr;</span>
+      <div class="flow-step" id="flow-3">
+        <div class="icon-box" style="background: linear-gradient(135deg, #4ade80, #22c55e);">&#128190;</div>
+        <span class="step-label">EVM 바이트코드</span>
+      </div>
+      <span class="flow-arrow" id="arrow-3">&rarr;</span>
+      <div class="flow-step" id="flow-4">
+        <div class="icon-box" style="background: linear-gradient(135deg, #f472b6, #ec4899);">&#128230;</div>
+        <span class="step-label">트랜잭션 생성</span>
+      </div>
+      <span class="flow-arrow" id="arrow-4">&rarr;</span>
+      <div class="flow-step" id="flow-5">
+        <div class="icon-box" style="background: linear-gradient(135deg, #a78bfa, #8b5cf6);">&#9939;</div>
+        <span class="step-label">블록체인 배포!</span>
+      </div>
+    </div>
+
+    <div class="text-center mt-16">
+      <button class="btn btn-primary" onclick="playCompileFlow()">&#9654; 재생</button>
+      <button class="btn btn-outline btn-sm" onclick="resetCompileFlow()" style="margin-left: 8px;">&#8635; 초기화</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Solidity의 핵심 특징</h3>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>특징</th>
+          <th>설명</th>
+          <th>비유</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>정적 타입</strong></td>
+          <td>변수 타입을 선언 시 지정</td>
+          <td>서류 양식에 칸이 정해져 있음</td>
+        </tr>
+        <tr>
+          <td><strong>상속 지원</strong></td>
+          <td>다중 상속, 인터페이스</td>
+          <td>부모 회사의 규칙을 자회사가 물려받음</td>
+        </tr>
+        <tr>
+          <td><strong>라이브러리</strong></td>
+          <td>재사용 가능한 코드 모음</td>
+          <td>공용 공구함</td>
+        </tr>
+        <tr>
+          <td><strong>이벤트</strong></td>
+          <td>블록체인 로그 기록</td>
+          <td>영수증 발행</td>
+        </tr>
+        <tr>
+          <td><strong>제한적 실행</strong></td>
+          <td>가스비로 연산량 제한</td>
+          <td>선불 교통카드 - 잔액만큼만 탈 수 있음</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 트랜잭션 라이프사이클 시뮬레이션 -->
+  <div class="card" id="sim-tx-lifecycle">
+    <h3>&#128640; 트랜잭션 라이프사이클 시뮬레이션</h3>
+    <p class="text-sm mb-16" style="color: var(--text-secondary);">트랜잭션이 생성되어 블록체인에 확정되기까지의 전체 과정을 단계별로 체험하세요.</p>
+
+    <div class="interactive-area" style="padding: 24px;">
+      <div class="sim-tx-lifecycle">
+        <div class="sim-tx-steps" id="sim-tx-steps">
+          <div class="sim-tx-step" id="sim-tx-1">
+            <div class="tx-step-circle" style="background: linear-gradient(135deg, #818cf8, #6366f1); color: white;">&#128100;</div>
+            <div class="tx-step-label">사용자 서명</div>
+            <div class="tx-step-detail">개인키로 트랜잭션 서명</div>
+          </div>
+          <span class="sim-tx-arrow" id="sim-tx-arr-1">&#8594;</span>
+          <div class="sim-tx-step" id="sim-tx-2">
+            <div class="tx-step-circle" style="background: linear-gradient(135deg, #fb923c, #f97316); color: white;">&#128230;</div>
+            <div class="tx-step-label">TX 생성</div>
+            <div class="tx-step-detail">nonce, gas, data 포함</div>
+          </div>
+          <span class="sim-tx-arrow" id="sim-tx-arr-2">&#8594;</span>
+          <div class="sim-tx-step" id="sim-tx-3">
+            <div class="tx-step-circle" style="background: linear-gradient(135deg, #a78bfa, #8b5cf6); color: white;">&#127760;</div>
+            <div class="tx-step-label">네트워크 전파</div>
+            <div class="tx-step-detail">mempool에 대기</div>
+          </div>
+          <span class="sim-tx-arrow" id="sim-tx-arr-3">&#8594;</span>
+          <div class="sim-tx-step" id="sim-tx-4">
+            <div class="tx-step-circle" style="background: linear-gradient(135deg, #4ade80, #22c55e); color: white;">&#9874;</div>
+            <div class="tx-step-label">검증자 검증</div>
+            <div class="tx-step-detail">서명 + 잔액 + 가스 확인</div>
+          </div>
+          <span class="sim-tx-arrow" id="sim-tx-arr-4">&#8594;</span>
+          <div class="sim-tx-step" id="sim-tx-5">
+            <div class="tx-step-circle" style="background: linear-gradient(135deg, #f472b6, #ec4899); color: white;">&#9939;</div>
+            <div class="tx-step-label">블록 포함</div>
+            <div class="tx-step-detail">블록 #에 기록</div>
+          </div>
+          <span class="sim-tx-arrow" id="sim-tx-arr-5">&#8594;</span>
+          <div class="sim-tx-step" id="sim-tx-6">
+            <div class="tx-step-circle" style="background: linear-gradient(135deg, #22d3ee, #06b6d4); color: white;">&#10003;</div>
+            <div class="tx-step-label">확인 완료</div>
+            <div class="tx-step-detail">finality 달성</div>
+          </div>
+        </div>
+
+        <div class="sim-tx-progress-bar">
+          <div class="sim-tx-progress-fill" id="sim-tx-progress"></div>
+        </div>
+
+        <div class="sim-tx-info-box" id="sim-tx-info">
+          <span style="color: #64748b;">// "재생" 버튼을 눌러 트랜잭션의 여정을 시작하세요</span>
+        </div>
+      </div>
+
+      <div class="text-center mt-16">
+        <button class="btn btn-primary" onclick="sim_txLifecyclePlay()">&#9654; 재생</button>
+        <button class="btn btn-outline btn-sm" onclick="sim_txLifecycleReset()" style="margin-left: 8px;">&#8635; 초기화</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ==================== 섹션 2: Remix IDE ==================== -->
+<section class="section" id="sec2">
+  <h2 class="section-title"><span class="num">2</span> Remix IDE 이해</h2>
+  <p class="section-subtitle">브라우저 기반 Solidity 통합 개발 환경</p>
+
+  <div class="card">
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유로 이해하기</div>
+      <p><strong>Remix는 요리사의 주방이다.</strong></p>
+      <p>&#129482; 냉장고(<strong>파일 탐색기</strong>)에서 재료(코드)를 꺼내고, &#129489;&#8205;&#127859; 조리대(<strong>에디터</strong>)에서 요리(코딩)하고, &#127859; 오븐(<strong>컴파일러</strong>)에서 굽고(컴파일), &#127869; 테이블(<strong>배포</strong>)에 내놓는(배포) 것입니다.</p>
+    </div>
+
+    <div class="formal-box">
+      <div class="label">&#128218; 정석 설명</div>
+      <p><strong>Remix IDE(통합 개발 환경 — 코딩·컴파일·테스트를 한 곳에서)</strong>는 브라우저 기반 Solidity 개발 환경입니다. 별도 설치 없이 <a href="https://remix.ethereum.org" target="_blank" style="color: var(--accent);">remix.ethereum.org</a>에 접속하여 코드 작성, 컴파일, 배포, 디버깅, 테스트를 한 곳에서 수행할 수 있습니다.</p>
+    </div>
+  </div>
+
+  <!-- Remix 인터랙티브 다이어그램 -->
+  <div class="card" id="sec2-diagram">
+    <h3>&#128421; Remix IDE 인터랙티브 다이어그램</h3>
+    <p class="text-sm mb-16" style="color: var(--text-secondary);">각 패널을 클릭하면 자세한 설명이 나타납니다.</p>
+
+    <div class="remix-diagram">
+      <!-- 왼쪽: 파일 탐색기 -->
+      <div class="remix-panel" onclick="showRemixTooltip('explorer')" id="panel-explorer">
+        <div class="panel-title">&#128193; 파일 탐색기</div>
+        <div class="panel-content">
+          <div style="padding: 4px 0; border-bottom: 1px solid #313244;">&#128196; contracts/</div>
+          <div style="padding: 4px 0 4px 16px; border-bottom: 1px solid #313244;">&#128196; HelloWorld.sol</div>
+          <div style="padding: 4px 0 4px 16px; border-bottom: 1px solid #313244;">&#128196; Counter.sol</div>
+          <div style="padding: 4px 0 4px 16px;">&#128196; Faucet.sol</div>
+          <div style="padding: 4px 0; margin-top: 4px; border-bottom: 1px solid #313244;">&#128196; scripts/</div>
+          <div style="padding: 4px 0;">&#128196; tests/</div>
+        </div>
+      </div>
+
+      <!-- 가운데: 에디터 -->
+      <div class="remix-panel" onclick="showRemixTooltip('editor')" id="panel-editor">
+        <div class="panel-title">&#128221; 코드 에디터</div>
+        <div class="panel-content" style="font-family: monospace; font-size: 0.75rem;">
+          <div style="color: #7f848e;">// SPDX-License-Identifier: MIT</div>
+          <div><span style="color: #c678dd;">pragma</span> <span style="color: #e5c07b;">solidity</span> ^0.8.26;</div>
+          <div>&nbsp;</div>
+          <div><span style="color: #c678dd;">contract</span> <span style="color: #e5c07b;">HelloWorld</span> {</div>
+          <div>&nbsp;&nbsp;<span style="color: #c678dd;">string</span> <span style="color: #c678dd;">public</span> <span style="color: #e06c75;">greet</span> = <span style="color: #98c379;">"Hello World"</span>;</div>
+          <div>}</div>
+        </div>
+      </div>
+
+      <!-- 오른쪽: 컴파일/배포 패널 -->
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="remix-panel" onclick="showRemixTooltip('compile')" id="panel-compile" style="flex: 1;">
+          <div class="panel-title">&#9881;&#65039; 컴파일러</div>
+          <div class="panel-content">
+            <div>Compiler: 0.8.26</div>
+            <div style="margin-top: 8px;">
+              <span style="background: #22c55e; color: white; padding: 4px 12px; border-radius: 4px; font-size: 0.72rem;">&#10003; 컴파일 성공</span>
+            </div>
+          </div>
+        </div>
+        <div class="remix-panel" onclick="showRemixTooltip('deploy')" id="panel-deploy" style="flex: 1;">
+          <div class="panel-title">&#128640; 배포 &amp; 실행</div>
+          <div class="panel-content">
+            <div>Environment: Remix VM</div>
+            <div>Account: 0x5B3...dC4</div>
+            <div style="margin-top: 8px;">
+              <span style="background: var(--orange); color: white; padding: 4px 12px; border-radius: 4px; font-size: 0.72rem;">Deploy</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 툴팁 영역 -->
+    <div class="remix-tooltip" id="remix-tooltip">
+      <div id="remix-tooltip-content"></div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ==================== 섹션 3: HelloWorld.sol 완전 분석 ==================== -->
+<section class="section" id="sec3">
+  <h2 class="section-title"><span class="num">3</span> HelloWorld.sol 완전 분석</h2>
+  <p class="section-subtitle">한 줄 한 줄 분해하여 완벽히 이해하기</p>
+
+  <!-- 전체 코드 -->
+  <div class="card">
+    <h3>&#128196; 전체 코드</h3>
+    <div class="code-block">
+      <span class="code-label">HelloWorld.sol</span>
+      <span class="code-line" id="code-line-1"><span class="line-num">1</span><span class="comment">// SPDX-License-Identifier: MIT</span></span>
+      <span class="code-line" id="code-line-2"><span class="line-num">2</span><span class="keyword">pragma solidity</span> <span class="operator">^</span><span class="number">0.8.26</span>;</span>
+      <span class="code-line" id="code-line-3"><span class="line-num">3</span></span>
+      <span class="code-line" id="code-line-4"><span class="line-num">4</span><span class="keyword">contract</span> <span class="type">HelloWorld</span> {</span>
+      <span class="code-line" id="code-line-5"><span class="line-num">5</span>    <span class="type">string</span> <span class="keyword">public</span> <span class="variable">greet</span> = <span class="string">"Hello World"</span>;</span>
+      <span class="code-line" id="code-line-6"><span class="line-num">6</span>}</span>
+      <span style="display: block; margin: 16px 0 8px; color: #7f848e; font-size: 0.82rem;">// 확장 버전 (private + getter/setter)</span>
+      <span class="code-line"><span class="line-num">1</span><span class="comment">// SPDX-License-Identifier: MIT</span></span>
+      <span class="code-line"><span class="line-num">2</span><span class="keyword">pragma solidity</span> <span class="operator">^</span><span class="number">0.8.26</span>;</span>
+      <span class="code-line"><span class="line-num">3</span></span>
+      <span class="code-line"><span class="line-num">4</span><span class="keyword">contract</span> <span class="type">HelloWorld</span> {</span>
+      <span class="code-line"><span class="line-num">5</span>    <span class="type">string</span> <span class="keyword">private</span> <span class="variable">_greeting</span> = <span class="string">"Hello, World!"</span>;</span>
+      <span class="code-line"><span class="line-num">6</span></span>
+      <span class="code-line"><span class="line-num">7</span>    <span class="keyword">function</span> <span class="function">greet</span>() <span class="keyword">public</span> <span class="keyword">view</span> <span class="keyword">returns</span> (<span class="type">string</span> <span class="keyword">memory</span>) {</span>
+      <span class="code-line"><span class="line-num">8</span>        <span class="keyword">return</span> <span class="variable">_greeting</span>;</span>
+      <span class="code-line"><span class="line-num">9</span>    }</span>
+      <span class="code-line"><span class="line-num">10</span></span>
+      <span class="code-line"><span class="line-num">11</span>    <span class="keyword">function</span> <span class="function">setGreeting</span>(<span class="type">string</span> <span class="keyword">memory</span> <span class="variable">newGreeting</span>) <span class="keyword">public</span> {</span>
+      <span class="code-line"><span class="line-num">12</span>        <span class="variable">_greeting</span> = <span class="variable">newGreeting</span>;</span>
+      <span class="code-line"><span class="line-num">13</span>    }</span>
+      <span class="code-line"><span class="line-num">14</span>}</span>
+    </div>
+  </div>
+
+  <!-- 3-1. SPDX -->
+  <div class="card" id="sec3-spdx">
+    <h3>3-1. SPDX 라이선스 식별자</h3>
+    <div class="code-block">
+      <span class="comment">// SPDX-License-Identifier: MIT</span>
+    </div>
+
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유로 이해하기</div>
+      <p><strong>책의 저작권 표시.</strong> MIT 라이선스는 "누구나 복사/수정 가능, 원저자 이름만 남기세요"라는 뜻입니다. 마치 오픈소스 요리 레시피에 "출처만 밝히면 자유롭게 사용하세요"라고 적는 것과 같습니다.</p>
+    </div>
+
+    <div class="formal-box">
+      <div class="label">&#128218; 정석 설명</div>
+      <p><strong>SPDX</strong>(Software Package Data Exchange)는 소프트웨어 라이선스 표준입니다.</p>
+      <ul style="margin-top: 8px; padding-left: 20px;">
+        <li>Solidity 0.6.8부터 도입</li>
+        <li>없으면 컴파일러가 경고(warning) 표시</li>
+        <li>주석(comment)이므로 바이트코드에 포함되지 않음</li>
+        <li>주요 라이선스: MIT, GPL-3.0, UNLICENSED(비공개)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 3-2. pragma -->
+  <div class="card" id="sec3-pragma">
+    <h3>3-2. pragma solidity (버전 지시자)</h3>
+    <div class="code-block">
+      <span class="keyword">pragma solidity</span> <span class="operator">^</span><span class="number">0.8.26</span>;
+    </div>
+
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유로 이해하기</div>
+      <p><strong>"이 레시피는 오븐 200도 이상에서만 작동합니다"</strong> = "이 코드는 Solidity 0.8.26 이상에서만 작동합니다". 너무 낮은 버전은 기능이 없고, 너무 높은 버전(0.9.x)은 문법이 달라질 수 있어 호환되지 않습니다.</p>
+    </div>
+
+    <div class="formal-box">
+      <div class="label">&#128218; 정석 설명</div>
+      <p><strong>pragma</strong>는 컴파일러에게 소스코드 처리 방식을 지시하는 키워드입니다.</p>
+      <table class="data-table mt-8">
+        <thead>
+          <tr>
+            <th>표현</th>
+            <th>의미</th>
+            <th>호환 범위</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>^0.8.26</code></td>
+            <td>캐럿(^) - 마이너 버전 호환</td>
+            <td>0.8.26 &le; v &lt; 0.9.0</td>
+          </tr>
+          <tr>
+            <td><code>&gt;=0.8.0 &lt;0.9.0</code></td>
+            <td>범위 지정</td>
+            <td>0.8.0 &le; v &lt; 0.9.0</td>
+          </tr>
+          <tr>
+            <td><code>0.8.26</code></td>
+            <td>정확히 이 버전만</td>
+            <td>0.8.26만 허용</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 버전 슬라이더 시뮬레이션 -->
+    <div class="interactive-area">
+      <h4>&#127918; 버전 호환성 시뮬레이터</h4>
+      <p class="text-sm mb-16">슬라이더를 움직여 Solidity 버전별 호환성을 확인하세요. (<code>^0.8.26</code> 기준)</p>
+
+      <div class="version-slider-container">
+        <div class="version-display" id="versionDisplay">0.8.26</div>
+
+        <div class="version-bar" id="versionBar">
+          <div class="compatible-range" id="compatibleRange"></div>
+        </div>
+
+        <input type="range" class="version-slider" id="versionSlider" min="70" max="95" value="82" step="1">
+
+        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+          <span>0.7.0</span>
+          <span>0.8.0</span>
+          <span>0.8.26</span>
+          <span>0.9.0</span>
+          <span>0.9.5</span>
+        </div>
+
+        <div class="version-status" id="versionStatus"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3-3. contract -->
+  <div class="card" id="sec3-contract">
+    <h3>3-3. contract 키워드</h3>
+    <div class="code-block">
+      <span class="keyword">contract</span> <span class="type">HelloWorld</span> {
+    <span class="comment">// 코드와 데이터의 모음</span>
+}
+    </div>
+
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유로 이해하기</div>
+      <p><strong>contract는 법적 계약서와 같다.</strong> 한번 서명(배포)하면 변경 불가능하고, 조건(함수)에 따라 자동으로 실행됩니다. "A가 B에게 돈을 보내면, C에게 물건을 전달한다"는 계약이 코드로 작성되어 블록체인 위에서 자동으로 집행됩니다.</p>
+    </div>
+
+    <div class="formal-box">
+      <div class="label">&#128218; 정석 설명</div>
+      <p><strong>contract</strong>는 EVM에서 실행되는 코드와 데이터의 모음입니다.</p>
+      <ul style="margin-top: 8px; padding-left: 20px;">
+        <li><strong>고유 주소:</strong> 배포 시 0x로 시작하는 주소 할당 (사람 지갑과 동일한 형식)</li>
+        <li>프로그래밍에서 '설계도'와 비슷합니다. 설계도(contract)대로 실제 건물(배포된 컨트랙트)을 짓는 것입니다. <small style='color:var(--text-secondary);'>(Java·Python의 class를 아신다면 같은 개념)</small> — 상태 변수(속성) + 함수(메서드)</li>
+        <li><strong>불변성:</strong> 배포 후 코드 수정 불가 (업그레이드 패턴은 별도)</li>
+        <li><strong>자체 잔액:</strong> ETH를 보유하고 전송 가능</li>
+      </ul>
+    </div>
+
+    <!-- 배포 흐름 애니메이션 -->
+    <div class="interactive-area">
+      <h4>&#128640; Contract 배포 과정</h4>
+      <p class="text-sm mb-16">"재생" 버튼으로 배포 과정을 단계별로 확인하세요.</p>
+
+      <div class="deploy-flow" id="deployFlow">
+        <div class="deploy-step" id="deploy-1">
+          <div class="step-circle" style="background: linear-gradient(135deg, #818cf8, #6366f1); color: white;">&#128221;</div>
+          <div class="step-text">코드 작성</div>
+        </div>
+        <span class="deploy-arrow" id="darrow-1">&rarr;</span>
+        <div class="deploy-step" id="deploy-2">
+          <div class="step-circle" style="background: linear-gradient(135deg, #fb923c, #f97316); color: white;">&#9881;&#65039;</div>
+          <div class="step-text">컴파일 (바이트코드)</div>
+        </div>
+        <span class="deploy-arrow" id="darrow-2">&rarr;</span>
+        <div class="deploy-step" id="deploy-3">
+          <div class="step-circle" style="background: linear-gradient(135deg, #f472b6, #ec4899); color: white;">&#128230;</div>
+          <div class="step-text">트랜잭션 생성</div>
+        </div>
+        <span class="deploy-arrow" id="darrow-3">&rarr;</span>
+        <div class="deploy-step" id="deploy-4">
+          <div class="step-circle" style="background: linear-gradient(135deg, #4ade80, #22c55e); color: white;">&#9939;</div>
+          <div class="step-text">블록에 포함</div>
+        </div>
+        <span class="deploy-arrow" id="darrow-4">&rarr;</span>
+        <div class="deploy-step" id="deploy-5">
+          <div class="step-circle" style="background: linear-gradient(135deg, #a78bfa, #8b5cf6); color: white;">&#127968;</div>
+          <div class="step-text">주소 할당 완료!</div>
+        </div>
+      </div>
+
+      <div class="text-center mt-16">
+        <button class="btn btn-primary" onclick="playDeployFlow()">&#9654; 재생</button>
+        <button class="btn btn-outline btn-sm" onclick="resetDeployFlow()" style="margin-left: 8px;">&#8635; 초기화</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3-4. 상태 변수 & 데이터 위치 -->
+  <div class="card" id="sec3-storage">
+    <h3>3-4. 상태 변수 &amp; 데이터 위치 (storage / memory / calldata)</h3>
+
+    <div class="code-block">
+      <span class="type">string</span> <span class="keyword">private</span> <span class="variable">_greeting</span> = <span class="string">"Hello, World!"</span>;  <span class="comment">// storage에 영구 저장</span>
+
+<span class="keyword">function</span> <span class="function">setGreeting</span>(<span class="type">string</span> <span class="keyword">memory</span> <span class="variable">newGreeting</span>) <span class="keyword">public</span> {
+    <span class="variable">_greeting</span> = <span class="variable">newGreeting</span>;  <span class="comment">// memory -> storage 복사</span>
+}
+    </div>
+
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유로 이해하기</div>
+      <p style="margin-bottom:12px;color:var(--text-primary);font-weight:600;">
+        💰 왜 세 가지를 구분할까요? <strong>비용(가스비)이 다르기 때문입니다!</strong>
+        영구 저장은 비싸고, 임시 저장은 저렴합니다.
+      </p>
+      <div class="visual-compare">
+        <div class="visual-compare-item">
+          <div class="vc-icon">&#128737;&#65039;</div>
+          <div class="vc-name">Storage</div>
+          <div class="vc-desc">금고 (영구 보관, 비용 높음). 단, 이 금고는 <strong>투명</strong>합니다 — 블록체인의 모든 데이터는 누구나 볼 수 있습니다.</div>
+        </div>
+        <div class="visual-compare-item">
+          <div class="vc-icon">&#128221;</div>
+          <div class="vc-name">Memory</div>
+          <div class="vc-desc">메모장 (임시, 함수 끝나면 소멸)</div>
+        </div>
+        <div class="visual-compare-item">
+          <div class="vc-icon">&#128230;</div>
+          <div class="vc-name">Calldata</div>
+          <div class="vc-desc">읽기전용 택배 상자 (수정 불가, 최저가)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="formal-box">
+      <div class="label">&#128218; 정석 설명</div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>데이터 위치</th>
+            <th>지속성</th>
+            <th>수정 가능</th>
+            <th>가스비</th>
+            <th>사용 위치</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>storage</strong></td>
+            <td>영구적 (블록체인에 저장)</td>
+            <td>&#9989; 가능</td>
+            <td>&#128293; 매우 높음 (20,000 gas)</td>
+            <td>상태 변수</td>
+          </tr>
+          <tr>
+            <td><strong>memory</strong></td>
+            <td>임시 (함수 실행 중만)</td>
+            <td>&#9989; 가능</td>
+            <td>&#128167; 중간 (기본 3 gas, 메모리 확장 시 이차적으로 증가)</td>
+            <td>함수 매개변수, 지역 변수</td>
+          </tr>
+          <tr>
+            <td><strong>calldata</strong></td>
+            <td>임시 (함수 실행 중만)</td>
+            <td>&#10060; 불가</td>
+            <td>&#10052;&#65039; 최저</td>
+            <td>external 함수 매개변수</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 드래그 앤 드롭 시뮬레이션 -->
+    <div class="interactive-area">
+      <h4>&#127918; 데이터 위치 시뮬레이션</h4>
+      <p class="text-sm mb-16">변수를 드래그하여 각 저장소에 넣어보세요. 가스비 차이를 확인할 수 있습니다.</p>
+
+      <div class="draggable-vars" id="draggableVars">
+        <div class="drag-item" draggable="true" data-var="userName" ondragstart="dragStart(event)">string userName</div>
+        <div class="drag-item" draggable="true" data-var="balance" ondragstart="dragStart(event)">uint256 balance</div>
+        <div class="drag-item" draggable="true" data-var="isActive" ondragstart="dragStart(event)">bool isActive</div>
+        <div class="drag-item" draggable="true" data-var="tokenData" ondragstart="dragStart(event)">bytes tokenData</div>
+      </div>
+
+      <div class="storage-sim" id="storageSim">
+        <div class="storage-box" id="box-storage" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropVar(event, 'storage')">
+          <div class="box-icon">&#128737;&#65039;</div>
+          <div class="box-title">Storage</div>
+          <div class="gas-info">&#128176; 20,000 gas / 쓰기</div>
+          <div class="dropped-vars" id="dropped-storage"></div>
+        </div>
+        <div class="storage-box" id="box-memory" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropVar(event, 'memory')">
+          <div class="box-icon">&#128221;</div>
+          <div class="box-title">Memory</div>
+          <div class="gas-info">&#128176; 3 gas / 접근</div>
+          <div class="dropped-vars" id="dropped-memory"></div>
+        </div>
+        <div class="storage-box" id="box-calldata" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropVar(event, 'calldata')">
+          <div class="box-icon">&#128230;</div>
+          <div class="box-title">Calldata</div>
+          <div class="gas-info">&#128176; 최저 (읽기전용)</div>
+          <div class="dropped-vars" id="dropped-calldata"></div>
+        </div>
+      </div>
+
+      <div id="storageFeedback" class="mt-16" style="font-size: 0.88rem; min-height: 24px;"></div>
+      <button class="btn btn-outline btn-sm mt-8" onclick="resetStorageSim()">&#8635; 초기화</button>
+    </div>
+  </div>
+
+  <!-- 3-5. 가시성/상태 수정자 -->
+  <div class="card" id="sec3-modifiers">
+    <h3>3-5. 가시성 수정자 &amp; 상태 수정자</h3>
+
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유로 이해하기</div>
+      <div class="modifier-sim" style="margin-top: 12px;">
+        <div class="modifier-card" onclick="showModifier('public')">
+          <div class="mod-icon">&#127978;</div>
+          <div class="mod-name">public</div>
+          <div class="mod-desc">가게 간판 - 누구나 볼 수 있음</div>
+        </div>
+        <div class="modifier-card" onclick="showModifier('private')">
+          <div class="mod-icon">&#128274;</div>
+          <div class="mod-name">private</div>
+          <div class="mod-desc">내부 서랍 - 컨트랙트 내부 전용</div>
+        </div>
+        <div class="modifier-card" onclick="showModifier('view')">
+          <div class="mod-icon">&#127963;&#65039;</div>
+          <div class="mod-name">view</div>
+          <div class="mod-desc">박물관 관람 - 보기만 가능</div>
+        </div>
+        <div class="modifier-card" onclick="showModifier('pure')">
+          <div class="mod-icon">&#129518;</div>
+          <div class="mod-name">pure</div>
+          <div class="mod-desc">계산기 - 순수 계산만</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modifier-result" id="modifierResult">
+      &#128072; 위의 카드를 클릭하면 각 수정자의 동작 시뮬레이션이 여기에 표시됩니다.
+    </div>
+
+    <div style="background:#fef2f2;border-left:4px solid #ef4444;padding:12px 16px;border-radius:0 8px 8px 0;margin-top:12px;">
+      <strong>&#9888;&#65039; 중요: private &#8800; 비밀!</strong><br>
+      <code>private</code>은 다른 컨트랙트에서 <strong>코드로 접근하는 것</strong>만 막습니다. 블록체인의 모든 데이터는 <code>eth_getStorageAt</code>으로 누구나 읽을 수 있습니다. <strong>절대로 비밀번호, 개인키 등 민감한 데이터를 private 변수에 저장하지 마세요!</strong>
+    </div>
+
+    <div class="formal-box" style="margin-top: 20px;">
+      <div class="label">&#128218; 정석 설명 - 가시성 수정자 (Visibility)</div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>수정자</th>
+            <th>컨트랙트 내부</th>
+            <th>상속된 컨트랙트</th>
+            <th>외부 호출</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>public</strong></td>
+            <td>&#9989;</td>
+            <td>&#9989;</td>
+            <td>&#9989;</td>
+          </tr>
+          <tr>
+            <td><strong>private</strong></td>
+            <td>&#9989;</td>
+            <td>&#10060;</td>
+            <td>&#10060;</td>
+          </tr>
+          <tr>
+            <td><strong>internal</strong></td>
+            <td>&#9989;</td>
+            <td>&#9989;</td>
+            <td>&#10060;</td>
+          </tr>
+          <tr>
+            <td><strong>external</strong></td>
+            <td>&#10060;</td>
+            <td>&#10060;</td>
+            <td>&#9989;</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="formal-box">
+      <div class="label">&#128218; 정석 설명 - 상태 수정자 (State Mutability)</div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>수정자</th>
+            <th>상태 읽기</th>
+            <th>상태 변경</th>
+            <th>가스비</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>view</strong></td>
+            <td>&#9989;</td>
+            <td>&#10060;</td>
+            <td>외부 호출 시 무료</td>
+          </tr>
+          <tr>
+            <td><strong>pure</strong></td>
+            <td>&#10060;</td>
+            <td>&#10060;</td>
+            <td>외부 호출 시 무료</td>
+          </tr>
+          <tr>
+            <td><strong>(없음)</strong></td>
+            <td>&#9989;</td>
+            <td>&#9989;</td>
+            <td>유료 (가스 소모)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 가스비 계산기 시뮬레이션 -->
+  <div class="card" id="sim-gas-calc">
+    <h3>&#9981; 가스비 계산기 시뮬레이션</h3>
+    <p class="text-sm mb-16" style="color: var(--text-secondary);">함수 종류에 따라 가스비가 어떻게 달라지는지 직접 비교해보세요. 관련 EVM 옵코드의 개별 비용도 확인할 수 있습니다.</p>
+
+    <div class="interactive-area" style="padding: 24px;">
+      <div class="sim-gas-panel">
+        <!-- 함수 타입 선택 -->
+        <div class="sim-gas-selector" id="sim-gas-selector">
+          <div class="sim-gas-option active" onclick="sim_gasSelect('view')">
+            <div class="gas-opt-icon">&#128065;</div>
+            <div class="gas-opt-name">view</div>
+            <div class="gas-opt-desc">상태 읽기만 (외부 호출 무료)</div>
+          </div>
+          <div class="sim-gas-option" onclick="sim_gasSelect('pure')">
+            <div class="gas-opt-icon">&#129518;</div>
+            <div class="gas-opt-name">pure</div>
+            <div class="gas-opt-desc">순수 계산 (외부 호출 무료)</div>
+          </div>
+          <div class="sim-gas-option" onclick="sim_gasSelect('state')">
+            <div class="gas-opt-icon">&#128293;</div>
+            <div class="gas-opt-name">state-changing</div>
+            <div class="gas-opt-desc">상태 변경 (가스비 발생)</div>
+          </div>
+        </div>
+
+        <!-- 가스비 막대그래프 비교 -->
+        <div class="sim-gas-bar-container">
+          <div class="sim-gas-bar-row">
+            <div class="sim-gas-bar-label">view</div>
+            <div class="sim-gas-bar-track">
+              <div class="sim-gas-bar-fill" id="sim-gas-bar-view" style="width: 0%; background: var(--green);"></div>
+            </div>
+            <div class="sim-gas-bar-value" id="sim-gas-val-view">0 gas</div>
+          </div>
+          <div class="sim-gas-bar-row">
+            <div class="sim-gas-bar-label">pure</div>
+            <div class="sim-gas-bar-track">
+              <div class="sim-gas-bar-fill" id="sim-gas-bar-pure" style="width: 0%; background: var(--blue);"></div>
+            </div>
+            <div class="sim-gas-bar-value" id="sim-gas-val-pure">0 gas</div>
+          </div>
+          <div class="sim-gas-bar-row">
+            <div class="sim-gas-bar-label">state</div>
+            <div class="sim-gas-bar-track">
+              <div class="sim-gas-bar-fill" id="sim-gas-bar-state" style="width: 0%; background: var(--red);"></div>
+            </div>
+            <div class="sim-gas-bar-value" id="sim-gas-val-state">0 gas</div>
+          </div>
+        </div>
+
+        <!-- 총 비용 표시 -->
+        <div class="sim-gas-cost-display" id="sim-gas-cost-display">
+          <div class="cost-title">선택된 함수의 예상 가스비</div>
+          <div class="cost-amount" id="sim-gas-total-cost">0 gas</div>
+          <div class="cost-usd" id="sim-gas-usd">&#8776; $0.00 (가스 가격 20 Gwei, ETH $3,500 기준)</div>
+        </div>
+
+        <!-- 관련 옵코드 -->
+        <div style="margin-top: 20px;">
+          <p style="font-size: 0.85rem; font-weight: 700; margin-bottom: 8px;">&#128268; 관련 EVM 옵코드 비용</p>
+          <div class="sim-gas-opcodes" id="sim-gas-opcodes">
+            <div class="sim-gas-opcode" data-ops="view,state">
+              <span class="opcode-name">SLOAD</span>
+              <span class="opcode-cost">2,100 gas</span>
+            </div>
+            <div class="sim-gas-opcode" data-ops="state">
+              <span class="opcode-name">SSTORE</span>
+              <span class="opcode-cost">20,000 gas</span>
+            </div>
+            <div class="sim-gas-opcode" data-ops="pure,view,state">
+              <span class="opcode-name">ADD</span>
+              <span class="opcode-cost">3 gas</span>
+            </div>
+            <div class="sim-gas-opcode" data-ops="pure,view,state">
+              <span class="opcode-name">MUL</span>
+              <span class="opcode-cost">5 gas</span>
+            </div>
+            <div class="sim-gas-opcode" data-ops="pure,view,state">
+              <span class="opcode-name">MLOAD</span>
+              <span class="opcode-cost">3 gas</span>
+            </div>
+            <div class="sim-gas-opcode" data-ops="pure,view,state">
+              <span class="opcode-name">MSTORE</span>
+              <span class="opcode-cost">3 gas</span>
+            </div>
+            <div class="sim-gas-opcode" data-ops="state">
+              <span class="opcode-name">LOG1</span>
+              <span class="opcode-cost">750 gas</span>
+            </div>
+            <div class="sim-gas-opcode" data-ops="state">
+              <span class="opcode-name">CALL</span>
+              <span class="opcode-cost">2,600 gas</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3-6. HelloNumber.sol -->
+  <div class="card" id="sec3-hellonumber">
+    <h3>3-6. HelloNumber.sol - int 타입 소개</h3>
+
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유로 이해하기</div>
+      <p><strong>number는 전자 게시판에 적힌 숫자.</strong> 누구나(<code>public</code>) 볼 수 있지만, 바꾸려면 별도 함수가 필요합니다.</p>
+    </div>
+
+    <div class="code-block">
+      <span class="code-label">HelloNumber.sol</span>
+      <span class="code-line"><span class="line-num">1</span><span class="comment">// SPDX-License-Identifier: MIT</span></span>
+      <span class="code-line"><span class="line-num">2</span><span class="keyword">pragma solidity</span> <span class="operator">^</span><span class="number">0.8.26</span>;</span>
+      <span class="code-line"><span class="line-num">3</span></span>
+      <span class="code-line"><span class="line-num">4</span><span class="keyword">contract</span> <span class="type">HelloNumber</span> {</span>
+      <span class="code-line"><span class="line-num">5</span>    <span class="type">int</span> <span class="keyword">public</span> <span class="variable">number</span> = <span class="number">10</span>;</span>
+      <span class="code-line"><span class="line-num">6</span>}</span>
+    </div>
+
+    <div class="formal-box">
+      <div class="label">&#128218; 정석 설명 - int vs uint</div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>타입</th>
+            <th>정식 명칭</th>
+            <th>범위</th>
+            <th>특징</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>int</code></td>
+            <td>int256</td>
+            <td>-2<sup>255</sup> ~ 2<sup>255</sup>-1</td>
+            <td>부호 있는 정수 (음수 가능)</td>
+          </tr>
+          <tr>
+            <td><code>uint</code></td>
+            <td>uint256</td>
+            <td>0 ~ 2<sup>256</sup>-1</td>
+            <td>부호 없는 정수 (양수만)</td>
+          </tr>
+        </tbody>
+      </table>
+      <ul style="margin-top: 12px; padding-left: 20px;">
+        <li>Solidity 0.8.0부터 <strong>오버플로우/언더플로우 자동 보호</strong> (이전에는 SafeMath 라이브러리 필요)</li>
+        <li><code>int8</code>, <code>int16</code>, ... <code>int256</code>까지 8비트 단위로 크기 지정 가능</li>
+        <li><code>int</code>는 <code>int256</code>의 축약형, <code>uint</code>는 <code>uint256</code>의 축약형</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ==================== 섹션 4: Counter.sol & constructor ==================== -->
+<section class="section" id="sec4">
+  <h2 class="section-title"><span class="num">4</span> Counter.sol &amp; constructor</h2>
+  <p class="section-subtitle">생성자와 상태 변경 함수 이해하기</p>
+
+  <div class="card">
+    <h3>&#128196; Counter.sol 전체 코드</h3>
+    <div class="code-block">
+      <span class="code-label">Counter.sol</span>
+      <span class="code-line"><span class="line-num">1</span><span class="comment">// SPDX-License-Identifier: MIT</span></span>
+      <span class="code-line"><span class="line-num">2</span><span class="keyword">pragma solidity</span> <span class="number">0.8.26</span>;</span>
+      <span class="code-line"><span class="line-num">3</span></span>
+      <span class="code-line"><span class="line-num">4</span><span class="keyword">contract</span> <span class="type">Counter</span> {</span>
+      <span class="code-line"><span class="line-num">5</span>    <span class="type">uint</span> <span class="keyword">public</span> <span class="variable">counter</span>;</span>
+      <span class="code-line"><span class="line-num">6</span></span>
+      <span class="code-line"><span class="line-num">7</span>    <span class="keyword">constructor</span>() {</span>
+      <span class="code-line"><span class="line-num">8</span>        <span class="variable">counter</span> = <span class="number">0</span>;</span>
+      <span class="code-line"><span class="line-num">9</span>    }</span>
+      <span class="code-line"><span class="line-num">10</span></span>
+      <span class="code-line"><span class="line-num">11</span>    <span class="keyword">function</span> <span class="function">count</span>() <span class="keyword">public</span> {</span>
+      <span class="code-line"><span class="line-num">12</span>        <span class="variable">counter</span> = <span class="variable">counter</span> + <span class="number">1</span>;</span>
+      <span class="code-line"><span class="line-num">13</span>    }</span>
+      <span class="code-line"><span class="line-num">14</span></span>
+      <span class="code-line"><span class="line-num">15</span>    <span class="keyword">function</span> <span class="function">get</span>() <span class="keyword">public</span> <span class="keyword">view</span> <span class="keyword">returns</span> (<span class="type">uint</span>) {</span>
+      <span class="code-line"><span class="line-num">16</span>        <span class="keyword">return</span> <span class="variable">counter</span>;</span>
+      <span class="code-line"><span class="line-num">17</span>    }</span>
+      <span class="code-line"><span class="line-num">18</span>}</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>constructor (생성자)</h3>
+
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유로 이해하기</div>
+      <p><strong>constructor는 가게 개업식.</strong> 한 번만 열리고, 그때 간판을 달고(변수 초기화) 사장을 등록(owner 설정)합니다. 개업식이 끝나면 다시는 열 수 없고, 그때 정한 규칙대로 가게가 운영됩니다.</p>
+    </div>
+
+    <div class="formal-box">
+      <div class="label">&#128218; 정석 설명</div>
+      <p><strong>constructor</strong>는 컨트랙트 배포 시 <strong>단 1회만 실행</strong>되는 특수 함수입니다.</p>
+      <ul style="margin-top: 8px; padding-left: 20px;">
+        <li>상태 변수 초기값 설정에 사용</li>
+        <li>매개변수를 받아 동적 초기화 가능</li>
+        <li>배포 후에는 호출 불가</li>
+        <li><code>msg.sender</code>로 배포자 주소를 owner로 저장하는 패턴이 일반적</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 카운터 시뮬레이션 -->
+  <div class="card" id="sec4-sim">
+    <h3>&#127918; 카운터 인터랙티브 시뮬레이션</h3>
+    <p class="text-sm mb-16" style="color: var(--text-secondary);">Remix에서 실행하는 것처럼 직접 버튼을 눌러보세요!</p>
+
+    <div class="interactive-area">
+      <div class="counter-sim">
+        <div style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 4px;">uint counter =</div>
+        <div class="counter-display" id="counterDisplay">0</div>
+
+        <div class="counter-buttons">
+          <button class="btn btn-orange" onclick="counterIncrement()">
+            &#128293; count()
+          </button>
+          <button class="btn btn-green" onclick="counterGet()">
+            &#128065; get()
+          </button>
+          <button class="btn btn-outline btn-sm" onclick="counterReset()">
+            &#8635; 재배포 (constructor)
+          </button>
+        </div>
+
+        <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 8px;">
+          <span class="tag tag-red" id="counterGasTag" style="display: none;"></span>
+        </div>
+
+        <div class="counter-log" id="counterLog">
+          <div style="color: #64748b;">// 콘솔 로그</div>
+          <div style="color: #61afef;">[Deploy] Counter 컨트랙트 배포됨. count = 0 (constructor 실행)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4-2. CheckNumber.sol 분석 -->
+  <div class="card" id="sec4-checknumber">
+    <h3>4-2. CheckNumber.sol 분석</h3>
+
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유로 이해하기</div>
+      <p><strong>CheckNumber는 숫자 감별사.</strong> 숫자를 건네주면 양수인지, 음수인지, 0인지 판별해줍니다.
+      음수를 건네면 "안 됩니다!"라며 거래 자체를 취소(<code>revert</code>)합니다.</p>
+    </div>
+
+    <div class="formal-box">
+      <div class="label">&#128218; 정석 설명</div>
+      <p><strong>CheckNumber.sol</strong>은 <code>pure</code> 함수와 <code>revert</code>를 실제로 사용하는 예제입니다.</p>
+      <ul style="margin-top: 8px; padding-left: 20px;">
+        <li><code>pure</code>: 상태 변수를 읽지도, 쓰지도 않는 순수 계산 함수</li>
+        <li><code>revert</code>: 조건 불충족 시 실행을 즉시 중단하고 에러 메시지 반환</li>
+        <li>입력값에 따라 3가지 분기: 양수 &rarr; 문자열 반환, 음수 &rarr; revert, 0 &rarr; 문자열 반환</li>
+      </ul>
+    </div>
+
+    <div class="code-block">
+      <span class="code-label">CheckNumber.sol</span>
+      <span class="code-line"><span class="line-num">1</span><span class="comment">// SPDX-License-Identifier: MIT</span></span>
+      <span class="code-line"><span class="line-num">2</span><span class="keyword">pragma solidity</span> <span class="operator">^</span><span class="number">0.8.26</span>;</span>
+      <span class="code-line"><span class="line-num">3</span></span>
+      <span class="code-line"><span class="line-num">4</span><span class="keyword">contract</span> <span class="type">CheckNumber</span> {</span>
+      <span class="code-line"><span class="line-num">5</span>    <span class="type">int</span> <span class="keyword">public</span> <span class="variable">number</span> = <span class="number">100</span>;</span>
+      <span class="code-line"><span class="line-num">6</span></span>
+      <span class="code-line"><span class="line-num">7</span>    <span class="keyword">function</span> <span class="function">check</span>(<span class="type">int</span> <span class="variable">x</span>) <span class="keyword">public</span> <span class="keyword">pure</span> <span class="keyword">returns</span> (<span class="type">string</span> <span class="keyword">memory</span>) {</span>
+      <span class="code-line"><span class="line-num">8</span>        <span class="keyword">if</span> (<span class="variable">x</span> > <span class="number">0</span>) {</span>
+      <span class="code-line"><span class="line-num">9</span>            <span class="keyword">return</span> <span class="string">"The number is positive"</span>;</span>
+      <span class="code-line"><span class="line-num">10</span>        } <span class="keyword">else if</span> (<span class="variable">x</span> &lt; <span class="number">0</span>) {</span>
+      <span class="code-line"><span class="line-num">11</span>            <span class="keyword">revert</span>(<span class="string">"The number is negative"</span>);</span>
+      <span class="code-line"><span class="line-num">12</span>        }</span>
+      <span class="code-line"><span class="line-num">13</span>        <span class="keyword">return</span> <span class="string">"The number is zero"</span>;</span>
+      <span class="code-line"><span class="line-num">14</span>    }</span>
+      <span class="code-line"><span class="line-num">15</span>}</span>
+    </div>
+
+    <div class="formal-box" style="margin-top: 16px;">
+      <div class="label">&#128218; pure 함수란?</div>
+      <ul style="padding-left: 20px;">
+        <li><code>check()</code>은 상태 변수 <code>number</code>를 읽지 않음 (파라미터 <code>x</code>만 사용)</li>
+        <li>같은 입력 &rarr; 항상 같은 출력 (순수 함수)</li>
+        <li>가스비 무료 (외부 호출 시)</li>
+      </ul>
+    </div>
+
+    <div class="formal-box" style="margin-top: 12px;">
+      <div class="label">&#128218; revert 동작 원리</div>
+      <ul style="padding-left: 20px;">
+        <li>음수 입력 &rarr; 즉시 실행 중단</li>
+        <li>모든 상태 변경 롤백</li>
+        <li>남은 가스 환불 (이미 사용된 가스는 손실)<br><em style="color:#3b82f6;font-size:0.85em;">※ 단, check()는 pure 함수이므로 외부 호출 시 가스비 자체가 무료 &mdash; revert되어도 실제 가스 소모 없음</em></li>
+        <li>에러 메시지 <code>"The number is negative"</code> 반환</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ==================== 섹션 5: Faucet.sol ==================== -->
+<section class="section" id="sec5">
+  <h2 class="section-title"><span class="num">5</span> Faucet.sol 심층 분석</h2>
+  <p class="section-subtitle">테스트넷 Faucet 스마트 컨트랙트의 모든 것</p>
+
+  <!-- 5-1. Faucet 개념 -->
+  <div class="card">
+    <h3>5-1. Faucet이란?</h3>
+
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유로 이해하기</div>
+      <p><strong>Faucet은 공원의 무료 음수대.</strong> 누구나 물(ETH)을 마실 수 있지만, 한 사람이 독점하지 못하도록 1일 1회 제한이 있습니다. 관리자(owner)만 물탱크를 채우거나 비울 수 있습니다.</p>
+    </div>
+
+    <div class="formal-box">
+      <div class="label">&#128218; 정석 설명</div>
+      <p><strong>Faucet</strong>은 테스트넷에서 소량의 ETH를 무료 배포하는 스마트 컨트랙트입니다.</p>
+      <ul style="margin-top: 8px; padding-left: 20px;">
+        <li><strong>목적:</strong> 개발자가 테스트에 필요한 ETH를 무료로 받을 수 있게 함</li>
+        <li><strong>레이트 리밋:</strong> 주소당 24시간에 1회만 출금 가능 (남용 방지)</li>
+        <li><strong>출금 한도:</strong> 1회 출금량 제한 (0.1 ETH, constant)</li>
+        <li><strong>소유자 관리:</strong> 잔액 충전/전액 회수는 owner만 가능</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 전체 코드 -->
+  <div class="card">
+    <h3>&#128196; Faucet.sol 전체 코드</h3>
+    <div class="code-block">
+      <span class="code-label">Faucet.sol</span>
+      <span class="code-line"><span class="line-num">1</span><span class="comment">// SPDX-License-Identifier: MIT</span></span>
+      <span class="code-line"><span class="line-num">2</span><span class="keyword">pragma solidity</span> <span class="operator">^</span><span class="number">0.8.26</span>;</span>
+      <span class="code-line"><span class="line-num">3</span></span>
+      <span class="code-line"><span class="line-num">4</span><span class="keyword">contract</span> <span class="type">Faucet</span> {</span>
+      <span class="code-line"><span class="line-num">5</span>    <span class="type">address</span> <span class="keyword">payable</span> <span class="keyword">public</span> <span class="variable">owner</span>;</span>
+      <span class="code-line"><span class="line-num">6</span>    <span class="type">uint256</span> <span class="keyword">public</span> <span class="keyword">constant</span> <span class="variable">WITHDRAWAL_AMOUNT</span> = <span class="number">0.1</span> <span class="keyword">ether</span>;</span>
+      <span class="code-line"><span class="line-num">7</span>    <span class="type">uint256</span> <span class="keyword">public</span> <span class="keyword">constant</span> <span class="variable">LOCK_TIME</span> = <span class="number">1</span> <span class="keyword">days</span>;</span>
+      <span class="code-line"><span class="line-num">8</span></span>
+      <span class="code-line"><span class="line-num">9</span>    <span class="keyword">mapping</span>(<span class="type">address</span> <span class="operator">=></span> <span class="type">uint256</span>) <span class="keyword">public</span> <span class="variable">lastWithdrawalTime</span>;</span>
+      <span class="code-line"><span class="line-num">10</span></span>
+      <span class="code-line"><span class="line-num">11</span>    <span class="keyword">event</span> <span class="function">Withdrawal</span>(<span class="type">address</span> <span class="keyword">indexed</span> <span class="variable">user</span>, <span class="type">uint256</span> <span class="variable">amount</span>);</span>
+      <span class="code-line"><span class="line-num">12</span></span>
+      <span class="code-line"><span class="line-num">13</span>    <span class="keyword">modifier</span> <span class="function">onlyOwner</span>() {</span>
+      <span class="code-line"><span class="line-num">14</span>        <span class="function">require</span>(<span class="variable">msg</span>.<span class="variable">sender</span> == <span class="variable">owner</span>, <span class="string">"Only the owner can call this function."</span>);</span>
+      <span class="code-line"><span class="line-num">15</span>        _;</span>
+      <span class="code-line"><span class="line-num">16</span>    }</span>
+      <span class="code-line"><span class="line-num">17</span></span>
+      <span class="code-line"><span class="line-num">18</span>    <span class="keyword">constructor</span>() {</span>
+      <span class="code-line"><span class="line-num">19</span>        <span class="variable">owner</span> = <span class="keyword">payable</span>(<span class="variable">msg</span>.<span class="variable">sender</span>);</span>
+      <span class="code-line"><span class="line-num">20</span>    }</span>
+      <span class="code-line"><span class="line-num">21</span></span>
+      <span class="code-line"><span class="line-num">22</span>    <span class="keyword">function</span> <span class="function">withdraw</span>() <span class="keyword">external</span> {</span>
+      <span class="code-line"><span class="line-num">23</span>        <span class="function">require</span>(</span>
+      <span class="code-line"><span class="line-num">24</span>            <span class="variable">block</span>.<span class="variable">timestamp</span> >= <span class="variable">lastWithdrawalTime</span>[<span class="variable">msg</span>.<span class="variable">sender</span>] + <span class="variable">LOCK_TIME</span>,</span>
+      <span class="code-line"><span class="line-num">25</span>            <span class="string">"You must wait 24 hours between withdrawals."</span>);</span>
+      <span class="code-line"><span class="line-num">26</span>        <span class="function">require</span>(</span>
+      <span class="code-line"><span class="line-num">27</span>            <span class="variable">address</span>(<span class="keyword">this</span>).<span class="variable">balance</span> >= <span class="variable">WITHDRAWAL_AMOUNT</span>,</span>
+      <span class="code-line"><span class="line-num">28</span>            <span class="string">"Insufficient balance in the faucet."</span>);</span>
+      <span class="code-line"><span class="line-num">29</span></span>
+      <span class="code-line"><span class="line-num">30</span>        <span class="variable">lastWithdrawalTime</span>[<span class="variable">msg</span>.<span class="variable">sender</span>] = <span class="variable">block</span>.<span class="variable">timestamp</span>;</span>
+      <span class="code-line"><span class="line-num">31</span>        <span class="keyword">payable</span>(<span class="variable">msg</span>.<span class="variable">sender</span>).<span class="function">transfer</span>(<span class="variable">WITHDRAWAL_AMOUNT</span>);</span>
+      <span class="code-line"><span class="line-num">32</span>        <span class="keyword">emit</span> <span class="function">Withdrawal</span>(<span class="variable">msg</span>.<span class="variable">sender</span>, <span class="variable">WITHDRAWAL_AMOUNT</span>);</span>
+      <span class="code-line"><span class="line-num">33</span>    }</span>
+      <span class="code-line"><span class="line-num">34</span></span>
+      <span class="code-line"><span class="line-num">35</span>    <span class="keyword">function</span> <span class="function">deposit</span>() <span class="keyword">external</span> <span class="keyword">payable</span> <span class="function">onlyOwner</span> {}</span>
+      <span class="code-line"><span class="line-num">36</span></span>
+      <span class="code-line"><span class="line-num">37</span>    <span class="keyword">function</span> <span class="function">withdrawAll</span>() <span class="keyword">external</span> <span class="function">onlyOwner</span> {</span>
+      <span class="code-line"><span class="line-num">38</span>        <span class="variable">owner</span>.<span class="function">transfer</span>(<span class="variable">address</span>(<span class="keyword">this</span>).<span class="variable">balance</span>);</span>
+      <span class="code-line"><span class="line-num">39</span>    }</span>
+      <span class="code-line"><span class="line-num">40</span></span>
+      <span class="code-line"><span class="line-num">41</span>    <span class="keyword">receive</span>() <span class="keyword">external</span> <span class="keyword">payable</span> {}</span>
+      <span class="code-line"><span class="line-num">42</span>}</span>
+    </div>
+
+    <div style="background:#fffbeb;border-left:4px solid #f59e0b;padding:12px 16px;border-radius:0 8px 8px 0;margin-top:12px;">
+      <strong>&#128161; 실무 참고:</strong> <code>.transfer()</code>는 학습용으로 사용합니다. 실제 프로젝트에서는 2300 gas 제한 문제로 <code>.call{value: amount}("")</code> 사용이 권장됩니다.
+    </div>
+  </div>
+
+  <!-- 5-2. 핵심 개념들 -->
+  <div class="card" id="sec5-concepts">
+    <h3>5-2. 핵심 개념 완전 정복</h3>
+
+    <!-- address payable -->
+    <h4>&#9312; address payable</h4>
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유</div>
+      <p><strong>돈을 받을 수 있는 지갑 주소.</strong> 일반 address는 신분증(확인용), payable address는 지갑(돈을 받을 수 있음)입니다.</p>
+    </div>
+    <div class="formal-box">
+      <div class="label">&#128218; 정석</div>
+      <p><code>address payable</code>은 <code>.transfer()</code>와 <code>.send()</code> 메서드를 사용할 수 있어 ETH를 수신할 수 있는 주소 타입입니다. 일반 <code>address</code>는 ETH 전송이 불가합니다.</p>
+    </div>
+
+    <!-- mapping -->
+    <h4>&#9313; mapping</h4>
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유</div>
+      <p><strong>전화번호부.</strong> 이름(key)을 알면 전화번호(value)를 바로 찾을 수 있습니다. <code>mapping(address => uint256)</code>은 "주소별 숫자를 기록하는 전화번호부"입니다.</p>
+    </div>
+    <div class="formal-box">
+      <div class="label">&#128218; 정석</div>
+      <p><code>mapping</code>은 해시 테이블 기반 key-value 저장소입니다. 항상 storage에 저장되며, 기본값이 자동 설정됩니다(uint는 0, bool은 false, address는 0x0).</p>
+    </div>
+
+    <!-- mapping 시각화 시뮬레이션 -->
+    <div class="interactive-area" id="sim-mapping-viz" style="text-align: left; padding: 24px;">
+      <h4 style="text-align: center; color: var(--accent);">&#127918; mapping 동작 시각화</h4>
+      <p class="text-sm mb-16" style="text-align: center; color: var(--text-secondary);">주소와 값을 입력하고 "저장"을 누르면 해시 테이블에 기록되는 과정을 볼 수 있습니다. "조회"로 값을 읽어보세요.</p>
+
+      <div class="sim-mapping-container">
+        <!-- 입력 영역 -->
+        <div class="sim-mapping-input">
+          <div>
+            <label>&#128273; Key (address)</label>
+            <input type="text" id="sim-mapping-key" placeholder="0xAlice" value="0xAlice">
+          </div>
+          <div>
+            <label>&#128200; Value (uint256)</label>
+            <input type="number" id="sim-mapping-value" placeholder="100" value="100" min="0">
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="sim_mappingStore()">&#128190; 저장 (SSTORE)</button>
+            <button class="btn btn-green" onclick="sim_mappingQuery()">&#128269; 조회 (SLOAD)</button>
+            <button class="btn btn-outline btn-sm" onclick="sim_mappingReset()">&#8635; 초기화</button>
+          </div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button class="btn btn-sm" style="background: #64748b; color: white; font-size: 0.75rem;" onclick="sim_mappingQuickFill('0xAlice', 500)">0xAlice: 500</button>
+            <button class="btn btn-sm" style="background: #64748b; color: white; font-size: 0.75rem;" onclick="sim_mappingQuickFill('0xBob', 200)">0xBob: 200</button>
+            <button class="btn btn-sm" style="background: #64748b; color: white; font-size: 0.75rem;" onclick="sim_mappingQuickFill('0xCharlie', 0)">0xCharlie: 0</button>
+          </div>
+          <!-- 조회 결과 -->
+          <div id="sim-mapping-result"></div>
+        </div>
+
+        <!-- 해시 테이블 시각화 -->
+        <div class="sim-mapping-table" id="sim-mapping-table">
+          <div class="table-header">
+            <span>Slot</span>
+            <span>Key (address)</span>
+            <span>Value</span>
+          </div>
+          <div id="sim-mapping-rows" style="color: #636d83; font-size: 0.78rem; padding: 12px 0; text-align: center;">
+            // 비어있음 (기본값: 0)
+          </div>
+        </div>
+
+        <!-- 해시 과정 표시 -->
+        <div class="sim-mapping-hash-display" id="sim-mapping-hash">
+          <span class="hash-label">&#128269; 스토리지 슬롯 계산 과정</span>
+          저장 또는 조회 시 keccak256 해시 과정이 여기에 표시됩니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- event & emit -->
+    <h4>&#9314; event &amp; emit</h4>
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유</div>
+      <p><strong>영수증 발행.</strong> 거래가 완료되면 영수증(event)을 발행(emit)하여 기록합니다. 나중에 누구나 이 영수증을 조회할 수 있습니다.</p>
+    </div>
+    <div class="formal-box">
+      <div class="label">&#128218; 정석</div>
+      <p><code>event</code>는 블록체인의 트랜잭션 로그에 기록되는 데이터입니다. <code>indexed</code>(검색 가능 표시) 키워드로 최대 3개의 매개변수를 필터링/검색 가능하게 만들 수 있습니다. 가스비가 storage보다 훨씬 저렴합니다(로그 1개당 ~375 gas).</p>
+    </div>
+
+    <!-- modifier -->
+    <h4>&#9315; modifier (함수 수정자)</h4>
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유</div>
+      <p><strong>보안 검문소.</strong> 함수(건물)에 들어가기 전에 검문소(modifier)를 통과해야 합니다. 통과하지 못하면 함수가 실행되지 않고 거래가 취소됩니다.</p>
+    </div>
+    <div class="formal-box">
+      <div class="label">&#128218; 정석</div>
+      <p><code>modifier</code>는 함수 실행 전/후에 조건을 검사하는 재사용 가능한 코드입니다. <code>_;</code>는 "원래 함수 코드를 여기서 실행하라"는 플레이스홀더입니다.</p>
+      <div class="code-block" style="margin-top: 8px;">
+<span class="keyword">modifier</span> <span class="function">onlyOwner</span>() {
+    <span class="function">require</span>(<span class="variable">msg</span>.<span class="variable">sender</span> == <span class="variable">owner</span>, <span class="string">"Only owner"</span>); <span class="comment">// 검문</span>
+    _;  <span class="comment">// _; = "여기에 원래 함수 코드를 실행하라"는 뜻 (플레이스홀더)</span>
+}
+      </div>
+    </div>
+
+    <!-- msg.sender -->
+    <h4>&#9316; msg.sender</h4>
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유</div>
+      <p><strong>전화 건 사람의 번호.</strong> 누가 이 함수를 호출했는지 알 수 있는 발신자 번호입니다. 위조 불가능합니다.</p>
+    </div>
+    <div class="formal-box">
+      <div class="label">&#128218; 정석</div>
+      <p><code>msg.sender</code>는 현재 함수를 호출한 주소(address)를 나타내는 전역 변수입니다. 외부 계정(EOA)일 수도 있고 다른 컨트랙트일 수도 있습니다.</p>
+    </div>
+
+    <div style="background:#fef2f2;border-left:4px solid #ef4444;padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0;">
+      <strong>⚠️ tx.origin vs msg.sender</strong><br>
+      <code>msg.sender</code>는 <strong>직접 호출자</strong> (컨트랙트일 수 있음) → 보안에 안전<br>
+      <code>tx.origin</code>은 <strong>최초 트랜잭션 발신자</strong> (항상 사람) → 피싱 공격에 취약<br>
+      <span style="color:#ef4444;"><strong>절대 <code>require(tx.origin == owner)</code> 를 쓰지 마세요!</strong> 악의적 컨트랙트가 사용자를 속여 트랜잭션을 보내게 하면, tx.origin은 사용자 주소가 됩니다.</span>
+    </div>
+
+    <!-- msg.value -->
+    <h4>&#9316;-2 msg.value</h4>
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유</div>
+      <p><strong>택배 상자에 동봉된 현금 금액.</strong> 함수를 호출할 때 "이 돈도 같이 보낼게요"라고 함께 전송한 ETH의 양입니다.</p>
+    </div>
+    <div class="formal-box">
+      <div class="label">&#128218; 정석</div>
+      <p><code>msg.value</code>는 함수 호출 시 함께 전송된 ETH의 양(wei 단위)입니다. <code>payable</code> 함수에서만 사용 가능합니다. <code>deposit()</code> 함수가 <code>payable</code>인 이유는 ETH를 받아야 하기 때문입니다.</p>
+    </div>
+
+    <!-- block.timestamp -->
+    <h4>&#9317; block.timestamp</h4>
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유</div>
+      <p><strong>우체국 소인.</strong> 편지(트랜잭션)가 처리된 정확한 시각이 자동으로 찍힙니다. 조작이 어렵습니다.</p>
+    </div>
+    <div class="formal-box">
+      <div class="label">&#128218; 정석</div>
+      <p><code>block.timestamp</code>는 현재 블록이 생성된 시간(Unix timestamp, 초 단위)입니다. 검증자(validator)가 수 초 범위에서 조작 가능 (2022년 PoS 전환 이후)하므로 정밀한 타이밍에는 부적합하지만, 24시간 간격 같은 대략적 시간 체크에는 충분합니다.</p>
+    </div>
+
+    <!-- receive() 함수 -->
+    <h4>&#9318; receive() 함수</h4>
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유</div>
+      <p><strong>집 현관의 우편함</strong> &mdash; 누군가 문을 두드리지 않고(함수 호출 없이) 우편함(<code>receive</code>)에 소포(ETH)를 넣으면 자동으로 받습니다.</p>
+    </div>
+    <div class="formal-box">
+      <div class="label">&#128218; 정석</div>
+      <p><code>receive()</code>는 컨트랙트가 순수 ETH 전송(calldata 없음)을 받았을 때 자동 호출되는 특수 함수입니다. Solidity 0.6.0에서 도입되었으며, 없으면 일반적인 ETH 전송을 받을 수 없습니다. <em style="font-size:0.85em;color:#6366f1;">(단, fallback() payable이 있거나 selfdestruct 강제 전송 등 예외 경로는 존재)</em></p>
+      <div class="code-block" style="margin-top: 8px;">
+<span class="keyword">receive</span>() <span class="keyword">external</span> <span class="keyword">payable</span> {}  <span class="comment">// 순수 ETH 전송을 받을 수 있게 함</span>
+      </div>
+    </div>
+
+    <!-- ether/days 단위 -->
+    <h4>&#9319; Solidity 내장 단위 (ether / time)</h4>
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유</div>
+      <p><strong>화폐 단위 변환표.</strong> 1만원 = 10,000원인 것처럼, Solidity도 ether와 시간에 대한 단위 변환을 내장하고 있습니다.</p>
+    </div>
+    <div class="formal-box">
+      <div class="label">&#128218; 정석 - ETH 단위</div>
+      <table class="data-table">
+        <thead>
+          <tr><th>표현</th><th>wei 환산</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>1 ether</code></td><td>1,000,000,000,000,000,000 wei (10<sup>18</sup>)</td></tr>
+          <tr><td><code>0.1 ether</code></td><td>100,000,000,000,000,000 wei</td></tr>
+          <tr><td><code>1 gwei</code></td><td>1,000,000,000 wei (10<sup>9</sup>)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="formal-box" style="margin-top: 12px;">
+      <div class="label">&#128218; 정석 - 시간 단위</div>
+      <table class="data-table">
+        <thead>
+          <tr><th>표현</th><th>초(seconds) 환산</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>1 days</code></td><td>86,400 seconds</td></tr>
+          <tr><td><code>1 hours</code></td><td>3,600 seconds</td></tr>
+          <tr><td><code>1 minutes</code></td><td>60 seconds</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="background:#eff6ff;border-left:4px solid #3b82f6;padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0;">
+      <strong>💡 constant vs immutable</strong><br>
+      <code>constant</code>: <strong>컴파일 시</strong> 값이 확정. 바이트코드에 직접 삽입. 예: <code>WITHDRAWAL_AMOUNT</code><br>
+      <code>immutable</code>: <strong>배포 시(constructor)</strong> 값이 확정. 이후 변경 불가. 예: <code>owner</code>에 적합<br>
+      <span style="color:#3b82f6;">둘 다 storage 슬롯을 사용하지 않아 <strong>가스비를 크게 절약</strong>합니다. (SLOAD 2,100 gas → PUSH 3 gas)</span>
+    </div>
+  </div>
+
+  <!-- 5-3. Faucet 시뮬레이션 -->
+  <div class="card" id="sec5-sim">
+    <h3>&#127918; Faucet 동작 시뮬레이션</h3>
+    <p class="text-sm mb-16" style="color: var(--text-secondary);">실제 Faucet 컨트랙트의 동작을 시뮬레이션합니다. 각 버튼을 눌러보세요!</p>
+
+    <div class="interactive-area" style="text-align: left; padding: 24px;">
+      <div class="faucet-sim" id="faucetSim">
+        <!-- 탱크 -->
+        <div class="faucet-tank">
+          <div class="tank-label">&#128167; Faucet 컨트랙트</div>
+          <div class="tank-visual">
+            <div class="tank-water" id="tankWater" style="height: 0%;"></div>
+          </div>
+          <div class="tank-amount"><span id="faucetBalance">0</span> ETH</div>
+          <div style="margin-top: 12px;">
+            <div class="faucet-info">
+              <div class="info-label">Owner</div>
+              <div class="info-value" id="faucetOwner">미배포</div>
+            </div>
+            <div class="faucet-info" style="margin-top: 6px;">
+              <div class="info-label">출금 한도</div>
+              <div class="info-value">0.1 ETH / 24시간</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 컨트롤 -->
+        <div class="faucet-controls">
+          <div style="margin-bottom: 8px;">
+            <label style="font-size: 0.82rem; font-weight: 600; display: block; margin-bottom: 4px;">현재 사용자:</label>
+            <select id="faucetUser" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-family: monospace; font-size: 0.82rem;">
+              <option value="owner">0xOwner (배포자)</option>
+              <option value="alice">0xAlice (사용자A)</option>
+              <option value="bob">0xBob (사용자B)</option>
+            </select>
+          </div>
+
+          <button class="btn btn-purple" onclick="faucetDeploy()" id="faucetDeployBtn">&#128640; 배포 (constructor)</button>
+          <button class="btn btn-blue" onclick="faucetDeposit()">&#128176; 입금 (1 ETH)</button>
+          <button class="btn btn-green" onclick="faucetRequest()">&#128167; 출금 (withdraw)</button>
+          <button class="btn btn-red" onclick="faucetWithdrawAll()">&#128274; 전액 회수 (withdrawAll)</button>
+          <button class="btn btn-orange btn-sm" onclick="faucetAdvanceTime()">&#9200; 24시간 경과 시뮬레이션</button>
+        </div>
+
+        <!-- 메시지 영역 -->
+        <div id="faucetMessage" style="grid-column: 1 / -1;"></div>
+
+        <!-- 로그 -->
+        <div class="faucet-log" id="faucetLog">
+          <div style="color: #64748b;">// Faucet 트랜잭션 로그</div>
+          <div style="color: #64748b;">// 배포 버튼을 눌러 시작하세요</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5-4. 보안 기능 -->
+  <div class="card" id="sec5-security">
+    <h3>&#128737;&#65039; 5-4. Faucet 보안 기능</h3>
+    <p class="mb-16">각 보안 기능이 어떤 위협을 방어하는지 확인하세요.</p>
+
+    <div class="security-grid">
+      <div class="security-item">
+        <div class="shield">&#128737;&#65039;</div>
+        <h5>onlyOwner modifier</h5>
+        <p>전액 회수(<strong>withdrawAll</strong>) 함수에 접근 제어를 적용하여 <strong>owner만</strong> 컨트랙트의 전체 잔액을 인출할 수 있게 합니다.</p>
+        <span class="tag tag-red mt-8">방어: 무단 자금 탈취</span>
+      </div>
+      <div class="security-item">
+        <div class="shield">&#9200;</div>
+        <h5>시간 기반 레이트 리밋</h5>
+        <p><code>lastWithdrawalTime</code> mapping으로 주소별 마지막 출금 시간을 기록. <strong>24시간</strong> 이내 재출금 차단.</p>
+        <span class="tag tag-orange mt-8">방어: 반복 출금 남용</span>
+      </div>
+      <div class="security-item">
+        <div class="shield">&#128176;</div>
+        <h5>잔액 검증</h5>
+        <p>출금 전 <code>address(this).balance >= WITHDRAWAL_AMOUNT</code>를 검사하여 <strong>잔액 부족 시 거래를 거부</strong>합니다.</p>
+        <span class="tag tag-blue mt-8">방어: 잔액 부족 오류</span>
+      </div>
+      <div class="security-item">
+        <div class="shield">&#128274;</div>
+        <h5>고정 출금액</h5>
+        <p>1회 출금량이 <code>0.1 ether</code>로 constant 고정되어 <strong>대량 출금을 원천 차단</strong>합니다.</p>
+        <span class="tag tag-purple mt-8">방어: 대량 인출 공격</span>
+      </div>
+      <div class="security-item">
+        <div class="shield">&#128203;</div>
+        <h5>이벤트 로깅</h5>
+        <p>Withdrawal 이벤트로 출금을 <strong>투명하게 기록</strong>합니다. 추후 감사(audit)에 활용 가능. <em style="font-size:0.85em;color:#6366f1;">(참고: 입금 이벤트도 추가하면 모든 자금 이동을 추적할 수 있어 더 좋습니다)</em></p>
+        <span class="tag tag-green mt-8">방어: 불투명한 자금 흐름</span>
+      </div>
+      <div class="security-item">
+        <div class="shield">&#128165;</div>
+        <h5>require로 조기 실패</h5>
+        <p>조건 불충족 시 즉시 <strong>revert</strong>하여 가스 낭비를 최소화합니다. 에러 메시지로 실패 원인을 알려줍니다.</p>
+        <span class="tag tag-red mt-8">방어: 의미 없는 가스 소모</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5-5. 재진입 공격과 방어 -->
+  <div class="card">
+    <h3>⚔️ 5-5. 재진입(Reentrancy) 공격과 방어</h3>
+
+    <div class="analogy-box">
+      <div class="label">💡 비유로 이해하기</div>
+      <p><strong>ATM 반복 출금 사기.</strong> ATM이 돈을 내보낸 뒤 잔액을 차감한다면, 잔액이 줄기 전에 다시 출금 버튼을 누를 수 있습니다. 스마트 컨트랙트에서도 ETH를 보낸 뒤 상태를 업데이트하면, 수신자가 receive() 함수에서 다시 withdraw()를 호출하여 반복 출금할 수 있습니다. 이것이 <strong>재진입 공격</strong>입니다.</p>
+    </div>
+
+    <div class="formal-box">
+      <div class="label">📚 정석 설명</div>
+      <p><strong>재진입(Reentrancy)</strong>은 스마트 컨트랙트 보안의 가장 대표적인 취약점입니다. 2016년 The DAO 해킹(약 360만 ETH, ~$50M 피해)의 원인이었습니다.</p>
+      <p style="margin-top:8px;"><strong>공격 원리:</strong></p>
+      <ol style="padding-left:20px;">
+        <li>공격자 컨트랙트가 <code>withdraw()</code> 호출</li>
+        <li>Faucet이 <code>.call{value: amt}("")</code>로 ETH를 전송 (모든 가스가 전달됨)</li>
+        <li>공격자의 <code>receive()</code> 함수가 자동 실행됨</li>
+        <li>receive() 안에서 다시 <code>withdraw()</code> 호출 &rarr; 잔액 차감 전이므로 또 성공</li>
+        <li>반복하여 컨트랙트의 모든 ETH 탈취</li>
+      </ol>
+      <p style="margin-top:8px;font-size:0.85em;color:#6366f1;"><strong>참고:</strong> <code>.transfer()</code>는 2,300 gas만 전달하므로 수신자의 receive()에서 withdraw()를 재호출할 가스가 부족하여 재진입이 사실상 차단됩니다. 그러나 EIP-1884 이후 가스 비용 변경 가능성 때문에, 현대 표준에서는 <code>.call() + CEI 패턴</code>을 함께 사용하는 것을 권장합니다.</p>
+      <p style="margin-top:8px;"><strong>방어법:</strong> Checks-Effects-Interactions (CEI) 패턴 &mdash; 상태를 먼저 변경한 후 외부 호출</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+      <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:12px;padding:16px;">
+        <h5 style="color:#ef4444;margin:0 0 8px;">❌ 취약한 코드</h5>
+        <code style="font-size:0.78rem;display:block;white-space:pre-wrap;color:#374151;">// 상태 변경 전에 먼저 전송 (위험!)
+msg.sender.call{value: amt}("");
+// 전송 후에야 상태 변경 (너무 늦음!)
+balances[msg.sender] -= amt;</code>
+      </div>
+      <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:16px;">
+        <h5 style="color:#10b981;margin:0 0 8px;">✅ 안전한 코드 (CEI)</h5>
+        <code style="font-size:0.78rem;display:block;white-space:pre-wrap;color:#374151;">// 1. Checks (검증)
+require(balance >= amt);
+// 2. Effects (상태 변경)
+balances[msg.sender] -= amt;
+// 3. Interactions (외부 호출)
+msg.sender.call{value: amt}("");</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5-6. CEI 패턴 -->
+  <div class="card">
+    <h3>🛡️ 5-6. Checks-Effects-Interactions (CEI) 패턴</h3>
+
+    <div class="analogy-box">
+      <div class="label">💡 비유로 이해하기</div>
+      <p><strong>은행 출금 3단계.</strong> 1) 신분증 확인(Checks) → 2) 장부에 출금 기록(Effects) → 3) 현금 전달(Interactions). 현금을 먼저 주고 나중에 장부를 수정하면 문제가 생깁니다.</p>
+    </div>
+
+    <div class="formal-box">
+      <div class="label">📚 정석 설명</div>
+      <p><strong>CEI 패턴</strong>은 스마트 컨트랙트 함수의 코드를 3단계로 구성하는 보안 설계 원칙입니다.</p>
+      <p style="margin-top:8px;">우리의 Faucet.sol <code>withdraw()</code> 함수가 이미 CEI를 따르고 있습니다:</p>
+      <div style="background:var(--code-bg,#282c34);padding:16px;border-radius:10px;margin-top:12px;font-family:monospace;font-size:0.82rem;color:#abb2bf;">
+        <div style="color:#e06c75;">// 1. Checks (검증)</div>
+        <div>require(block.timestamp >= lastWithdrawalTime[msg.sender] + LOCK_TIME, ...);</div>
+        <div>require(address(this).balance >= WITHDRAWAL_AMOUNT, ...);</div>
+        <div style="color:#e06c75;margin-top:8px;">// 2. Effects (상태 변경 + 이벤트 로깅) &larr; 외부 호출보다 먼저!</div>
+        <div>lastWithdrawalTime[msg.sender] = block.timestamp;</div>
+        <div>emit Withdrawal(msg.sender, WITHDRAWAL_AMOUNT);</div>
+        <div style="color:#e06c75;margin-top:8px;">// 3. Interactions (외부 호출) &larr; 가장 마지막!</div>
+        <div>payable(msg.sender).transfer(WITHDRAWAL_AMOUNT);</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ==================== 섹션 6: require vs assert vs revert ==================== -->
+<section class="section" id="sec6">
+  <h2 class="section-title"><span class="num">6</span> require vs assert vs revert</h2>
+  <p class="section-subtitle">에러 처리의 삼총사</p>
+
+  <div class="card">
+    <div class="analogy-box">
+      <div class="label">&#128161; 비유로 이해하기</div>
+      <p>식당에서의 비유:</p>
+      <ul style="padding-left: 20px; margin-top: 8px;">
+        <li><strong>require</strong> = 입구 안내원: "예약하셨나요? 아니면 돌아가세요" (입력 검증)</li>
+        <li><strong>assert</strong> = 비상벨: "주방에 불이 났다! 이건 있을 수 없는 일!" (내부 불변 조건)</li>
+        <li><strong>revert</strong> = 매니저 판단: "복잡한 상황을 종합적으로 봤을 때, 이 주문은 취소합니다" (복잡한 조건)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="compare-cards">
+    <div class="compare-card" style="border-color: var(--blue); background: rgba(59,130,246,0.03);">
+      <h4 style="color: var(--blue);">&#128994; require</h4>
+      <p class="text-sm mb-8"><strong>용도:</strong> 입력값/외부 조건 검증</p>
+      <div class="code-block" style="font-size: 0.8rem;">
+<span class="function">require</span>(msg.value > <span class="number">0</span>, <span class="string">"Send ETH!"</span>);
+<span class="function">require</span>(balance >= amount, <span class="string">"Not enough"</span>);
+      </div>
+      <ul style="font-size: 0.82rem; padding-left: 16px; margin-top: 8px;">
+        <li>조건이 false면 <strong>revert</strong></li>
+        <li>남은 가스 <strong>환불</strong></li>
+        <li>에러 메시지 제공 가능</li>
+        <li><span class="tag tag-blue">가장 자주 사용</span></li>
+      </ul>
+    </div>
+
+    <div class="compare-card" style="border-color: var(--red); background: rgba(239,68,68,0.03);">
+      <h4 style="color: var(--red);">&#128308; assert</h4>
+      <p class="text-sm mb-8"><strong>용도:</strong> 내부 불변 조건 검증</p>
+      <div class="code-block" style="font-size: 0.8rem;">
+<span class="function">assert</span>(totalSupply >= <span class="number">0</span>);
+<span class="function">assert</span>(balance[msg.sender] <= totalSupply);
+      </div>
+      <ul style="font-size: 0.82rem; padding-left: 16px; margin-top: 8px;">
+        <li>조건이 false면 <strong>Panic 에러</strong></li>
+        <li>0.8.0 이후 가스 <strong>환불</strong></li>
+        <li>에러 메시지 없음</li>
+        <li><span class="tag tag-red">버그 탐지용</span></li>
+      </ul>
+    </div>
+
+    <div class="compare-card" style="border-color: var(--orange); background: rgba(249,115,22,0.03);">
+      <h4 style="color: var(--orange);">&#128992; revert</h4>
+      <p class="text-sm mb-8"><strong>용도:</strong> 복잡한 조건부 에러 처리</p>
+      <div class="code-block" style="font-size: 0.8rem;">
+<span class="keyword">if</span> (amount > limit) {
+    <span class="keyword">revert</span>(<span class="string">"Over limit"</span>);
+}
+<span class="keyword">revert</span> <span class="type">CustomError</span>(amount);
+      </div>
+      <ul style="font-size: 0.82rem; padding-left: 16px; margin-top: 8px;">
+        <li>무조건 <strong>revert</strong></li>
+        <li>남은 가스 <strong>환불</strong></li>
+        <li>Custom Error 사용 가능 (가스 절약)</li>
+        <li><span class="tag tag-orange">복잡한 로직용</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card mt-24">
+    <h3>비교 요약 표</h3>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>항목</th>
+          <th>require</th>
+          <th>assert</th>
+          <th>revert</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>주 용도</strong></td>
+          <td>입력/조건 검증</td>
+          <td>불변 조건 확인</td>
+          <td>복잡한 에러 처리</td>
+        </tr>
+        <tr>
+          <td><strong>실패 시</strong></td>
+          <td>Error(string)</td>
+          <td>Panic(uint256)</td>
+          <td>Error(string) 또는 Custom</td>
+        </tr>
+        <tr>
+          <td><strong>가스 환불</strong></td>
+          <td>&#9989;</td>
+          <td>&#9989; (0.8.0+)</td>
+          <td>&#9989;</td>
+        </tr>
+        <tr>
+          <td><strong>에러 메시지</strong></td>
+          <td>&#9989;</td>
+          <td>&#10060;</td>
+          <td>&#9989; + Custom Error</td>
+        </tr>
+        <tr>
+          <td><strong>사용 빈도</strong></td>
+          <td>&#11088;&#11088;&#11088;&#11088;&#11088;</td>
+          <td>&#11088;&#11088;</td>
+          <td>&#11088;&#11088;&#11088;</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- require/revert/assert 시뮬레이터 -->
+  <div class="card" id="sim-error-handler">
+    <h3>&#127918; 에러 처리 인터랙티브 시뮬레이터</h3>
+    <p class="text-sm mb-16" style="color: var(--text-secondary);">에러 처리 방식을 선택하고, 입력값을 조절하여 성공/실패 시 동작 차이를 직접 체험하세요.</p>
+
+    <div class="interactive-area" style="padding: 24px;">
+      <div class="sim-error-panel">
+        <!-- 에러 타입 선택 -->
+        <div class="sim-error-selector" id="sim-error-selector">
+          <div class="sim-error-type-btn active-require" onclick="sim_errorSelect('require')">
+            <div class="err-icon">&#128994;</div>
+            <div class="err-label">require</div>
+            <div class="err-desc">입력값 검증</div>
+          </div>
+          <div class="sim-error-type-btn" onclick="sim_errorSelect('assert')">
+            <div class="err-icon">&#128308;</div>
+            <div class="err-label">assert</div>
+            <div class="err-desc">불변 조건 확인</div>
+          </div>
+          <div class="sim-error-type-btn" onclick="sim_errorSelect('revert')">
+            <div class="err-icon">&#128992;</div>
+            <div class="err-label">revert</div>
+            <div class="err-desc">복잡한 조건 에러</div>
+          </div>
+        </div>
+
+        <!-- 시나리오 설정 -->
+        <div class="sim-error-scenario-box">
+          <label id="sim-error-scenario-label">&#128176; 출금 요청 금액 (잔액: 100 ETH)</label>
+          <input type="range" id="sim-error-slider" min="0" max="200" value="50" style="width: 100%; margin: 8px 0;" oninput="sim_errorUpdateSlider()">
+          <div style="display: flex; justify-content: space-between; font-size: 0.82rem;">
+            <span>0 ETH</span>
+            <span style="font-weight: 700; color: var(--accent);" id="sim-error-slider-val">50 ETH</span>
+            <span>200 ETH</span>
+          </div>
+          <div class="text-center mt-16">
+            <button class="btn btn-primary" onclick="sim_errorExecute()">&#9654; 실행</button>
+          </div>
+        </div>
+
+        <!-- 실행 결과 -->
+        <div class="sim-error-result" id="sim-error-result" style="display: none;">
+          <div class="sim-error-result-header" id="sim-error-result-header">결과</div>
+          <div class="sim-error-result-body" id="sim-error-result-body">
+          </div>
+        </div>
+
+        <!-- 가스비 비교 -->
+        <div class="sim-error-gas-compare" id="sim-error-gas-compare">
+          <div class="sim-error-gas-item" id="sim-error-gas-require" style="border-top-color: var(--blue);">
+            <div class="gas-type" style="color: var(--blue);">require</div>
+            <div class="gas-used" id="sim-error-gas-req-val">-</div>
+            <div class="gas-refund">남은 가스 환불</div>
+          </div>
+          <div class="sim-error-gas-item" id="sim-error-gas-assert" style="border-top-color: var(--red);">
+            <div class="gas-type" style="color: var(--red);">assert</div>
+            <div class="gas-used" id="sim-error-gas-ast-val">-</div>
+            <div class="gas-refund">Panic(uint256)</div>
+          </div>
+          <div class="sim-error-gas-item" id="sim-error-gas-revert" style="border-top-color: var(--orange);">
+            <div class="gas-type" style="color: var(--orange);">revert</div>
+            <div class="gas-used" id="sim-error-gas-rev-val">-</div>
+            <div class="gas-refund">Custom Error 가능</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ==================== 섹션 7: 핵심 요약 ==================== -->
+<section class="section" id="sec7">
+  <h2 class="section-title"><span class="num">7</span> 핵심 요약 마인드맵</h2>
+  <p class="section-subtitle">5주차에서 배운 모든 내용을 한눈에</p>
+
+  <div class="card">
+    <div class="interactive-area" style="border: none; background: var(--card-bg); min-height: 520px; position: relative; overflow: hidden;">
+
+      <!-- 마인드맵 - CSS Grid 기반 -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; max-width: 800px; margin: 0 auto;">
+
+        <!-- 중앙 타이틀 -->
+        <div style="grid-column: 1 / -1; text-align: center; margin-bottom: 8px;">
+          <div style="display: inline-block; background: var(--accent); color: white; padding: 16px 32px; border-radius: 20px; font-weight: 800; font-size: 1.2rem; box-shadow: var(--shadow-lg);">
+            &#9939; Solidity & 스마트 컨트랙트
+          </div>
+        </div>
+
+        <!-- 행 1 -->
+        <div style="background: linear-gradient(135deg, #ede9fe, #ddd6fe); padding: 16px; border-radius: var(--radius); border-left: 4px solid var(--purple);">
+          <div style="font-weight: 700; color: var(--purple); margin-bottom: 6px;">&#128161; Solidity</div>
+          <ul style="font-size: 0.8rem; padding-left: 16px; color: var(--text-secondary);">
+            <li>EVM 위에서 실행</li>
+            <li>정적 타입 언어</li>
+            <li>JS/Python/C++ 영향</li>
+          </ul>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #e0f2fe, #bae6fd); padding: 16px; border-radius: var(--radius); border-left: 4px solid var(--blue);">
+          <div style="font-weight: 700; color: var(--blue); margin-bottom: 6px;">&#128421; Remix IDE</div>
+          <ul style="font-size: 0.8rem; padding-left: 16px; color: var(--text-secondary);">
+            <li>브라우저 기반 IDE</li>
+            <li>파일탐색기 / 에디터</li>
+            <li>컴파일러 / 배포패널</li>
+          </ul>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 16px; border-radius: var(--radius); border-left: 4px solid var(--orange);">
+          <div style="font-weight: 700; color: #b45309; margin-bottom: 6px;">&#128196; HelloWorld.sol</div>
+          <ul style="font-size: 0.8rem; padding-left: 16px; color: var(--text-secondary);">
+            <li>SPDX / pragma</li>
+            <li>contract = 코드+데이터</li>
+            <li>상태변수 / 함수</li>
+          </ul>
+        </div>
+
+        <!-- 행 2 -->
+        <div style="background: linear-gradient(135deg, #dcfce7, #bbf7d0); padding: 16px; border-radius: var(--radius); border-left: 4px solid var(--green);">
+          <div style="font-weight: 700; color: #16a34a; margin-bottom: 6px;">&#128190; 데이터 위치</div>
+          <ul style="font-size: 0.8rem; padding-left: 16px; color: var(--text-secondary);">
+            <li>storage = 금고 (영구)</li>
+            <li>memory = 메모장 (임시)</li>
+            <li>calldata = 택배 (읽기전용)</li>
+          </ul>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #fce7f3, #fbcfe8); padding: 16px; border-radius: var(--radius); border-left: 4px solid #ec4899;">
+          <div style="font-weight: 700; color: #db2777; margin-bottom: 6px;">&#128274; 수정자</div>
+          <ul style="font-size: 0.8rem; padding-left: 16px; color: var(--text-secondary);">
+            <li>public / private</li>
+            <li>view / pure</li>
+            <li>modifier (보안 검문)</li>
+          </ul>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #fee2e2, #fecaca); padding: 16px; border-radius: var(--radius); border-left: 4px solid var(--red);">
+          <div style="font-weight: 700; color: var(--red); margin-bottom: 6px;">&#128295; Counter.sol</div>
+          <ul style="font-size: 0.8rem; padding-left: 16px; color: var(--text-secondary);">
+            <li>constructor = 개업식</li>
+            <li>count() = 상태 변경</li>
+            <li>get() = view (무료 조회)</li>
+          </ul>
+        </div>
+
+        <!-- 행 3 (넓게) -->
+        <div style="grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); padding: 16px; border-radius: var(--radius); border-left: 4px solid #0ea5e9;">
+            <div style="font-weight: 700; color: #0369a1; margin-bottom: 6px;">&#128167; Faucet.sol</div>
+            <ul style="font-size: 0.8rem; padding-left: 16px; color: var(--text-secondary);">
+              <li>address payable / mapping</li>
+              <li>event & emit (영수증)</li>
+              <li>modifier onlyOwner (검문소)</li>
+              <li>msg.sender / block.timestamp</li>
+              <li>레이트 리밋 (24시간)</li>
+            </ul>
+          </div>
+
+          <div style="background: linear-gradient(135deg, #fff7ed, #fed7aa); padding: 16px; border-radius: var(--radius); border-left: 4px solid #ea580c;">
+            <div style="font-weight: 700; color: #c2410c; margin-bottom: 6px;">&#9888;&#65039; 에러 처리</div>
+            <ul style="font-size: 0.8rem; padding-left: 16px; color: var(--text-secondary);">
+              <li><strong>require</strong> = 입력 검증 (가장 많이 사용)</li>
+              <li><strong>assert</strong> = 불변 조건 (버그 탐지)</li>
+              <li><strong>revert</strong> = 복잡한 조건부 에러</li>
+              <li>모두 가스 환불 (0.8.0+)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 최종 체크리스트 -->
+  <div class="card">
+    <h3>&#9989; 5주차 학습 체크리스트</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-top: 12px;">
+      <label style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f8fafc; border-radius: 8px; cursor: pointer; font-size: 0.88rem;">
+        <input type="checkbox" style="width: 18px; height: 18px; accent-color: var(--accent);"> Solidity의 정의와 특징 설명 가능
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f8fafc; border-radius: 8px; cursor: pointer; font-size: 0.88rem;">
+        <input type="checkbox" style="width: 18px; height: 18px; accent-color: var(--accent);"> Remix IDE 각 패널의 역할 이해
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f8fafc; border-radius: 8px; cursor: pointer; font-size: 0.88rem;">
+        <input type="checkbox" style="width: 18px; height: 18px; accent-color: var(--accent);"> SPDX, pragma 의미 설명 가능
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f8fafc; border-radius: 8px; cursor: pointer; font-size: 0.88rem;">
+        <input type="checkbox" style="width: 18px; height: 18px; accent-color: var(--accent);"> contract 키워드와 배포 과정 이해
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f8fafc; border-radius: 8px; cursor: pointer; font-size: 0.88rem;">
+        <input type="checkbox" style="width: 18px; height: 18px; accent-color: var(--accent);"> storage / memory / calldata 차이 설명
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f8fafc; border-radius: 8px; cursor: pointer; font-size: 0.88rem;">
+        <input type="checkbox" style="width: 18px; height: 18px; accent-color: var(--accent);"> public / private / view / pure 차이
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f8fafc; border-radius: 8px; cursor: pointer; font-size: 0.88rem;">
+        <input type="checkbox" style="width: 18px; height: 18px; accent-color: var(--accent);"> constructor의 역할과 실행 시점
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f8fafc; border-radius: 8px; cursor: pointer; font-size: 0.88rem;">
+        <input type="checkbox" style="width: 18px; height: 18px; accent-color: var(--accent);"> Faucet 컨트랙트 전체 동작 이해
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f8fafc; border-radius: 8px; cursor: pointer; font-size: 0.88rem;">
+        <input type="checkbox" style="width: 18px; height: 18px; accent-color: var(--accent);"> mapping, event, modifier 사용법
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f8fafc; border-radius: 8px; cursor: pointer; font-size: 0.88rem;">
+        <input type="checkbox" style="width: 18px; height: 18px; accent-color: var(--accent);"> require / assert / revert 차이 설명
+      </label>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:24px;border:2px solid var(--accent,#3b82f6);">
+    <h3>🗺️ 이 다음에는?</h3>
+    <p>이 자료를 마스터했다면 다음 주제에 도전해보세요:</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px;">
+      <div style="background:var(--bg-secondary,#f8fafc);padding:12px;border-radius:10px;">
+        <strong>🏦 DeFi</strong><br>
+        <small>탈중앙 금융 — Uniswap, Aave 같은 프로토콜의 원리</small>
+      </div>
+      <div style="background:var(--bg-secondary,#f8fafc);padding:12px;border-radius:10px;">
+        <strong>🎨 NFT (ERC-721)</strong><br>
+        <small>대체 불가능 토큰 — 디지털 자산의 소유권 증명</small>
+      </div>
+      <div style="background:var(--bg-secondary,#f8fafc);padding:12px;border-radius:10px;">
+        <strong>🗳️ DAO</strong><br>
+        <small>탈중앙 자율 조직 — 코드로 운영되는 조직</small>
+      </div>
+      <div style="background:var(--bg-secondary,#f8fafc);padding:12px;border-radius:10px;">
+        <strong>🔐 OpenZeppelin</strong><br>
+        <small>보안 검증된 표준 라이브러리 — Ownable, ERC20 등</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- 풋터 -->
+  <div style="text-align: center; padding: 40px 0; color: var(--text-secondary); font-size: 0.82rem;">
+    <p>&#128214; 블록체인실습 5주차 학습 가이드</p>
+    <p style="margin-top: 4px;">2026년 3월 29일 | Solidity 기초 &amp; 스마트 컨트랙트</p>
+  </div>
+</section>
+
+</main>
+
+<!-- ========== JavaScript ========== -->
+<script>
+// =============================================
+// 전역 상태 & 초기화
+// =============================================
+
+document.addEventListener('DOMContentLoaded', function() {
+  initIntersectionObserver();
+  initProgressBar();
+  initSidebar();
+  initVersionSlider();
+});
+
+// =============================================
+// Intersection Observer - 섹션 나타남 효과
+// =============================================
+function initIntersectionObserver() {
+  var sections = document.querySelectorAll('.section');
+
+  // IntersectionObserver 지원 여부 확인
+  if (!('IntersectionObserver' in window)) {
+    // 미지원 브라우저: 모든 섹션 즉시 표시
+    sections.forEach(function(section) { section.classList.add('visible'); });
+    return;
+  }
+
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.05, rootMargin: '200px 0px 200px 0px' });
+
+  sections.forEach(function(section) {
+    observer.observe(section);
+  });
+
+  // 앵커 링크 클릭 시 해당 섹션을 즉시 visible로 설정
+  window.addEventListener('hashchange', function() {
+    var hash = window.location.hash;
+    if (hash) {
+      var target = document.querySelector(hash);
+      if (target) {
+        // 타겟 자체가 섹션이면 visible 추가
+        if (target.classList.contains('section')) {
+          target.classList.add('visible');
+        }
+        // 타겟이 섹션 내부 요소면 부모 섹션을 찾아서 visible 추가
+        var parentSection = target.closest('.section');
+        if (parentSection) {
+          parentSection.classList.add('visible');
+        }
+      }
+    }
+  });
+
+  // 페이지 로드 시 해시가 있으면 즉시 해당 섹션 표시
+  if (window.location.hash) {
+    var hash = window.location.hash;
+    var target = document.querySelector(hash);
+    if (target) {
+      if (target.classList.contains('section')) {
+        target.classList.add('visible');
+      }
+      var parentSection = target.closest('.section');
+      if (parentSection) {
+        parentSection.classList.add('visible');
+      }
+    }
+  }
+
+  // 1초 후 뷰포트에 보이는 모든 섹션을 강제로 visible 처리 (안전장치)
+  setTimeout(function() {
+    sections.forEach(function(section) {
+      var rect = section.getBoundingClientRect();
+      var windowHeight = window.innerHeight || document.documentElement.clientHeight;
+      if (rect.top < windowHeight + 200 && rect.bottom > -200) {
+        section.classList.add('visible');
+      }
+    });
+  }, 1000);
+}
+
+// =============================================
+// 진행 바 + 사이드바 활성 섹션 하이라이팅
+// =============================================
+function initProgressBar() {
+  window.addEventListener('scroll', function() {
+    // 진행 바
+    var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+    var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    var scrolled = (winScroll / height) * 100;
+    document.getElementById('progressBar').style.width = scrolled + '%';
+
+    // 사이드바 활성 섹션
+    var sections = ['sec0','sec1','sec2','sec3','sec4','sec5','sec6','sec7'];
+    var current = '';
+    for (var i = 0; i < sections.length; i++) {
+      var section = document.getElementById(sections[i]);
+      if (section) {
+        var rect = section.getBoundingClientRect();
+        if (rect.top <= 150) {
+          current = sections[i];
+        }
+      }
+    }
+
+    document.querySelectorAll('.toc-list a').forEach(function(link) {
+      link.classList.remove('active');
+      if (link.getAttribute('data-section') === current) {
+        link.classList.add('active');
+      }
+    });
+  });
+}
+
+// =============================================
+// 사이드바 (모바일 토글)
+// =============================================
+function initSidebar() {
+  var menuToggle = document.getElementById('menuToggle');
+  var sidebar = document.getElementById('sidebar');
+  var overlay = document.getElementById('overlay');
+
+  menuToggle.addEventListener('click', function() {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+  });
+
+  overlay.addEventListener('click', function() {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+  });
+
+  // 사이드바 링크 클릭 시 모바일에서 닫기
+  document.querySelectorAll('.toc-list a').forEach(function(link) {
+    link.addEventListener('click', function() {
+      if (window.innerWidth <= 900) {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+      }
+    });
+  });
+}
+
+// =============================================
+// 컴파일 흐름 애니메이션 (섹션 1)
+// =============================================
+var compileFlowPlaying = false;
+
+function playCompileFlow() {
+  if (compileFlowPlaying) return;
+  compileFlowPlaying = true;
+  resetCompileFlow();
+
+  var steps = [
+    function() { document.getElementById('flow-1').classList.add('show'); },
+    function() { document.getElementById('arrow-1').classList.add('show'); },
+    function() { document.getElementById('flow-2').classList.add('show'); },
+    function() { document.getElementById('arrow-2').classList.add('show'); },
+    function() { document.getElementById('flow-3').classList.add('show'); },
+    function() { document.getElementById('arrow-3').classList.add('show'); },
+    function() { document.getElementById('flow-4').classList.add('show'); },
+    function() { document.getElementById('arrow-4').classList.add('show'); },
+    function() {
+      document.getElementById('flow-5').classList.add('show');
+      compileFlowPlaying = false;
+    }
+  ];
+
+  steps.forEach(function(step, i) {
+    setTimeout(step, i * 400);
+  });
+}
+
+function resetCompileFlow() {
+  for (var i = 1; i <= 5; i++) {
+    document.getElementById('flow-' + i).classList.remove('show');
+  }
+  for (var j = 1; j <= 4; j++) {
+    document.getElementById('arrow-' + j).classList.remove('show');
+  }
+  compileFlowPlaying = false;
+}
+
+// =============================================
+// Remix 인터랙티브 다이어그램 (섹션 2)
+// =============================================
+var remixDescriptions = {
+  explorer: {
+    title: '파일 탐색기 (File Explorer)',
+    content: '<p><strong>역할:</strong> 프로젝트의 파일과 폴더를 관리합니다.</p>' +
+      '<ul style="margin-top: 8px; padding-left: 20px; font-size: 0.85rem;">' +
+      '<li><strong>contracts/</strong> 폴더에 .sol 파일을 작성</li>' +
+      '<li><strong>scripts/</strong> 폴더에 배포 스크립트 작성</li>' +
+      '<li><strong>tests/</strong> 폴더에 테스트 코드 작성</li>' +
+      '<li>파일 생성, 삭제, 이름 변경 가능</li>' +
+      '<li>GitHub에서 코드 가져오기 가능</li></ul>'
+  },
+  editor: {
+    title: '코드 에디터 (Code Editor)',
+    content: '<p><strong>역할:</strong> Solidity 코드를 작성하고 편집합니다.</p>' +
+      '<ul style="margin-top: 8px; padding-left: 20px; font-size: 0.85rem;">' +
+      '<li>문법 하이라이팅 (키워드별 색상 구분)</li>' +
+      '<li>자동 완성 (Ctrl+Space)</li>' +
+      '<li>실시간 에러 표시 (빨간 밑줄)</li>' +
+      '<li>다중 탭으로 여러 파일 동시 편집</li>' +
+      '<li>줄 번호, 코드 접기 지원</li></ul>'
+  },
+  compile: {
+    title: '컴파일러 (Solidity Compiler)',
+    content: '<p><strong>역할:</strong> Solidity 코드를 EVM 바이트코드로 변환합니다.</p>' +
+      '<ul style="margin-top: 8px; padding-left: 20px; font-size: 0.85rem;">' +
+      '<li>컴파일러 버전 선택 (pragma와 일치시켜야 함)</li>' +
+      '<li>Auto compile 체크 시 저장할 때마다 자동 컴파일</li>' +
+      '<li>컴파일 성공: ABI와 바이트코드 생성</li>' +
+      '<li>컴파일 실패: 에러/경고 메시지 표시</li>' +
+      '<li><strong>ABI:</strong> 컨트랙트의 인터페이스 정의 (JSON)</li></ul>'
+  },
+  deploy: {
+    title: '배포 & 실행 (Deploy & Run)',
+    content: '<p><strong>역할:</strong> 컴파일된 컨트랙트를 배포하고 함수를 실행합니다.</p>' +
+      '<ul style="margin-top: 8px; padding-left: 20px; font-size: 0.85rem;">' +
+      '<li><strong>Remix VM:</strong> 브라우저 내장 가상 블록체인 (테스트용)</li>' +
+      '<li><strong>Injected Provider:</strong> MetaMask 연결 (실제 네트워크)</li>' +
+      '<li>Account에서 테스트 계정 선택</li>' +
+      '<li><span style="color: var(--orange);">주황색 버튼</span> = 가스비 발생 (상태 변경)</li>' +
+      '<li><span style="color: var(--green);">파란/초록 버튼</span> = 가스비 무료 (조회)</li></ul>'
+  }
+};
+
+function showRemixTooltip(panel) {
+  // 모든 패널 비활성화
+  document.querySelectorAll('.remix-panel').forEach(function(p) {
+    p.classList.remove('active');
+  });
+
+  // 선택된 패널 활성화
+  document.getElementById('panel-' + panel).classList.add('active');
+
+  // 툴팁 표시
+  var tooltip = document.getElementById('remix-tooltip');
+  var content = document.getElementById('remix-tooltip-content');
+  var desc = remixDescriptions[panel];
+  content.innerHTML = '<h4 style="color: var(--accent); margin-bottom: 8px;">' + desc.title + '</h4>' + desc.content;
+  tooltip.classList.add('visible');
+}
+
+// =============================================
+// 버전 슬라이더 (섹션 3-2)
+// =============================================
+function initVersionSlider() {
+  var slider = document.getElementById('versionSlider');
+  var display = document.getElementById('versionDisplay');
+  var status = document.getElementById('versionStatus');
+  var bar = document.getElementById('versionBar');
+  var range = document.getElementById('compatibleRange');
+
+  // 호환 범위 표시 (^0.8.26 = 0.8.26 ~ 0.9.0)
+  // 슬라이더: 70 = 0.7.0, 95 = 0.9.5
+  // 82.6 = 0.8.26, 90 = 0.9.0
+  var minCompat = ((82.6 - 70) / 25) * 100;
+  var maxCompat = ((90 - 70) / 25) * 100;
+  range.style.left = minCompat + '%';
+  range.style.width = (maxCompat - minCompat) + '%';
+
+  function updateSlider() {
+    var val = parseFloat(slider.value);
+    var major = 0;
+    var minor = Math.floor((val - 70) / 10) + 7;
+    var patch = Math.round(((val - 70) % 10) * 2.6);
+
+    // 정확한 표시를 위해 매핑
+    var version;
+    if (val < 80) {
+      version = '0.7.' + Math.round((val - 70) * 2.6);
+    } else if (val < 90) {
+      version = '0.8.' + Math.round((val - 80) * 2.6);
+    } else {
+      version = '0.9.' + Math.round((val - 90) * 2.6);
+    }
+
+    display.textContent = version;
+
+    // 호환성 체크: ^0.8.26 = [0.8.26, 0.9.0)
+    var isCompat = val >= 82.6 && val < 90;
+    if (isCompat) {
+      status.className = 'version-status compatible';
+      status.textContent = '\u2705 호환됨! ' + version + '은 ^0.8.26 범위 안에 있습니다.';
+    } else if (val < 82.6) {
+      status.className = 'version-status incompatible';
+      status.textContent = '\u274C 호환 불가! ' + version + '은 0.8.26보다 낮습니다.';
+    } else {
+      status.className = 'version-status incompatible';
+      status.textContent = '\u274C 호환 불가! ' + version + '은 0.9.0 이상입니다 (메이저 변경).';
+    }
+  }
+
+  slider.addEventListener('input', updateSlider);
+  // 초기값 설정
+  slider.value = 82.6;
+  updateSlider();
+}
+
+// =============================================
+// 배포 흐름 애니메이션 (섹션 3-3)
+// =============================================
+var deployFlowPlaying = false;
+
+function playDeployFlow() {
+  if (deployFlowPlaying) return;
+  deployFlowPlaying = true;
+  resetDeployFlow();
+
+  var steps = [
+    function() { document.getElementById('deploy-1').classList.add('show'); },
+    function() { document.getElementById('darrow-1').classList.add('show'); },
+    function() { document.getElementById('deploy-2').classList.add('show'); },
+    function() { document.getElementById('darrow-2').classList.add('show'); },
+    function() { document.getElementById('deploy-3').classList.add('show'); },
+    function() { document.getElementById('darrow-3').classList.add('show'); },
+    function() { document.getElementById('deploy-4').classList.add('show'); },
+    function() { document.getElementById('darrow-4').classList.add('show'); },
+    function() {
+      document.getElementById('deploy-5').classList.add('show');
+      deployFlowPlaying = false;
+    }
+  ];
+
+  steps.forEach(function(step, i) {
+    setTimeout(step, i * 500);
+  });
+}
+
+function resetDeployFlow() {
+  for (var i = 1; i <= 5; i++) {
+    document.getElementById('deploy-' + i).classList.remove('show');
+  }
+  for (var j = 1; j <= 4; j++) {
+    document.getElementById('darrow-' + j).classList.remove('show');
+  }
+  deployFlowPlaying = false;
+}
+
+// =============================================
+// 드래그 앤 드롭 시뮬레이션 (섹션 3-4)
+// =============================================
+var draggedVar = null;
+
+function dragStart(e) {
+  draggedVar = e.target.getAttribute('data-var');
+  e.target.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function dragOver(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('drag-over');
+}
+
+function dragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+
+function dropVar(e, location) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+
+  if (!draggedVar) return;
+
+  // 드래그 원본 숨기기
+  var items = document.querySelectorAll('.drag-item');
+  items.forEach(function(item) {
+    if (item.getAttribute('data-var') === draggedVar) {
+      item.style.display = 'none';
+    }
+    item.classList.remove('dragging');
+  });
+
+  // 타겟에 추가
+  var container = document.getElementById('dropped-' + location);
+  var el = document.createElement('span');
+  el.className = 'dropped-item';
+  el.textContent = draggedVar;
+  container.appendChild(el);
+
+  // 피드백
+  var feedback = document.getElementById('storageFeedback');
+  var messages = {
+    storage: '\uD83D\uDCB0 <strong>' + draggedVar + '</strong>이(가) storage에 저장됨 → 가스비: 20,000 gas (영구 보관, 블록체인에 기록)',
+    memory: '\uD83D\uDCDD <strong>' + draggedVar + '</strong>이(가) memory에 저장됨 → 가스비: 3 gas (함수 종료 시 소멸)',
+    calldata: '\uD83D\uDCE6 <strong>' + draggedVar + '</strong>이(가) calldata에 저장됨 → 가스비: 최저 (읽기전용, 수정 불가)'
+  };
+  feedback.innerHTML = messages[location];
+
+  draggedVar = null;
+}
+
+function resetStorageSim() {
+  ['storage', 'memory', 'calldata'].forEach(function(loc) {
+    document.getElementById('dropped-' + loc).innerHTML = '';
+  });
+  document.querySelectorAll('.drag-item').forEach(function(item) {
+    item.style.display = 'inline-block';
+    item.classList.remove('dragging');
+  });
+  document.getElementById('storageFeedback').innerHTML = '';
+}
+
+// =============================================
+// 수정자 시뮬레이션 (섹션 3-5)
+// =============================================
+var modifierDescriptions = {
+  public: {
+    code: '<span style="color: #c678dd;">function</span> <span style="color: #61afef;">getBalance</span>() <span style="color: #c678dd;">public</span> <span style="color: #c678dd;">view</span> <span style="color: #c678dd;">returns</span> (<span style="color: #e5c07b;">uint256</span>) {\n' +
+      '    <span style="color: #c678dd;">return</span> <span style="color: #e06c75;">balance</span>;\n' +
+      '}\n\n' +
+      '<span style="color: #7f848e;">// ✅ 컨트랙트 내부에서 호출 가능</span>\n' +
+      '<span style="color: #7f848e;">// ✅ 상속된 컨트랙트에서 호출 가능</span>\n' +
+      '<span style="color: #7f848e;">// ✅ 외부(다른 컨트랙트, EOA)에서 호출 가능</span>\n' +
+      '<span style="color: #7f848e;">// ✅ 자동으로 getter 함수 생성</span>'
+  },
+  private: {
+    code: '<span style="color: #e5c07b;">uint256</span> <span style="color: #c678dd;">private</span> <span style="color: #e06c75;">_internalCounter</span> = <span style="color: #d19a66;">0</span>;\n\n' +
+      '<span style="color: #c678dd;">function</span> <span style="color: #61afef;">_internalCalc</span>() <span style="color: #c678dd;">private</span> <span style="color: #c678dd;">pure</span> <span style="color: #c678dd;">returns</span> (<span style="color: #e5c07b;">uint256</span>) {\n' +
+      '    <span style="color: #c678dd;">return</span> <span style="color: #d19a66;">42</span> * <span style="color: #d19a66;">2</span>;\n' +
+      '}\n\n' +
+      '<span style="color: #7f848e;">// ✅ 컨트랙트 내부에서만 호출 가능</span>\n' +
+      '<span style="color: #7f848e;">// ❌ 상속된 컨트랙트에서 호출 불가</span>\n' +
+      '<span style="color: #7f848e;">// ❌ 외부에서 호출 불가</span>\n' +
+      '<span style="color: #7f848e;">// ⚠️ private ≠ 비밀! eth_getStorageAt으로 열람 가능</span>'
+  },
+  view: {
+    code: '<span style="color: #e5c07b;">uint256</span> <span style="color: #c678dd;">public</span> <span style="color: #e06c75;">count</span> = <span style="color: #d19a66;">10</span>;\n\n' +
+      '<span style="color: #c678dd;">function</span> <span style="color: #61afef;">getCount</span>() <span style="color: #c678dd;">public</span> <span style="color: #c678dd;">view</span> <span style="color: #c678dd;">returns</span> (<span style="color: #e5c07b;">uint256</span>) {\n' +
+      '    <span style="color: #c678dd;">return</span> <span style="color: #e06c75;">count</span>;  <span style="color: #7f848e;">// 읽기만 가능</span>\n' +
+      '}\n\n' +
+      '<span style="color: #7f848e;">// ✅ 상태 변수 읽기 가능</span>\n' +
+      '<span style="color: #7f848e;">// ❌ 상태 변수 변경 불가</span>\n' +
+      '<span style="color: #7f848e;">// 💰 외부 호출 시 가스비 무료!</span>\n' +
+      '<span style="color: #7f848e;">// 🔵 Remix에서 파란색 버튼</span>'
+  },
+  pure: {
+    code: '<span style="color: #c678dd;">function</span> <span style="color: #61afef;">add</span>(<span style="color: #e5c07b;">uint256</span> <span style="color: #e06c75;">a</span>, <span style="color: #e5c07b;">uint256</span> <span style="color: #e06c75;">b</span>) <span style="color: #c678dd;">public</span> <span style="color: #c678dd;">pure</span> <span style="color: #c678dd;">returns</span> (<span style="color: #e5c07b;">uint256</span>) {\n' +
+      '    <span style="color: #c678dd;">return</span> <span style="color: #e06c75;">a</span> + <span style="color: #e06c75;">b</span>;  <span style="color: #7f848e;">// 순수 계산만</span>\n' +
+      '}\n\n' +
+      '<span style="color: #7f848e;">// ❌ 상태 변수 읽기 불가</span>\n' +
+      '<span style="color: #7f848e;">// ❌ 상태 변수 변경 불가</span>\n' +
+      '<span style="color: #7f848e;">// 💰 외부 호출 시 가스비 무료!</span>\n' +
+      '<span style="color: #7f848e;">// 🧮 입력값만으로 결과 결정 (함수형 프로그래밍)</span>'
+  }
+};
+
+function showModifier(mod) {
+  // 카드 활성화
+  document.querySelectorAll('.modifier-card').forEach(function(card) {
+    card.classList.remove('selected');
+  });
+  if (typeof event !== 'undefined' && event && event.currentTarget) {
+    event.currentTarget.classList.add('selected');
+  }
+
+  // 결과 표시
+  var result = document.getElementById('modifierResult');
+  result.innerHTML = '<pre style="margin: 0; white-space: pre-wrap; line-height: 1.6;">' + modifierDescriptions[mod].code + '</pre>';
+}
+
+// =============================================
+// 카운터 시뮬레이션 (섹션 4)
+// =============================================
+var counterValue = 0;
+var counterTxCount = 0;
+
+function counterIncrement() {
+  counterValue++;
+  counterTxCount++;
+  var display = document.getElementById('counterDisplay');
+  display.textContent = counterValue;
+  display.classList.remove('bump');
+  // 리플로우 강제
+  void display.offsetWidth;
+  display.classList.add('bump');
+
+  var gasTag = document.getElementById('counterGasTag');
+  gasTag.style.display = 'inline-block';
+  gasTag.textContent = '\uD83D\uDD25 가스비 소모됨 (~43,000 gas)';
+  gasTag.className = 'tag tag-red';
+
+  addCounterLog('[Tx #' + counterTxCount + '] count() 호출 → counter = ' + counterValue + ' | Gas: ~43,000', '#f97316');
+}
+
+function counterGet() {
+  var gasTag = document.getElementById('counterGasTag');
+  gasTag.style.display = 'inline-block';
+  gasTag.textContent = '\u2705 가스비 무료 (view 함수)';
+  gasTag.className = 'tag tag-green';
+
+  addCounterLog('[Call] get() → 반환값: ' + counterValue + ' | Gas: 무료 (view)', '#22c55e');
+}
+
+function counterReset() {
+  counterValue = 0;
+  counterTxCount = 0;
+  document.getElementById('counterDisplay').textContent = '0';
+  document.getElementById('counterGasTag').style.display = 'none';
+  document.getElementById('counterLog').innerHTML =
+    '<div style="color: #64748b;">// 콘솔 로그</div>' +
+    '<div style="color: #61afef;">[Deploy] Counter 컨트랙트 재배포됨. count = 0 (constructor 실행)</div>';
+}
+
+function addCounterLog(msg, color) {
+  var log = document.getElementById('counterLog');
+  var div = document.createElement('div');
+  div.style.color = color || '#abb2bf';
+  div.textContent = msg;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+// =============================================
+// Faucet 시뮬레이션 (섹션 5)
+// =============================================
+var faucetState = {
+  deployed: false,
+  balance: 0,
+  owner: null,
+  lastWithdraw: {},
+  currentTime: Date.now() / 1000,
+  withdrawalAmount: 0.1,
+  lockTime: 86400 // 24시간 (초)
+};
+
+function faucetDeploy() {
+  faucetState.deployed = true;
+  faucetState.owner = 'owner';
+  faucetState.balance = 0;
+  faucetState.lastWithdraw = {};
+  faucetState.currentTime = Date.now() / 1000;
+
+  document.getElementById('faucetOwner').textContent = '0xOwner';
+  document.getElementById('faucetDeployBtn').disabled = true;
+  document.getElementById('faucetDeployBtn').style.opacity = '0.5';
+  updateFaucetDisplay();
+  addFaucetLog('[Deploy] Faucet 컨트랙트 배포됨! owner = 0xOwner', '#a78bfa');
+  showFaucetMsg('success', '\u2705 Faucet 컨트랙트가 배포되었습니다. owner = 0xOwner');
+}
+
+function faucetDeposit() {
+  if (!faucetState.deployed) {
+    showFaucetMsg('error', '\u274C 컨트랙트가 아직 배포되지 않았습니다.');
+    return;
+  }
+
+  var user = document.getElementById('faucetUser').value;
+
+  // onlyOwner 검증
+  if (user !== 'owner') {
+    showFaucetMsg('error', '\u274C owner만 입금할 수 있습니다! (onlyOwner)');
+    addFaucetLog('[Revert] require 실패: "Only the owner..."', '#ef4444');
+    return;
+  }
+
+  faucetState.balance += 1;
+  updateFaucetDisplay();
+  addFaucetLog('[Tx] 0x' + capitalize(user) + '이(가) 1 ETH 입금 → 잔액: ' + faucetState.balance + ' ETH', '#3b82f6');
+  addFaucetLog('  emit Deposit(0x' + capitalize(user) + ', 1 ETH)', '#64748b');
+  showFaucetMsg('success', '\u2705 1 ETH가 입금되었습니다. 잔액: ' + faucetState.balance + ' ETH');
+}
+
+function faucetRequest() {
+  if (!faucetState.deployed) {
+    showFaucetMsg('error', '\u274C 컨트랙트가 아직 배포되지 않았습니다.');
+    return;
+  }
+
+  var user = document.getElementById('faucetUser').value;
+
+  // 시간 체크 (Solidity 코드의 첫 번째 require와 동일한 순서)
+  var lastTime = faucetState.lastWithdraw[user] || 0;
+  var elapsed = faucetState.currentTime - lastTime;
+  if (elapsed < faucetState.lockTime && lastTime > 0) {
+    var remaining = Math.ceil((faucetState.lockTime - elapsed) / 3600);
+    addFaucetLog('[Revert] require 실패: "Wait 24 hours" (0x' + capitalize(user) + ')', '#ef4444');
+    showFaucetMsg('error', '\u274C 24시간 대기 필요! 약 ' + remaining + '시간 후 재출금 가능');
+    return;
+  }
+
+  // 잔액 체크 (Solidity 코드의 두 번째 require와 동일한 순서)
+  if (faucetState.balance < faucetState.withdrawalAmount) {
+    addFaucetLog('[Revert] require 실패: "Insufficient balance"', '#ef4444');
+    showFaucetMsg('error', '\u274C 잔액 부족! 현재 잔액: ' + faucetState.balance + ' ETH < 0.1 ETH');
+    return;
+  }
+
+  // 출금 성공
+  faucetState.balance -= faucetState.withdrawalAmount;
+  faucetState.lastWithdraw[user] = faucetState.currentTime;
+  updateFaucetDisplay();
+  addFaucetLog('[Tx] withdraw() → 0x' + capitalize(user) + '에게 0.1 ETH 전송', '#22c55e');
+  addFaucetLog('  emit Withdrawal(0x' + capitalize(user) + ', 0.1 ETH)', '#64748b');
+  showFaucetMsg('success', '\u2705 0.1 ETH가 0x' + capitalize(user) + '에게 전송되었습니다!');
+}
+
+function faucetWithdrawAll() {
+  if (!faucetState.deployed) {
+    showFaucetMsg('error', '\u274C 컨트랙트가 아직 배포되지 않았습니다.');
+    return;
+  }
+
+  var user = document.getElementById('faucetUser').value;
+
+  // onlyOwner 체크
+  if (user !== 'owner') {
+    addFaucetLog('[Revert] modifier onlyOwner 실패: "Only owner" (0x' + capitalize(user) + ')', '#ef4444');
+    showFaucetMsg('error', '\u274C Only owner! 0x' + capitalize(user) + '은(는) owner가 아닙니다.');
+    return;
+  }
+
+  if (faucetState.balance === 0) {
+    showFaucetMsg('error', '\u274C 회수할 잔액이 없습니다.');
+    return;
+  }
+
+  var amount = faucetState.balance;
+  faucetState.balance = 0;
+  updateFaucetDisplay();
+  addFaucetLog('[Tx] withdrawAll() → owner가 ' + amount + ' ETH 전액 회수', '#ef4444');
+  showFaucetMsg('success', '\u2705 ' + amount + ' ETH가 owner에게 전액 회수되었습니다.');
+}
+
+function faucetAdvanceTime() {
+  if (!faucetState.deployed) {
+    showFaucetMsg('error', '\u274C 컨트랙트가 아직 배포되지 않았습니다.');
+    return;
+  }
+
+  faucetState.currentTime += 86400;
+  addFaucetLog('[Time] \u23F0 24시간 경과 시뮬레이션 (block.timestamp += 86400)', '#f97316');
+  showFaucetMsg('success', '\u23F0 24시간이 경과했습니다. 출금 잠금이 해제됩니다.');
+}
+
+function updateFaucetDisplay() {
+  document.getElementById('faucetBalance').textContent = faucetState.balance.toFixed(2);
+  var waterHeight = Math.min((faucetState.balance / 5) * 100, 100);
+  document.getElementById('tankWater').style.height = waterHeight + '%';
+}
+
+function addFaucetLog(msg, color) {
+  var log = document.getElementById('faucetLog');
+  var div = document.createElement('div');
+  div.style.color = color || '#abb2bf';
+  div.textContent = msg;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function showFaucetMsg(type, msg) {
+  var container = document.getElementById('faucetMessage');
+  container.innerHTML = '<div class="faucet-msg ' + type + '">' + msg + '</div>';
+  setTimeout(function() {
+    var msgEl = container.querySelector('.faucet-msg');
+    if (msgEl) {
+      msgEl.style.opacity = '0';
+      msgEl.style.transition = 'opacity 0.5s';
+      setTimeout(function() { container.innerHTML = ''; }, 500);
+    }
+  }, 3000);
+}
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// =============================================
+// 트랜잭션 라이프사이클 시뮬레이션 (섹션 1)
+// =============================================
+var simTxPlaying = false;
+var simTxTimeouts = [];
+
+var simTxStepData = [
+  {
+    id: 1,
+    info: '<span style="color: #f97316;">&#128230; [Step 1] 트랜잭션 생성</span>\n' +
+      '지갑이 트랜잭션 객체를 구성합니다.\n' +
+      '  {\n' +
+      '    nonce: 42,         // 발신자의 트랜잭션 순번\n' +
+      '    to: 0xContract,    // 수신 주소\n' +
+      '    value: 0.1 ETH,    // 전송 금액\n' +
+      '    gasLimit: 100000,  // 최대 가스량\n' +
+      '  }'
+  },
+  {
+    id: 2,
+    info: '<span style="color: #818cf8;">&#128100; [Step 2] 사용자 서명</span>\n' +
+      '사용자가 MetaMask 등 지갑에서 트랜잭션에 서명합니다.\n' +
+      '  - 개인키(Private Key)로 디지털 서명 생성\n' +
+      '  - 서명 = 개인키 보유 증명 (비밀번호 입력과 유사)\n' +
+      '  - 서명 후 트랜잭션은 변조 불가능'
+  },
+  {
+    id: 3,
+    info: '<span style="color: #8b5cf6;">&#127760; [Step 3] 네트워크 전파</span>\n' +
+      '트랜잭션이 P2P 네트워크로 전파됩니다.\n' +
+      '  - 가까운 노드에 전송 → 다른 노드로 릴레이\n' +
+      '  - Mempool(대기열)에 저장됨\n' +
+      '  - EIP-1559: baseFee(자동 결정, 소각) + priorityFee(팁)가 높을수록 우선 처리\n' +
+      '  - 이 단계에서는 아직 "미확인(pending)" 상태'
+  },
+  {
+    id: 4,
+    info: '<span style="color: #22c55e;">&#9874; [Step 4] 검증자 검증</span>\n' +
+      '검증자(Validator)가 트랜잭션을 검증합니다.\n' +
+      '  &#10003; 서명 유효성 검사 → 정말 이 주소의 소유자인가?\n' +
+      '  &#10003; nonce 검사 → 순서가 맞는가? (이중 전송 방지)\n' +
+      '  &#10003; 잔액 검사 → value + gas fee를 지불할 수 있는가?\n' +
+      '  &#10003; 가스 한도 검사 → gasLimit이 충분한가?'
+  },
+  {
+    id: 5,
+    info: '<span style="color: #ec4899;">&#9939; [Step 5] 블록 포함</span>\n' +
+      '검증을 통과한 트랜잭션이 새 블록에 포함됩니다.\n' +
+      '  - 검증자가 블록을 제안 (Propose)\n' +
+      '  - 이더리움: ~12초마다 새 블록 생성\n' +
+      '  - EVM이 트랜잭션을 실행하고 상태를 변경\n' +
+      '  - 가스비 = 실제 사용 gas × gas price'
+  },
+  {
+    id: 6,
+    info: '<span style="color: #06b6d4;">&#10003; [Step 6] 확인 완료 (Finality)</span>\n' +
+      '트랜잭션이 블록체인에 영구 기록되었습니다!\n' +
+      '  - 이더리움 PoS: ~13분 후 finality 달성 (2 epoch)\n' +
+      '  - 한번 확정된 트랜잭션은 되돌릴 수 없음 (불변성)\n' +
+      '  - 블록 탐색기(Etherscan)에서 조회 가능\n' +
+      '  &#128640; 전체 과정: 사용자 행동 → 자동 실행 → 영구 기록'
+  }
+];
+
+function sim_txLifecyclePlay() {
+  if (simTxPlaying) return;
+  simTxPlaying = true;
+  sim_txLifecycleReset();
+
+  var totalSteps = simTxStepData.length;
+
+  simTxStepData.forEach(function(stepData, index) {
+    // 단계 활성화
+    var t1 = setTimeout(function() {
+      // 이전 단계 완료 처리
+      if (index > 0) {
+        var prevStep = document.getElementById('sim-tx-' + index);
+        prevStep.classList.remove('active');
+        prevStep.classList.add('completed');
+      }
+
+      // 현재 단계 활성화
+      var step = document.getElementById('sim-tx-' + (index + 1));
+      step.classList.add('active');
+
+      // 화살표 활성화
+      if (index > 0) {
+        var arrow = document.getElementById('sim-tx-arr-' + index);
+        arrow.classList.add('active');
+      }
+
+      // 진행 바
+      var progress = ((index + 1) / totalSteps) * 100;
+      document.getElementById('sim-tx-progress').style.width = progress + '%';
+
+      // 정보 표시
+      document.getElementById('sim-tx-info').innerHTML = '<pre style="margin:0; white-space: pre-wrap; line-height: 1.5;">' + stepData.info + '</pre>';
+
+      // 마지막 단계
+      if (index === totalSteps - 1) {
+        var t2 = setTimeout(function() {
+          step.classList.remove('active');
+          step.classList.add('completed');
+          var lastArrow = document.getElementById('sim-tx-arr-' + totalSteps);
+          if (lastArrow) lastArrow.classList.add('active');
+          simTxPlaying = false;
+        }, 2000);
+        simTxTimeouts.push(t2);
+      }
+    }, index * 2500);
+    simTxTimeouts.push(t1);
+  });
+}
+
+function sim_txLifecycleReset() {
+  simTxTimeouts.forEach(function(t) { clearTimeout(t); });
+  simTxTimeouts = [];
+  simTxPlaying = false;
+
+  for (var i = 1; i <= 6; i++) {
+    var step = document.getElementById('sim-tx-' + i);
+    step.classList.remove('active', 'completed');
+  }
+  for (var j = 1; j <= 5; j++) {
+    var arrow = document.getElementById('sim-tx-arr-' + j);
+    arrow.classList.remove('active');
+  }
+  document.getElementById('sim-tx-progress').style.width = '0%';
+  document.getElementById('sim-tx-info').innerHTML = '<span style="color: #64748b;">// "재생" 버튼을 눌러 트랜잭션의 여정을 시작하세요</span>';
+}
+
+// =============================================
+// 가스비 계산기 시뮬레이션 (섹션 3)
+// =============================================
+var simGasCurrentType = 'view';
+
+var simGasData = {
+  view: {
+    gas: 2100,
+    label: 'view 함수 (외부 호출 시 무료)',
+    barPercent: 5,
+    usd: 0,
+    description: 'view 함수는 블록체인 상태를 읽기만 합니다. 외부에서 호출 시 노드가 로컬에서 실행하므로 가스비가 무료입니다. 단, 다른 컨트랙트 내부에서 호출하면 가스가 소모됩니다.',
+    highlightOps: ['view']
+  },
+  pure: {
+    gas: 0,
+    label: 'pure 함수 (외부 호출 시 무료)',
+    barPercent: 1,
+    usd: 0,
+    description: 'pure 함수는 상태를 읽지도, 쓰지도 않습니다. 입력값으로만 결과를 계산하며, 외부 호출 시 완전 무료입니다. 블록체인에 접근하지 않으므로 가장 가벼운 함수입니다.',
+    highlightOps: ['pure']
+  },
+  state: {
+    gas: 43000,
+    label: 'state-changing 함수 (가스비 필수)',
+    barPercent: 100,
+    usd: 3.01,
+    description: '상태를 변경하는 함수는 반드시 트랜잭션으로 실행되며, 가스비를 지불해야 합니다. SSTORE(20,000 gas) 하나만으로도 비용이 크게 증가합니다. 이벤트 로깅(LOG)도 추가 비용이 발생합니다.',
+    highlightOps: ['state']
+  }
+};
+
+function sim_gasSelect(type) {
+  simGasCurrentType = type;
+
+  // 옵션 활성화
+  var options = document.querySelectorAll('.sim-gas-option');
+  options.forEach(function(opt) { opt.classList.remove('active'); });
+  // onclick에서 호출 시 event 사용, setTimeout에서 호출 시 타입 기반 선택
+  if (typeof event !== 'undefined' && event && event.currentTarget) {
+    event.currentTarget.classList.add('active');
+  } else {
+    var typeMap = { view: 0, pure: 1, state: 2 };
+    if (options[typeMap[type]]) options[typeMap[type]].classList.add('active');
+  }
+
+  // 막대그래프 업데이트
+  var viewData = simGasData.view;
+  var pureData = simGasData.pure;
+  var stateData = simGasData.state;
+
+  // 막대 비율 (state 기준 100%)
+  var maxGas = stateData.gas;
+  sim_gasUpdateBar('view', viewData.gas, maxGas, 'var(--green)');
+  sim_gasUpdateBar('pure', pureData.gas, maxGas, 'var(--blue)');
+  sim_gasUpdateBar('state', stateData.gas, maxGas, 'var(--red)');
+
+  // 선택된 함수 비용 표시
+  var selected = simGasData[type];
+  document.getElementById('sim-gas-total-cost').textContent = type === 'pure' ? '0 gas (무료)' : (type === 'view' ? '0 gas (외부 호출 시 무료)' : selected.gas.toLocaleString() + ' gas');
+
+  var usdText = selected.usd === 0 ? '무료! 가스비가 들지 않습니다' : '≈ $' + selected.usd.toFixed(2) + ' (가스 가격 20 Gwei, ETH $3,500 기준)';
+  document.getElementById('sim-gas-usd').textContent = usdText;
+
+  // 옵코드 하이라이트
+  var opcodes = document.querySelectorAll('.sim-gas-opcode');
+  opcodes.forEach(function(opEl) {
+    var ops = opEl.getAttribute('data-ops').split(',');
+    if (ops.indexOf(type) >= 0) {
+      opEl.classList.add('highlight');
+    } else {
+      opEl.classList.remove('highlight');
+    }
+  });
+}
+
+function sim_gasUpdateBar(type, gas, maxGas, color) {
+  var bar = document.getElementById('sim-gas-bar-' + type);
+  var val = document.getElementById('sim-gas-val-' + type);
+
+  var percent = maxGas > 0 ? Math.max((gas / maxGas) * 100, gas > 0 ? 3 : 1) : 1;
+  bar.style.width = percent + '%';
+  bar.style.background = color;
+
+  if (type === 'pure') {
+    val.textContent = '0 gas';
+  } else if (type === 'view') {
+    val.textContent = '무료*';
+  } else {
+    val.textContent = gas.toLocaleString() + ' gas';
+  }
+}
+
+// 초기 실행
+setTimeout(function() {
+  sim_gasSelect('view');
+}, 100);
+
+// =============================================
+// mapping 시각화 시뮬레이션 (섹션 5)
+// =============================================
+var simMappingData = {};
+var simMappingSlotIndex = 0;
+
+function sim_mappingSimpleHash(key) {
+  // 간이 해시 시뮬레이션 (실제 keccak256을 흉내)
+  var hash = 0;
+  var str = key.toString();
+  for (var i = 0; i < str.length; i++) {
+    var chr = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + chr;
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(16).padStart(8, '0');
+}
+
+function sim_mappingStore() {
+  var keyInput = document.getElementById('sim-mapping-key');
+  var valInput = document.getElementById('sim-mapping-value');
+  var key = keyInput.value.trim();
+  var val = parseInt(valInput.value) || 0;
+
+  if (!key) {
+    sim_mappingShowResult('error', '&#10060; 주소(key)를 입력하세요!');
+    return;
+  }
+
+  var isNew = !(key in simMappingData);
+  simMappingData[key] = val;
+
+  // 해시 과정 표시
+  var hashResult = sim_mappingSimpleHash(key);
+  var hashDisplay = document.getElementById('sim-mapping-hash');
+  hashDisplay.innerHTML = '<span class="hash-label">&#128269; 스토리지 슬롯 계산 과정</span>' +
+    '<span style="color: #e06c75;">slot = keccak256(abi.encode(' + key + ', mappingSlot))</span>\n' +
+    '<span style="color: #7f848e;">     = keccak256(0x' + hashResult + '...)</span>\n' +
+    '<span style="color: #98c379;">     → slot 0x' + hashResult + '에 값 ' + val + ' 저장</span>\n' +
+    '<span style="color: #e5c07b;">     &#128293; SSTORE: ' + (isNew ? '20,000 gas (신규 저장)' : '5,000 gas (기존 값 수정)') + '</span>';
+
+  sim_mappingRender();
+  sim_mappingShowResult('success', '&#9989; mapping[' + key + '] = ' + val + ' 저장 완료! (' + (isNew ? 'SSTORE 20,000 gas' : 'SSTORE 5,000 gas') + ')');
+}
+
+function sim_mappingQuery() {
+  var key = document.getElementById('sim-mapping-key').value.trim();
+  if (!key) {
+    sim_mappingShowResult('error', '&#10060; 조회할 주소(key)를 입력하세요!');
+    return;
+  }
+
+  var val = simMappingData[key];
+  var hashResult = sim_mappingSimpleHash(key);
+
+  var hashDisplay = document.getElementById('sim-mapping-hash');
+  hashDisplay.innerHTML = '<span class="hash-label">&#128269; 스토리지 슬롯 조회 과정</span>' +
+    '<span style="color: #e06c75;">slot = keccak256(abi.encode(' + key + ', mappingSlot))</span>\n' +
+    '<span style="color: #7f848e;">     = keccak256(0x' + hashResult + '...)</span>\n' +
+    '<span style="color: #61afef;">     → slot 0x' + hashResult + '에서 읽기</span>\n' +
+    '<span style="color: #e5c07b;">     &#128065; SLOAD: 2,100 gas</span>';
+
+  if (val !== undefined) {
+    sim_mappingShowResult('success', '&#128270; mapping[' + key + '] = <strong>' + val + '</strong> (SLOAD 2,100 gas)');
+  } else {
+    sim_mappingShowResult('info', '&#128270; mapping[' + key + '] = <strong>0</strong> (기본값, 저장된 적 없음)');
+  }
+}
+
+function sim_mappingQuickFill(key, val) {
+  document.getElementById('sim-mapping-key').value = key;
+  document.getElementById('sim-mapping-value').value = val;
+}
+
+function sim_mappingReset() {
+  simMappingData = {};
+  simMappingSlotIndex = 0;
+  document.getElementById('sim-mapping-rows').innerHTML = '<span style="color: #636d83; font-size: 0.78rem; padding: 12px 0; text-align: center; display: block;">// 비어있음 (기본값: 0)</span>';
+  document.getElementById('sim-mapping-hash').innerHTML = '<span class="hash-label">&#128269; 스토리지 슬롯 계산 과정</span>저장 또는 조회 시 keccak256 해시 과정이 여기에 표시됩니다.';
+  document.getElementById('sim-mapping-result').innerHTML = '';
+}
+
+function sim_mappingRender() {
+  var container = document.getElementById('sim-mapping-rows');
+  container.innerHTML = '';
+  var keys = Object.keys(simMappingData);
+
+  if (keys.length === 0) {
+    container.innerHTML = '<span style="color: #636d83; font-size: 0.78rem; padding: 12px 0; text-align: center; display: block;">// 비어있음 (기본값: 0)</span>';
+    return;
+  }
+
+  keys.forEach(function(key, idx) {
+    var hashSlot = sim_mappingSimpleHash(key).slice(0, 6);
+    var row = document.createElement('div');
+    row.className = 'sim-mapping-row' + (idx === keys.length - 1 ? ' highlight-new' : '');
+    row.innerHTML = '<span class="slot-idx">#' + idx + '</span>' +
+      '<span class="slot-key" title="' + key + '">' + key + '</span>' +
+      '<span class="slot-val">' + simMappingData[key] + '</span>';
+    container.appendChild(row);
+  });
+
+  // 스크롤 최하단
+  var table = document.getElementById('sim-mapping-table');
+  table.scrollTop = table.scrollHeight;
+}
+
+function sim_mappingShowResult(type, msg) {
+  var el = document.getElementById('sim-mapping-result');
+  var bgMap = {
+    success: 'rgba(34,197,94,0.15)',
+    error: 'rgba(239,68,68,0.15)',
+    info: 'rgba(59,130,246,0.15)'
+  };
+  var colorMap = {
+    success: '#16a34a',
+    error: '#dc2626',
+    info: '#2563eb'
+  };
+  el.innerHTML = '<div class="sim-mapping-query-result" style="background: ' + bgMap[type] + '; color: ' + colorMap[type] + ';">' + msg + '</div>';
+}
+
+// =============================================
+// require/revert/assert 시뮬레이터 (섹션 6)
+// =============================================
+var simErrorCurrentType = 'require';
+var simErrorBalance = 100; // 시뮬레이션 잔액
+
+var simErrorScenarios = {
+  require: {
+    label: '&#128176; 출금 요청 금액 (잔액: 100 ETH)',
+    code: function(amount) {
+      return 'require(balance >= amount, "Insufficient balance");\n' +
+        '// balance = ' + simErrorBalance + ', amount = ' + amount;
+    },
+    execute: function(amount) {
+      if (amount <= simErrorBalance && amount > 0) {
+        return {
+          success: true,
+          msg: '&#9989; require 통과! ' + amount + ' ETH 출금 성공\n' +
+            '  require(' + simErrorBalance + ' >= ' + amount + ') → true\n' +
+            '  balance: ' + simErrorBalance + ' → ' + (simErrorBalance - amount) + ' ETH',
+          gasUsed: 23000 + Math.floor(amount * 100),
+          gasRefund: 0
+        };
+      } else {
+        return {
+          success: false,
+          msg: '&#10060; require 실패! 트랜잭션 revert\n' +
+            '  require(' + simErrorBalance + ' >= ' + amount + ') → false\n' +
+            '  Error: "Insufficient balance"\n' +
+            '  → 상태 변경 모두 롤백, 남은 가스 환불',
+          gasUsed: 21000,
+          gasRefund: '환불됨'
+        };
+      }
+    }
+  },
+  assert: {
+    label: '&#128200; totalSupply 값 설정 (불변 조건: totalSupply >= 0)',
+    code: function(amount) {
+      return 'assert(totalSupply >= 0);\n' +
+        '// totalSupply를 ' + (amount > 100 ? '음수로 변경 시도 (-' + (amount - 100) + ')' : amount + '로 설정');
+    },
+    execute: function(amount) {
+      if (amount <= 100) {
+        return {
+          success: true,
+          msg: '&#9989; assert 통과! 불변 조건 유지\n' +
+            '  totalSupply = ' + amount + '\n' +
+            '  assert(' + amount + ' >= 0) → true\n' +
+            '  → 정상적인 상태입니다.',
+          gasUsed: 21000 + Math.floor(amount * 50),
+          gasRefund: 0
+        };
+      } else {
+        return {
+          success: false,
+          msg: '&#128680; assert 실패! Panic 에러 발생!\n' +
+            '  totalSupply = -' + (amount - 100) + ' (음수!)\n' +
+            '  assert(-' + (amount - 100) + ' >= 0) → Panic(0x01)\n' +
+            '  → 이것은 버그입니다! 코드 로직에 문제가 있습니다.\n' +
+            '  → 0.8.0+ 에서는 가스 환불됨 (이전에는 모든 가스 소진)',
+          gasUsed: 21000,
+          gasRefund: '환불 (0.8.0+)'
+        };
+      }
+    }
+  },
+  revert: {
+    label: '&#128200; 전송 금액 (한도: 100 ETH, 일일한도: 50 ETH)',
+    code: function(amount) {
+      return 'if (amount > maxLimit) {\n' +
+        '    revert TransferExceedsLimit(amount, maxLimit);\n' +
+        '}\n' +
+        'if (amount > dailyLimit) {\n' +
+        '    revert DailyLimitExceeded(amount, dailyLimit);\n' +
+        '}\n// amount = ' + amount + ', maxLimit = 100, dailyLimit = 50';
+    },
+    execute: function(amount) {
+      if (amount > 100) {
+        return {
+          success: false,
+          msg: '&#10060; revert 발생! Custom Error 반환\n' +
+            '  if (' + amount + ' > 100) → true\n' +
+            '  revert TransferExceedsLimit(' + amount + ', 100)\n' +
+            '  → Custom Error로 가스비 절약 (string보다 ~50% 저렴)\n' +
+            '  → 남은 가스 환불',
+          gasUsed: 21200,
+          gasRefund: '환불됨'
+        };
+      } else if (amount > 50) {
+        return {
+          success: false,
+          msg: '&#10060; revert 발생! 일일 한도 초과\n' +
+            '  if (' + amount + ' > 100) → false (최대 한도 통과)\n' +
+            '  if (' + amount + ' > 50) → true\n' +
+            '  revert DailyLimitExceeded(' + amount + ', 50)\n' +
+            '  → 복잡한 조건 분기에서 정확한 에러 전달',
+          gasUsed: 21500,
+          gasRefund: '환불됨'
+        };
+      } else {
+        return {
+          success: true,
+          msg: '&#9989; 모든 조건 통과! ' + amount + ' ETH 전송 성공\n' +
+            '  if (' + amount + ' > 100) → false\n' +
+            '  if (' + amount + ' > 50) → false\n' +
+            '  → 전송 실행됨',
+          gasUsed: 23000 + Math.floor(amount * 120),
+          gasRefund: 0
+        };
+      }
+    }
+  }
+};
+
+function sim_errorSelect(type) {
+  simErrorCurrentType = type;
+
+  // 버튼 활성화
+  var btns = document.querySelectorAll('.sim-error-type-btn');
+  btns.forEach(function(btn) {
+    btn.className = 'sim-error-type-btn';
+  });
+  var activeClass = 'sim-error-type-btn active-' + type;
+  if (typeof event !== 'undefined' && event && event.currentTarget) {
+    event.currentTarget.className = activeClass;
+  } else {
+    var typeMap = { require: 0, assert: 1, revert: 2 };
+    if (btns[typeMap[type]]) btns[typeMap[type]].className = activeClass;
+  }
+
+  // 시나리오 라벨 변경
+  document.getElementById('sim-error-scenario-label').innerHTML = simErrorScenarios[type].label;
+
+  // 슬라이더 리셋
+  document.getElementById('sim-error-slider').value = 50;
+  sim_errorUpdateSlider();
+
+  // 결과 숨기기
+  document.getElementById('sim-error-result').style.display = 'none';
+
+  // 가스 비교 리셋
+  document.getElementById('sim-error-gas-req-val').textContent = '-';
+  document.getElementById('sim-error-gas-ast-val').textContent = '-';
+  document.getElementById('sim-error-gas-rev-val').textContent = '-';
+  document.querySelectorAll('.sim-error-gas-item').forEach(function(item) {
+    item.classList.remove('active-item');
+  });
+}
+
+function sim_errorUpdateSlider() {
+  var val = document.getElementById('sim-error-slider').value;
+  document.getElementById('sim-error-slider-val').textContent = val + (simErrorCurrentType === 'assert' ? '' : ' ETH');
+}
+
+function sim_errorExecute() {
+  var amount = parseInt(document.getElementById('sim-error-slider').value);
+  var scenario = simErrorScenarios[simErrorCurrentType];
+  var result = scenario.execute(amount);
+
+  // 결과 표시
+  var resultEl = document.getElementById('sim-error-result');
+  var headerEl = document.getElementById('sim-error-result-header');
+  var bodyEl = document.getElementById('sim-error-result-body');
+
+  resultEl.style.display = 'block';
+
+  if (result.success) {
+    headerEl.style.background = 'var(--green)';
+    headerEl.textContent = '✓ 실행 성공';
+  } else {
+    headerEl.style.background = simErrorCurrentType === 'assert' ? 'var(--red)' : 'var(--orange)';
+    headerEl.textContent = '✗ 실행 실패 (' + (simErrorCurrentType === 'assert' ? 'Panic' : 'Revert') + ')';
+  }
+
+  bodyEl.innerHTML = '<pre style="margin:0; white-space: pre-wrap;">' + result.msg + '</pre>';
+
+  // 가스비 비교 업데이트
+  var gasMap = {
+    require: 'sim-error-gas-req-val',
+    assert: 'sim-error-gas-ast-val',
+    revert: 'sim-error-gas-rev-val'
+  };
+
+  // 모든 타입에 대해 시뮬레이션 실행하여 비교
+  ['require', 'assert', 'revert'].forEach(function(type) {
+    var simResult = simErrorScenarios[type].execute(amount);
+    var gasText = simResult.success ? simResult.gasUsed.toLocaleString() + ' gas' : '~21,000 gas + 환불';
+    document.getElementById(gasMap[type]).textContent = gasText;
+  });
+
+  // 선택된 항목 강조
+  document.querySelectorAll('.sim-error-gas-item').forEach(function(item) {
+    item.classList.remove('active-item');
+  });
+  document.getElementById('sim-error-gas-' + simErrorCurrentType).classList.add('active-item');
+}
+
+</script>
+</body>
+</html>
