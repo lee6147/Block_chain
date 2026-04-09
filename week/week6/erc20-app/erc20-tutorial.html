@@ -1,0 +1,4740 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ERC20 토큰 튜토리얼 | 블록체인 실습</title>
+
+  <!-- Tailwind CSS CDN (동적 빌드 방식이라 SRI 적용 불가, 프로덕션에서는 빌드된 CSS 사용 권장) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Ethers.js v6 CDN (SRI 적용) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"
+          integrity="sha384-u311tQFVn6y5yDJLo2kMKEKJCgc5/W+lPFSH4bqCjkBvKUMo0PFJBLE+VYbGHGr"
+          crossorigin="anonymous"></script>
+  <!-- Chart.js CDN (SRI 적용) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"
+          integrity="sha384-EJFHZmgSMFkRTlfIvGsDwOHBR49OZ5GPS8JRzFR0xEJyiw5poOXABQLLBbEY/OOG"
+          crossorigin="anonymous"></script>
+
+  <!-- Tailwind 커스텀 설정 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            // 블록체인 테마 커스텀 색상
+            brand: {
+              50:  '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a8a',
+            },
+            sepolia: {
+              green: '#22c55e',
+              red:   '#ef4444',
+            },
+          },
+          fontFamily: {
+            mono: ['JetBrains Mono', 'Fira Code', 'Consolas', 'monospace'],
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.2s ease-in-out',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%':   { opacity: '0', transform: 'translateY(4px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* ── 탭 전환 애니메이션 ── */
+    .tab-content {
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── 코드 블록 기본 스타일 ── */
+    .code-block {
+      background-color: #111827; /* gray-900 */
+      color: #f3f4f6;            /* gray-100 */
+      border-radius: 0.5rem;
+      padding: 1rem;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+      font-size: 0.875rem;
+      line-height: 1.6;
+      position: relative;
+    }
+
+    /* ── 코드 블록 복사 버튼 ── */
+    .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      padding: 0.25rem 0.625rem;
+      font-size: 0.75rem;
+      border-radius: 0.375rem;
+      background-color: #374151; /* gray-700 */
+      color: #d1d5db;            /* gray-300 */
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.15s;
+    }
+
+    .copy-btn:hover {
+      background-color: #4b5563; /* gray-600 */
+    }
+
+    /* ── 스크롤바 커스텀 ── */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* ── 알림 박스 공통 스타일 ── */
+    .alert {
+      border-left-width: 4px;
+      border-radius: 0.375rem;
+      padding: 0.875rem 1rem;
+      font-size: 0.875rem;
+    }
+
+    .alert-info    { background: #eff6ff; border-color: #3b82f6; color: #1e40af; }
+    .alert-warning { background: #fffbeb; border-color: #f59e0b; color: #92400e; }
+    .alert-error   { background: #fef2f2; border-color: #ef4444; color: #991b1b; }
+    .alert-success { background: #f0fdf4; border-color: #22c55e; color: #166534; }
+
+    /* ── 모바일 햄버거 메뉴 열릴 때 ── */
+    #mobile-menu.hidden { display: none; }
+
+    /* ── 네트워크 배지 점멸 (미연결 시) ── */
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+
+    .pulse-dot {
+      animation: pulse-dot 1.5s ease-in-out infinite;
+    }
+
+    /* ── 카드 호버 효과 ── */
+    .card-hover {
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+
+    .card-hover:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen flex flex-col">
+
+  <!-- ══════════════════════════════════════════
+       상단 네비게이션 바 (sticky)
+       ══════════════════════════════════════════ -->
+  <nav class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+    <div class="max-w-5xl mx-auto px-4">
+      <div class="flex items-center justify-between h-16">
+
+        <!-- 로고 -->
+        <a
+          href="#"
+          onclick="switchTab('tab-home'); return false;"
+          class="flex items-center gap-2 font-bold text-blue-600 text-lg shrink-0"
+        >
+          <!-- 육각형 이더리움 아이콘 -->
+          <svg class="w-7 h-7" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="16,3 29,10 29,22 16,29 3,22 3,10"
+              fill="#2563eb" opacity="0.15"/>
+            <polygon points="16,7 25,12 25,20 16,25 7,20 7,12"
+              fill="#2563eb" opacity="0.4"/>
+            <circle cx="16" cy="16" r="4" fill="#2563eb"/>
+          </svg>
+          <span class="hidden sm:inline">ERC20 튜토리얼</span>
+          <span class="sm:hidden">ERC20</span>
+        </a>
+
+        <!-- 데스크톱 탭 메뉴 -->
+        <div class="hidden md:flex items-center gap-1" role="tablist" aria-label="튜토리얼 탭 메뉴">
+          <!-- 탭 버튼 — 활성 탭은 JS에서 nav-active 클래스 + aria-selected 적용 -->
+          <button
+            class="nav-btn px-3 py-1.5 rounded-md text-sm font-medium transition-colors nav-active"
+            data-tab="tab-home"
+            onclick="switchTab('tab-home')"
+            role="tab" aria-selected="true" aria-controls="tab-home"
+          >홈</button>
+          <button
+            class="nav-btn px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+            data-tab="tab-tutorial"
+            onclick="switchTab('tab-tutorial')"
+            role="tab" aria-selected="false" aria-controls="tab-tutorial"
+          >튜토리얼</button>
+          <button
+            class="nav-btn px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+            data-tab="tab-deploy"
+            onclick="switchTab('tab-deploy')"
+            role="tab" aria-selected="false" aria-controls="tab-deploy"
+          >배포</button>
+          <button
+            class="nav-btn px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+            data-tab="tab-interact"
+            onclick="switchTab('tab-interact')"
+            role="tab" aria-selected="false" aria-controls="tab-interact"
+          >인터랙션</button>
+          <button
+            class="nav-btn px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+            data-tab="tab-faucet"
+            onclick="switchTab('tab-faucet')"
+            role="tab" aria-selected="false" aria-controls="tab-faucet"
+          >퍼셋</button>
+          <button
+            class="nav-btn px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+            data-tab="tab-dashboard"
+            onclick="switchTab('tab-dashboard')"
+            role="tab" aria-selected="false" aria-controls="tab-dashboard"
+          >대시보드</button>
+        </div>
+
+        <!-- 우측: 네트워크 배지 + 지갑 연결 버튼 + 햄버거 -->
+        <div class="flex items-center gap-2">
+          <!-- 네트워크 상태 배지 -->
+          <div id="network-badge" class="hidden md:flex items-center gap-1.5">
+            <!-- JS에서 동적으로 렌더링 -->
+          </div>
+
+          <!-- 지갑 연결 버튼 -->
+          <button
+            id="wallet-btn"
+            onclick="handleWalletBtn()"
+            class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700
+                   text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            <!-- 미연결 상태 기본 텍스트 -->
+            <span id="wallet-btn-text">🦊 메타마스크 연결</span>
+          </button>
+
+          <!-- 햄버거 메뉴 버튼 (모바일) -->
+          <button
+            id="hamburger-btn"
+            onclick="toggleMobileMenu()"
+            class="md:hidden p-2 rounded-md text-gray-500 hover:bg-gray-100 transition-colors"
+            aria-label="메뉴 열기"
+          >
+            <!-- 햄버거 아이콘 -->
+            <svg id="hamburger-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+            <!-- X 아이콘 (메뉴 열렸을 때) -->
+            <svg id="close-icon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 모바일 드롭다운 메뉴 -->
+      <div id="mobile-menu" class="hidden md:hidden pb-3 border-t border-gray-100 mt-1 pt-2">
+        <!-- 모바일 네트워크 배지 -->
+        <div id="network-badge-mobile" class="flex items-center gap-1.5 px-2 py-1.5 mb-1">
+          <!-- JS에서 동적으로 렌더링 -->
+        </div>
+        <!-- 모바일 탭 목록 -->
+        <div class="flex flex-col gap-0.5">
+          <button class="mob-nav-btn text-left px-3 py-2 rounded-md text-sm font-medium transition-colors nav-active"
+            data-tab="tab-home" onclick="switchTab('tab-home'); toggleMobileMenu();">🏠 홈</button>
+          <button class="mob-nav-btn text-left px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            data-tab="tab-tutorial" onclick="switchTab('tab-tutorial'); toggleMobileMenu();">📖 튜토리얼</button>
+          <button class="mob-nav-btn text-left px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            data-tab="tab-deploy" onclick="switchTab('tab-deploy'); toggleMobileMenu();">🚀 배포</button>
+          <button class="mob-nav-btn text-left px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            data-tab="tab-interact" onclick="switchTab('tab-interact'); toggleMobileMenu();">⚡ 인터랙션</button>
+          <button class="mob-nav-btn text-left px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            data-tab="tab-faucet" onclick="switchTab('tab-faucet'); toggleMobileMenu();">💧 퍼셋</button>
+          <button class="mob-nav-btn text-left px-3 py-2 rounded-md text-sm font-medium transition-colors"
+      </div>
+    </div>
+  </div>
+  </nav>
+
+  <!-- ══════════════════════════════════════════
+       메인 컨텐츠 컨테이너
+       ══════════════════════════════════════════ -->
+  <main class="flex-1 max-w-5xl mx-auto px-4 py-8 w-full">
+
+    <!-- ──────────────────────────────────────
+         탭 1: 홈 (직접 작성)
+         ────────────────────────────────────── -->
+    <div id="tab-home" class="tab-content" role="tabpanel" aria-label="홈">
+
+      <!-- 히어로 섹션 -->
+      <div class="text-center mb-10">
+        <div class="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1
+                    rounded-full text-sm font-medium mb-4">
+          <span class="pulse-dot w-2 h-2 bg-blue-500 rounded-full inline-block"></span>
+          블록체인 실습 교육 플랫폼
+        </div>
+        <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
+          ERC20 토큰 만들기
+        </h1>
+        <p class="text-lg text-gray-500 max-w-xl mx-auto mb-6">
+          이더리움 테스트넷(Sepolia)에서 나만의 ERC20 토큰을 직접 배포하고
+          전송·조회·발행까지 모든 과정을 단계별로 실습합니다.
+        </p>
+        <div class="flex flex-wrap justify-center gap-3">
+          <button
+            onclick="switchTab('tab-tutorial')"
+            class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold
+                   rounded-lg transition-colors shadow-sm"
+          >
+            지금 시작하기 →
+          </button>
+          <button
+            onclick="switchTab('tab-deploy')"
+            class="px-6 py-2.5 bg-white border border-gray-300 hover:bg-gray-50
+                   text-gray-700 font-semibold rounded-lg transition-colors"
+          >
+            바로 배포하기
+          </button>
+        </div>
+      </div>
+
+      <!-- 4단계 학습 경로 카드 -->
+      <div class="mb-8">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">📚 4단계 학습 경로</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+          <!-- 1단계: 튜토리얼 -->
+          <button
+            onclick="switchTab('tab-tutorial')"
+            class="card-hover text-left bg-white rounded-lg shadow-sm border p-6
+                   hover:border-blue-400 transition-colors group"
+          >
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center
+                          justify-center text-lg font-bold shrink-0 group-hover:bg-blue-200 transition-colors">
+                1
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-blue-500 uppercase tracking-wide mb-1">Step 1</p>
+                <h3 class="font-bold text-gray-900 mb-1">ERC20 개념 이해</h3>
+                <p class="text-sm text-gray-500">
+                  ERC20 표준이란 무엇인지, 토큰의 동작 원리와 스마트 컨트랙트 구조를 학습합니다.
+                </p>
+              </div>
+            </div>
+          </button>
+
+          <!-- 2단계: 배포 -->
+          <button
+            onclick="switchTab('tab-deploy')"
+            class="card-hover text-left bg-white rounded-lg shadow-sm border p-6
+                   hover:border-purple-400 transition-colors group"
+          >
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center
+                          justify-center text-lg font-bold shrink-0 group-hover:bg-purple-200 transition-colors">
+                2
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-purple-500 uppercase tracking-wide mb-1">Step 2</p>
+                <h3 class="font-bold text-gray-900 mb-1">토큰 배포</h3>
+                <p class="text-sm text-gray-500">
+                  메타마스크로 Sepolia 테스트넷에 ERC20 스마트 컨트랙트를 실제로 배포합니다.
+                </p>
+              </div>
+            </div>
+          </button>
+
+          <!-- 3단계: 인터랙션 -->
+          <button
+            onclick="switchTab('tab-interact')"
+            class="card-hover text-left bg-white rounded-lg shadow-sm border p-6
+                   hover:border-green-400 transition-colors group"
+          >
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center
+                          justify-center text-lg font-bold shrink-0 group-hover:bg-green-200 transition-colors">
+                3
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-green-500 uppercase tracking-wide mb-1">Step 3</p>
+                <h3 class="font-bold text-gray-900 mb-1">토큰 인터랙션</h3>
+                <p class="text-sm text-gray-500">
+                  배포된 토큰을 전송·승인·조회·위임전송·발행·소각 등 모든 ERC20 함수를 직접 실습합니다.
+                </p>
+              </div>
+            </div>
+          </button>
+
+          <!-- 4단계: 대시보드 -->
+          <button
+            onclick="switchTab('tab-dashboard')"
+            class="card-hover text-left bg-white rounded-lg shadow-sm border p-6
+                   hover:border-orange-400 transition-colors group"
+          >
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center
+                          justify-center text-lg font-bold shrink-0 group-hover:bg-orange-200 transition-colors">
+                4
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-orange-500 uppercase tracking-wide mb-1">Step 4</p>
+                <h3 class="font-bold text-gray-900 mb-1">토큰 대시보드</h3>
+                <p class="text-sm text-gray-500">
+                  잔액 추이, 전송 이력, 토큰 분배 차트 등 실시간 대시보드를 확인합니다.
+                </p>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- 추가 도구 카드 -->
+      <div class="mb-8">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">🛠 추가 도구</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+          <!-- 퍼셋 -->
+          <button
+            onclick="switchTab('tab-faucet')"
+            class="card-hover text-left bg-white rounded-lg shadow-sm border p-6
+                   hover:border-cyan-400 transition-colors"
+          >
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-2xl">💧</span>
+              <h3 class="font-bold text-gray-900">테스트 토큰 퍼셋</h3>
+            </div>
+            <p class="text-sm text-gray-500">
+              Sepolia ETH가 부족할 때 테스트용 토큰을 무료로 받을 수 있는 퍼셋입니다.
+            </p>
+          </button>
+
+        </div>
+      </div>
+
+      <!-- 사전 준비 체크리스트 -->
+      <div class="bg-white rounded-lg shadow-sm border p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">✅ 사전 준비 체크리스트</h2>
+        <p class="text-sm text-gray-500 mb-4">
+          실습을 시작하기 전에 아래 항목들을 모두 완료해 주세요.
+        </p>
+        <ul class="space-y-3">
+
+          <!-- 체크 아이템 1 -->
+          <li class="flex items-start gap-3">
+            <span class="mt-0.5 w-5 h-5 rounded-full bg-green-100 text-green-600
+                         flex items-center justify-center text-xs font-bold shrink-0">✓</span>
+            <div>
+              <p class="text-sm font-medium text-gray-800">메타마스크 설치</p>
+              <p class="text-xs text-gray-500 mt-0.5">
+                Chrome/Firefox 확장 프로그램으로
+                <a href="https://metamask.io/download/" target="_blank" rel="noopener"
+                   class="text-blue-500 hover:underline">metamask.io</a>에서 설치하세요.
+              </p>
+            </div>
+          </li>
+
+          <!-- 체크 아이템 2 -->
+          <li class="flex items-start gap-3">
+            <span class="mt-0.5 w-5 h-5 rounded-full bg-green-100 text-green-600
+                         flex items-center justify-center text-xs font-bold shrink-0">✓</span>
+            <div>
+              <p class="text-sm font-medium text-gray-800">Sepolia 테스트넷 추가</p>
+              <p class="text-xs text-gray-500 mt-0.5">
+                메타마스크에서 네트워크를 "Sepolia Test Network"로 전환하세요.
+                (Chain ID: 11155111)
+              </p>
+            </div>
+          </li>
+
+          <!-- 체크 아이템 3 -->
+          <li class="flex items-start gap-3">
+            <span class="mt-0.5 w-5 h-5 rounded-full bg-yellow-100 text-yellow-600
+                         flex items-center justify-center text-xs font-bold shrink-0">!</span>
+            <div>
+              <p class="text-sm font-medium text-gray-800">Sepolia ETH 확보 (가스비용)</p>
+              <p class="text-xs text-gray-500 mt-0.5">
+                이더리움에서 트랜잭션을 실행하려면 <strong>가스(Gas)</strong>라는 수수료가 필요합니다.
+                가스는 네트워크 혼잡도에 따라 변동되며, 컨트랙트 배포는 일반 전송보다 더 많은 가스를 소비합니다.
+                테스트넷에서는 무료 ETH를 받아 실습할 수 있습니다:
+                <a href="https://sepoliafaucet.com/" target="_blank" rel="noopener"
+                   class="text-blue-500 hover:underline">sepoliafaucet.com</a> 또는
+                <a href="https://www.alchemy.com/faucets/ethereum-sepolia" target="_blank" rel="noopener"
+                   class="text-blue-500 hover:underline">Alchemy Faucet</a>에서 받으세요.
+              </p>
+            </div>
+          </li>
+
+          <!-- 체크 아이템 4 -->
+          <li class="flex items-start gap-3">
+            <span class="mt-0.5 w-5 h-5 rounded-full bg-yellow-100 text-yellow-600
+                         flex items-center justify-center text-xs font-bold shrink-0">!</span>
+            <div>
+              <p class="text-sm font-medium text-gray-800">지갑 연결</p>
+              <p class="text-xs text-gray-500 mt-0.5">
+                우측 상단 "🦊 메타마스크 연결" 버튼을 눌러 이 사이트와 지갑을 연결하세요.
+              </p>
+            </div>
+          </li>
+        </ul>
+
+        <!-- 빠른 연결 버튼 -->
+        <div class="mt-5 pt-4 border-t border-gray-100">
+          <button
+            onclick="handleWalletBtn()"
+            class="w-full sm:w-auto px-5 py-2.5 bg-blue-600 hover:bg-blue-700
+                   text-white text-sm font-semibold rounded-lg transition-colors"
+          >
+            🦊 메타마스크 연결하기
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- /tab-home -->
+
+    <!-- ──────────────────────────────────────
+         탭 2: 튜토리얼 (다른 에이전트가 채울 영역)
+         ────────────────────────────────────── -->
+    <div id="tab-tutorial" class="tab-content hidden" role="tabpanel" aria-label="튜토리얼">
+      <!-- ERC20 튜토리얼 콘텐츠 (tab-tutorial 탭 내부에 삽입) -->
+
+<!-- 진행률 바 -->
+<div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+  <div id="tutorial-progress" class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+</div>
+<p class="text-sm text-gray-500 mb-8 text-right" id="progress-label">0 / 5 단계 완료</p>
+
+<!-- Step 1: ERC20이란? -->
+<div class="bg-white rounded-lg shadow-sm border p-6 mb-4" id="step-1">
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center gap-3">
+      <span class="bg-blue-600 text-white text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center">1</span>
+      <h2 class="text-xl font-bold text-gray-800">ERC20이란?</h2>
+    </div>
+    <button
+      class="check-btn px-4 py-2 rounded-lg border-2 border-gray-300 text-gray-500 text-sm font-medium hover:border-green-500 hover:text-green-600 transition-colors"
+      onclick="markComplete(this, 1)"
+      data-step="1"
+    >
+      완료 체크
+    </button>
+  </div>
+
+  <!-- 설명 모드 토글 -->
+  <div class="flex gap-2 mb-4">
+    <button
+      class="toggle-btn active-toggle px-3 py-1 rounded-full text-sm font-medium border"
+      onclick="toggleExplanation(this, 'simple', 'step1')"
+    >
+      쉽게 이해하기
+    </button>
+    <button
+      class="toggle-btn px-3 py-1 rounded-full text-sm font-medium border border-gray-300 text-gray-500"
+      onclick="toggleExplanation(this, 'technical', 'step1')"
+    >
+      기술적 설명
+    </button>
+  </div>
+
+  <!-- 쉽게 이해하기 -->
+  <div id="step1-simple" class="explanation-panel">
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+      <p class="text-blue-800 font-medium mb-1">비유로 이해하기</p>
+      <p class="text-blue-700 text-sm">
+        USB 포트를 생각해 보세요. 예전에는 제조사마다 충전 포트가 달라서 케이블을 여러 개 들고 다녀야 했습니다.
+        그런데 USB-C라는 표준이 생기면서 하나의 케이블로 모든 기기를 충전할 수 있게 되었습니다.
+        <strong>ERC20은 이더리움 토큰의 USB-C 표준</strong>입니다.
+      </p>
+    </div>
+    <ul class="space-y-2 text-gray-700 text-sm">
+      <li class="flex items-start gap-2">
+        <span class="text-blue-500 mt-0.5">&#9679;</span>
+        표준이 없으면 지갑마다 토큰을 따로 지원해야 해서 개발자와 사용자 모두 힘들어집니다.
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-blue-500 mt-0.5">&#9679;</span>
+        ERC20 표준을 따르면 MetaMask, Uniswap, 거래소 등 모든 곳에서 자동으로 호환됩니다.
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-blue-500 mt-0.5">&#9679;</span>
+        ERC = Ethereum Request for Comments. EIP(Ethereum Improvement Proposal, 이더리움 개선 제안)의 하위 카테고리로, 애플리케이션 수준 표준을 정의합니다.
+      </li>
+    </ul>
+  </div>
+
+  <!-- 기술적 설명 -->
+  <div id="step1-technical" class="explanation-panel hidden">
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+      <p class="text-gray-800 font-medium mb-2">기술적 정의</p>
+      <p class="text-gray-700 text-sm mb-3">
+        ERC20은 이더리움 블록체인 위에서 대체 가능한 토큰(Fungible Token)을 구현하기 위한
+        스마트 컨트랙트 인터페이스 표준입니다. EIP-20으로 공식 등록되어 있습니다.
+      </p>
+      <ul class="space-y-1 text-sm text-gray-700">
+        <li><strong>대체 가능성(Fungibility):</strong> 동일한 토큰 간에 가치가 동일하여 교환 가능</li>
+        <li><strong>표준 인터페이스:</strong> 6개의 필수 함수 + 2개의 이벤트로 구성</li>
+        <li><strong>호환성:</strong> 표준을 따르는 모든 DApp이 별도 구현 없이 토큰 연동 가능</li>
+      </ul>
+    </div>
+    <div class="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto font-mono text-sm relative">
+      <button class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-gray-200 text-xs px-2 py-1 rounded" onclick="copyCode(this)">복사</button>
+      <pre><code>// ERC20 표준 인터페이스
+interface IERC20 {
+    function totalSupply() external view returns (uint256);
+    function balanceOf(address account) external view returns (uint256);
+    function transfer(address to, uint256 amount) external returns (bool);
+    function allowance(address owner, address spender) external view returns (uint256);
+    function approve(address spender, uint256 amount) external returns (bool);
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+}</code></pre>
+    </div>
+  </div>
+</div>
+
+<!-- Step 2: 핵심 함수 6개 -->
+<div class="bg-white rounded-lg shadow-sm border p-6 mb-4" id="step-2">
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center gap-3">
+      <span class="bg-blue-600 text-white text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center">2</span>
+      <h2 class="text-xl font-bold text-gray-800">핵심 함수 6개</h2>
+    </div>
+    <button
+      class="check-btn px-4 py-2 rounded-lg border-2 border-gray-300 text-gray-500 text-sm font-medium hover:border-green-500 hover:text-green-600 transition-colors"
+      onclick="markComplete(this, 2)"
+      data-step="2"
+    >
+      완료 체크
+    </button>
+  </div>
+
+  <!-- 설명 모드 토글 -->
+  <div class="flex gap-2 mb-4">
+    <button
+      class="toggle-btn active-toggle px-3 py-1 rounded-full text-sm font-medium border"
+      onclick="toggleExplanation(this, 'simple', 'step2')"
+    >
+      쉽게 이해하기
+    </button>
+    <button
+      class="toggle-btn px-3 py-1 rounded-full text-sm font-medium border border-gray-300 text-gray-500"
+      onclick="toggleExplanation(this, 'technical', 'step2')"
+    >
+      기술적 설명
+    </button>
+  </div>
+
+  <!-- 쉽게 이해하기 -->
+  <div id="step2-simple" class="explanation-panel">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+      <!-- totalSupply -->
+      <div class="border border-gray-200 rounded-lg p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded font-mono">totalSupply()</span>
+        </div>
+        <p class="text-sm font-medium text-gray-800 mb-1">전체 발행량 조회</p>
+        <div class="bg-purple-50 border border-purple-100 rounded p-2">
+          <p class="text-xs text-purple-700">비유: 한국은행이 발행한 총 화폐량을 조회하는 것과 같습니다. 시장에 존재하는 토큰 총량을 알 수 있습니다.</p>
+        </div>
+      </div>
+
+      <!-- balanceOf -->
+      <div class="border border-gray-200 rounded-lg p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded font-mono">balanceOf(address)</span>
+        </div>
+        <p class="text-sm font-medium text-gray-800 mb-1">잔액 조회</p>
+        <div class="bg-green-50 border border-green-100 rounded p-2">
+          <p class="text-xs text-green-700">비유: 은행 앱에서 내 잔고를 확인하는 것과 같습니다. 특정 지갑 주소의 토큰 잔액을 반환합니다.</p>
+        </div>
+      </div>
+
+      <!-- transfer -->
+      <div class="border border-gray-200 rounded-lg p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded font-mono">transfer(to, amount)</span>
+        </div>
+        <p class="text-sm font-medium text-gray-800 mb-1">직접 전송</p>
+        <div class="bg-blue-50 border border-blue-100 rounded p-2">
+          <p class="text-xs text-blue-700">비유: 인터넷 뱅킹으로 직접 계좌이체하는 것과 같습니다. 본인이 직접 다른 주소로 토큰을 보냅니다.</p>
+        </div>
+      </div>
+
+      <!-- approve -->
+      <div class="border border-gray-200 rounded-lg p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-1 rounded font-mono">approve(spender, amount)</span>
+        </div>
+        <p class="text-sm font-medium text-gray-800 mb-1">사용 권한 부여</p>
+        <div class="bg-yellow-50 border border-yellow-100 rounded p-2">
+          <p class="text-xs text-yellow-700">비유: 자동이체를 등록하는 것과 같습니다. 특정 컨트랙트가 내 토큰을 대신 사용할 수 있도록 허용합니다.</p>
+        </div>
+      </div>
+
+      <!-- allowance -->
+      <div class="border border-gray-200 rounded-lg p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-1 rounded font-mono">allowance(owner, spender)</span>
+        </div>
+        <p class="text-sm font-medium text-gray-800 mb-1">승인량 조회</p>
+        <div class="bg-orange-50 border border-orange-100 rounded p-2">
+          <p class="text-xs text-orange-700">비유: 자동이체 한도를 확인하는 것과 같습니다. spender가 owner 대신 사용할 수 있는 잔여 허용량을 반환합니다.</p>
+        </div>
+      </div>
+
+      <!-- transferFrom -->
+      <div class="border border-gray-200 rounded-lg p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded font-mono">transferFrom(from, to, amount)</span>
+        </div>
+        <p class="text-sm font-medium text-gray-800 mb-1">위임 전송</p>
+        <div class="bg-red-50 border border-red-100 rounded p-2">
+          <p class="text-xs text-red-700">비유: 자동이체가 실행되는 것과 같습니다. approve로 허가받은 spender가 from의 토큰을 to에게 전송합니다.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 기술적 설명 -->
+  <div id="step2-technical" class="explanation-panel hidden">
+    <div class="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto font-mono text-sm relative">
+      <button class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-gray-200 text-xs px-2 py-1 rounded" onclick="copyCode(this)">복사</button>
+      <pre><code>// 총 발행량 반환 (읽기 전용)
+function totalSupply() external view returns (uint256);
+
+// 특정 주소의 잔액 반환
+function balanceOf(address account) external view returns (uint256);
+
+// 호출자(msg.sender)에서 to로 amount만큼 전송
+// 성공 시 true 반환, 잔액 부족 시 revert
+function transfer(address to, uint256 amount) external returns (bool);
+
+// spender가 호출자 대신 사용할 수 있는 한도 설정
+// 덮어쓰기 방식 (이전 값 무시)
+function approve(address spender, uint256 amount) external returns (bool);
+
+// owner가 spender에게 허용한 잔여 한도 조회
+function allowance(address owner, address spender) external view returns (uint256);
+
+// spender가 from의 토큰을 to로 전송 (allowance 차감)
+// DeFi 프로토콜의 핵심 메커니즘
+function transferFrom(
+    address from,
+    address to,
+    uint256 amount
+) external returns (bool);</code></pre>
+    </div>
+  </div>
+</div>
+
+<!-- Step 3: 이벤트 -->
+<div class="bg-white rounded-lg shadow-sm border p-6 mb-4" id="step-3">
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center gap-3">
+      <span class="bg-blue-600 text-white text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center">3</span>
+      <h2 class="text-xl font-bold text-gray-800">이벤트 (Transfer, Approval)</h2>
+    </div>
+    <button
+      class="check-btn px-4 py-2 rounded-lg border-2 border-gray-300 text-gray-500 text-sm font-medium hover:border-green-500 hover:text-green-600 transition-colors"
+      onclick="markComplete(this, 3)"
+      data-step="3"
+    >
+      완료 체크
+    </button>
+  </div>
+
+  <!-- 설명 모드 토글 -->
+  <div class="flex gap-2 mb-4">
+    <button
+      class="toggle-btn active-toggle px-3 py-1 rounded-full text-sm font-medium border"
+      onclick="toggleExplanation(this, 'simple', 'step3')"
+    >
+      쉽게 이해하기
+    </button>
+    <button
+      class="toggle-btn px-3 py-1 rounded-full text-sm font-medium border border-gray-300 text-gray-500"
+      onclick="toggleExplanation(this, 'technical', 'step3')"
+    >
+      기술적 설명
+    </button>
+  </div>
+
+  <!-- 쉽게 이해하기 -->
+  <div id="step3-simple" class="explanation-panel">
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+      <p class="text-blue-800 font-medium mb-1">비유로 이해하기</p>
+      <p class="text-blue-700 text-sm">
+        이벤트는 <strong>은행 거래 내역서</strong>와 같습니다. 돈이 오갈 때마다 기록이 남듯이,
+        토큰이 전송되거나 승인될 때마다 블록체인에 로그가 기록됩니다.
+        MetaMask나 DApp이 이 로그를 읽어 화면을 실시간으로 업데이트합니다.
+      </p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <p class="font-mono text-sm font-bold text-gray-800 mb-2">Transfer 이벤트</p>
+        <p class="text-sm text-gray-600 mb-2">토큰이 전송될 때마다 자동으로 기록됩니다.</p>
+        <ul class="text-xs text-gray-500 space-y-1">
+          <li>· <code class="bg-gray-100 px-1 rounded">from</code>: 보낸 주소</li>
+          <li>· <code class="bg-gray-100 px-1 rounded">to</code>: 받는 주소</li>
+          <li>· <code class="bg-gray-100 px-1 rounded">value</code>: 전송량</li>
+        </ul>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <p class="font-mono text-sm font-bold text-gray-800 mb-2">Approval 이벤트</p>
+        <p class="text-sm text-gray-600 mb-2">approve() 호출 시 자동으로 기록됩니다.</p>
+        <ul class="text-xs text-gray-500 space-y-1">
+          <li>· <code class="bg-gray-100 px-1 rounded">owner</code>: 허용한 주소</li>
+          <li>· <code class="bg-gray-100 px-1 rounded">spender</code>: 허용받은 주소</li>
+          <li>· <code class="bg-gray-100 px-1 rounded">value</code>: 허용량</li>
+        </ul>
+      </div>
+    </div>
+    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
+      <p class="text-yellow-800 text-sm">
+        <strong>활용:</strong> 프론트엔드에서 <code class="bg-yellow-100 px-1 rounded">contract.on("Transfer", callback)</code>으로
+        이벤트를 구독하면 전송이 발생할 때마다 UI를 자동으로 업데이트할 수 있습니다.
+      </p>
+    </div>
+  </div>
+
+  <!-- 기술적 설명 -->
+  <div id="step3-technical" class="explanation-panel hidden">
+    <p class="text-gray-700 text-sm mb-3">
+      이벤트는 EVM 로그(Log)로 저장되며, 스토리지보다 훨씬 저렴합니다.
+      <code class="bg-gray-100 px-1 rounded text-xs">indexed</code> 키워드가 붙은 파라미터는
+      블룸 필터로 빠르게 검색할 수 있습니다.
+    </p>
+    <div class="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto font-mono text-sm relative mb-4">
+      <button class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-gray-200 text-xs px-2 py-1 rounded" onclick="copyCode(this)">복사</button>
+      <pre><code>// 토큰 전송 시 발생하는 이벤트 (mint: from=0x0, burn: to=0x0)
+event Transfer(address indexed from, address indexed to, uint256 value);
+
+// approve() 호출 시 발생하는 이벤트
+event Approval(address indexed owner, address indexed spender, uint256 value);
+
+// ethers.js에서 이벤트 구독 예시
+contract.on("Transfer", (from, to, value, event) => {
+  console.log(`${from} -> ${to}: ${ethers.formatEther(value)} MTK`);
+  // UI 잔액 업데이트 로직 실행
+});</code></pre>
+    </div>
+  </div>
+</div>
+
+<!-- Step 4: 전체 코드 해설 -->
+<div class="bg-white rounded-lg shadow-sm border p-6 mb-4" id="step-4">
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center gap-3">
+      <span class="bg-blue-600 text-white text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center">4</span>
+      <h2 class="text-xl font-bold text-gray-800">전체 코드 해설</h2>
+    </div>
+    <button
+      class="check-btn px-4 py-2 rounded-lg border-2 border-gray-300 text-gray-500 text-sm font-medium hover:border-green-500 hover:text-green-600 transition-colors"
+      onclick="markComplete(this, 4)"
+      data-step="4"
+    >
+      완료 체크
+    </button>
+  </div>
+
+  <!-- 설명 모드 토글 -->
+  <div class="flex gap-2 mb-4">
+    <button
+      class="toggle-btn active-toggle px-3 py-1 rounded-full text-sm font-medium border"
+      onclick="toggleExplanation(this, 'simple', 'step4')"
+    >
+      쉽게 이해하기
+    </button>
+    <button
+      class="toggle-btn px-3 py-1 rounded-full text-sm font-medium border border-gray-300 text-gray-500"
+      onclick="toggleExplanation(this, 'technical', 'step4')"
+    >
+      기술적 설명
+    </button>
+  </div>
+
+  <!-- 쉽게 이해하기 -->
+  <div id="step4-simple" class="explanation-panel">
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+      <p class="text-blue-800 font-medium mb-1">비유로 이해하기</p>
+      <p class="text-blue-700 text-sm">
+        이 코드는 <strong>회사 설립 서류</strong>와 같습니다. 회사를 세울 때 정관(사업 목적, 상호명, 자본금)을 작성하듯이,
+        스마트 컨트랙트 배포 시 토큰의 이름·심볼·초기 발행량을 설정합니다.
+        기본적으로 한 번 배포하면 변경할 수 없습니다.
+        (단, Proxy 패턴(UUPS, Transparent Proxy 등)을 사용하면 업그레이드 가능한 컨트랙트를 만들 수 있습니다.)
+      </p>
+    </div>
+    <p class="text-gray-600 text-sm mb-4">각 줄이 무엇을 의미하는지 쉽게 설명합니다.</p>
+    <div class="space-y-3">
+      <div class="flex gap-3 items-start">
+        <code class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded font-mono whitespace-nowrap">1번 줄</code>
+        <p class="text-sm text-gray-700">라이선스 표시 — 이 코드는 MIT 라이선스로 누구나 사용 가능합니다.</p>
+      </div>
+      <div class="flex gap-3 items-start">
+        <code class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded font-mono whitespace-nowrap">2번 줄</code>
+        <p class="text-sm text-gray-700">솔리디티 버전 — 0.8.20 이상 컴파일러를 사용해야 합니다.</p>
+      </div>
+      <div class="flex gap-3 items-start">
+        <code class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded font-mono whitespace-nowrap">3번 줄</code>
+        <p class="text-sm text-gray-700">OpenZeppelin 라이브러리에서 이미 만들어진 ERC20 코드를 가져옵니다. 우리가 직접 6개 함수를 짤 필요가 없습니다!</p>
+      </div>
+      <div class="flex gap-3 items-start">
+        <code class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded font-mono whitespace-nowrap">4번 줄</code>
+        <p class="text-sm text-gray-700">MyToken이라는 컨트랙트를 ERC20을 상속받아 만듭니다. (상속 = 기존 기능 전부 가져오기)</p>
+      </div>
+      <div class="flex gap-3 items-start">
+        <code class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded font-mono whitespace-nowrap">5번 줄</code>
+        <p class="text-sm text-gray-700">배포 시 한 번만 실행되는 초기화 함수 — 이름은 "My Token", 심볼은 "MTK"로 설정합니다.</p>
+      </div>
+      <div class="flex gap-3 items-start">
+        <code class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded font-mono whitespace-nowrap">6번 줄</code>
+        <p class="text-sm text-gray-700">배포자(msg.sender)에게 initialSupply * 10^18개의 토큰을 발행합니다. (18자리는 소수점 단위. 예: initialSupply=1000이면 내부적으로 1000 * 10^18 = 1,000,000,000,000,000,000,000 최소 단위로 저장됩니다. UI에서는 ethers.formatUnits()로 사람이 읽을 수 있는 "1000"으로 변환합니다.)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 기술적 설명 (코드 블록) -->
+  <div id="step4-technical" class="explanation-panel hidden">
+    <div class="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto font-mono text-sm relative">
+      <button class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-gray-200 text-xs px-2 py-1 rounded" onclick="copyCode(this)">복사</button>
+      <pre><code>// SPDX-License-Identifier: MIT
+// ↑ 라이선스 식별자: 컴파일러 경고 방지 및 오픈소스 라이선스 명시
+
+pragma solidity ^0.8.20;
+// ↑ 0.8.20 이상 버전에서만 컴파일 허용
+//   참고: 오버플로우/언더플로우 자동 체크는 Solidity 0.8.0부터 도입된 기능입니다
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+// ↑ OpenZeppelin의 검증된 ERC20 구현체 임포트
+//   totalSupply, balanceOf, transfer 등 모든 표준 함수가 구현되어 있음
+
+contract MyToken is ERC20 {
+// ↑ ERC20을 상속받아 모든 표준 기능을 자동으로 획득
+
+    constructor(uint256 initialSupply) ERC20("My Token", "MTK") {
+    // ↑ 배포 시 1회 실행되는 생성자
+    //   ERC20("My Token", "MTK"): 토큰 이름과 심볼 초기화
+
+        _mint(msg.sender, initialSupply * 10 ** decimals());
+        // ↑ _mint: 내부 함수로 새 토큰을 생성하여 msg.sender에게 지급
+        //   decimals()는 기본값 18 반환 → 1 토큰 = 1 * 10^18 최소 단위
+        //   예: initialSupply=1000 → 1000 * 10^18 wei 단위 토큰 발행
+    }
+}</code></pre>
+    </div>
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+      <p class="text-blue-800 text-sm">
+        <strong>핵심 포인트:</strong> <code class="bg-blue-100 px-1 rounded">decimals()</code>가 18을 반환하는 것은
+        ETH의 최소 단위(Wei, 10^18)와 일관성을 유지하기 위한 <strong>관례적 기본값</strong>입니다.
+        필수는 아니며, 토큰마다 자유롭게 설정할 수 있습니다 (예: USDT는 6, WBTC는 8).
+        UI에서는 <code class="bg-blue-100 px-1 rounded">ethers.formatUnits(balance, decimals)</code>로 읽기 좋은 형태로 변환합니다.
+      </p>
+    </div>
+  </div>
+
+  <!-- 코드 원본 (항상 표시) -->
+  <div class="mt-4">
+    <p class="text-xs text-gray-400 mb-2">MyToken.sol 전체 코드</p>
+    <div class="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto font-mono text-sm relative">
+      <button class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-gray-200 text-xs px-2 py-1 rounded" onclick="copyCode(this)">복사</button>
+      <pre><code>// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+contract MyToken is ERC20 {
+    constructor(uint256 initialSupply) ERC20("My Token", "MTK") {
+        _mint(msg.sender, initialSupply * 10 ** decimals());
+    }
+}</code></pre>
+    </div>
+  </div>
+</div>
+
+<!-- Step 5: 확장 기능 -->
+<div class="bg-white rounded-lg shadow-sm border p-6 mb-4" id="step-5">
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center gap-3">
+      <span class="bg-blue-600 text-white text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center">5</span>
+      <h2 class="text-xl font-bold text-gray-800">확장 기능 (mint, burn, pause)</h2>
+    </div>
+    <button
+      class="check-btn px-4 py-2 rounded-lg border-2 border-gray-300 text-gray-500 text-sm font-medium hover:border-green-500 hover:text-green-600 transition-colors"
+      onclick="markComplete(this, 5)"
+      data-step="5"
+    >
+      완료 체크
+    </button>
+  </div>
+
+  <!-- 설명 모드 토글 -->
+  <div class="flex gap-2 mb-4">
+    <button
+      class="toggle-btn active-toggle px-3 py-1 rounded-full text-sm font-medium border"
+      onclick="toggleExplanation(this, 'simple', 'step5')"
+    >
+      쉽게 이해하기
+    </button>
+    <button
+      class="toggle-btn px-3 py-1 rounded-full text-sm font-medium border border-gray-300 text-gray-500"
+      onclick="toggleExplanation(this, 'technical', 'step5')"
+    >
+      기술적 설명
+    </button>
+  </div>
+
+  <!-- 쉽게 이해하기 -->
+  <div id="step5-simple" class="explanation-panel">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <div class="border border-green-200 bg-green-50 rounded-lg p-4">
+        <p class="font-bold text-green-800 mb-2">mint (추가 발행)</p>
+        <p class="text-sm text-green-700">중앙은행이 화폐를 추가로 발행하는 것과 같습니다. 새 토큰을 만들어 특정 주소에 지급합니다.</p>
+      </div>
+      <div class="border border-red-200 bg-red-50 rounded-lg p-4">
+        <p class="font-bold text-red-800 mb-2">burn (소각)</p>
+        <p class="text-sm text-red-700">화폐를 없애는 것과 같습니다. 토큰을 영구적으로 삭제하여 총 발행량을 줄입니다. 디플레이션 효과.</p>
+      </div>
+      <div class="border border-yellow-200 bg-yellow-50 rounded-lg p-4">
+        <p class="font-bold text-yellow-800 mb-2">pause (일시정지)</p>
+        <p class="text-sm text-yellow-700">긴급 상황에서 모든 거래를 멈추는 비상 브레이크입니다. 해킹이나 버그 발견 시 사용합니다.</p>
+      </div>
+    </div>
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <p class="text-blue-800 text-sm">
+        <strong>Ownable 접근 제어:</strong> mint와 pause 같은 강력한 기능은 컨트랙트 소유자(배포자)만 사용할 수 있도록 제한합니다.
+        자물쇠가 달린 관리자 전용 기능이라고 생각하세요.
+      </p>
+    </div>
+  </div>
+
+  <!-- 기술적 설명 -->
+  <div id="step5-technical" class="explanation-panel hidden">
+    <div class="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto font-mono text-sm relative">
+      <button class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-gray-200 text-xs px-2 py-1 rounded" onclick="copyCode(this)">복사</button>
+      <pre><code>// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract MyTokenExtended is ERC20, ERC20Burnable, ERC20Pausable, Ownable {
+    constructor(uint256 initialSupply)
+        ERC20("My Token", "MTK")
+        Ownable(msg.sender)  // 배포자를 소유자로 설정
+    {
+        _mint(msg.sender, initialSupply * 10 ** decimals());
+    }
+
+    // onlyOwner: 소유자만 호출 가능한 mint 함수
+    function mint(address to, uint256 amount) public onlyOwner {
+        _mint(to, amount);
+    }
+
+    // onlyOwner: 비상 시 모든 전송 정지
+    function pause() public onlyOwner {
+        _pause();
+    }
+
+    // onlyOwner: 정지 해제
+    function unpause() public onlyOwner {
+        _unpause();
+    }
+
+    // ERC20Burnable을 통해 burn(), burnFrom() 자동 제공
+
+    // Pausable 충돌 해결을 위한 override 필요
+    function _update(address from, address to, uint256 value)
+        internal
+        override(ERC20, ERC20Pausable)
+    {
+        super._update(from, to, value);
+    }
+}</code></pre>
+    </div>
+  </div>
+
+  <!-- 추가 보안/확장 개념 (항상 표시) -->
+  <div class="mt-6 space-y-4">
+
+    <!-- Ownable 소유권 관리 -->
+    <div class="border border-orange-200 bg-orange-50 rounded-lg p-4">
+      <p class="font-bold text-orange-800 mb-2">Ownable 소유권 관리</p>
+      <p class="text-sm text-orange-700 mb-2">
+        Ownable 패턴은 컨트랙트의 관리자 권한을 제어합니다. 두 가지 중요한 함수가 있습니다:
+      </p>
+      <ul class="text-xs text-orange-700 space-y-1 mb-2">
+        <li>· <strong>transferOwnership(newOwner)</strong>: 소유권을 다른 주소로 이전합니다. 실수로 잘못된 주소에 전달하면 소유권을 되찾을 수 없습니다.</li>
+        <li>· <strong>renounceOwnership()</strong>: 소유권을 영구히 포기합니다. 호출 후에는 mint, pause 등 onlyOwner 함수를 <strong>영영 호출할 수 없습니다</strong>.</li>
+      </ul>
+      <div class="bg-orange-100 rounded p-2">
+        <p class="text-xs text-orange-800"><strong>주의:</strong> renounceOwnership()은 탈중앙화를 위해 의도적으로 사용할 수 있지만,
+          실수로 호출하면 컨트랙트의 관리 기능이 영구 잠금됩니다. 신중하게 사용하세요.</p>
+      </div>
+    </div>
+
+    <!-- ERC20Capped -->
+    <div class="border border-purple-200 bg-purple-50 rounded-lg p-4">
+      <p class="font-bold text-purple-800 mb-2">ERC20Capped — 최대 발행량 제한</p>
+      <p class="text-sm text-purple-700 mb-2">
+        기본 MyToken은 mint에 상한선이 없어 무한 발행이 가능합니다.
+        <code class="bg-purple-100 px-1 rounded text-xs">ERC20Capped</code>를 사용하면 최대 발행량(cap)을 지정하여
+        비트코인처럼 총 발행량을 제한할 수 있습니다.
+      </p>
+      <div class="bg-gray-900 text-gray-100 rounded p-3 font-mono text-xs overflow-x-auto">
+        <pre><code>import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
+
+contract CappedToken is ERC20Capped, Ownable {
+    constructor() ERC20("Capped", "CAP")
+        ERC20Capped(1_000_000 * 10**18) // 최대 100만 개
+        Ownable(msg.sender) {
+        _mint(msg.sender, 500_000 * 10**18); // 초기 50만 개
+    }
+    function mint(address to, uint256 amount) public onlyOwner {
+        _mint(to, amount); // cap 초과 시 자동 revert
+    }
+    // ERC20 + ERC20Capped 상속 충돌 해결
+    function _update(address from, address to, uint256 value)
+        internal override(ERC20, ERC20Capped) {
+        super._update(from, to, value);
+    }
+}</code></pre>
+      </div>
+    </div>
+
+    <!-- EIP-2612 Permit -->
+    <div class="border border-blue-200 bg-blue-50 rounded-lg p-4">
+      <p class="font-bold text-blue-800 mb-2">EIP-2612 Permit — 가스 없는 승인</p>
+      <p class="text-sm text-blue-700 mb-2">
+        일반 <code class="bg-blue-100 px-1 rounded text-xs">approve()</code>는 별도 트랜잭션(가스비)이 필요합니다.
+        <strong>EIP-2612 permit()</strong>은 오프체인 서명(ECDSA)으로 approve를 대체하여:
+      </p>
+      <ul class="text-xs text-blue-700 space-y-1 mb-2">
+        <li>· 사용자가 <strong>가스비 없이</strong> 승인할 수 있음 (서명만 하면 됨)</li>
+        <li>· approve + transferFrom을 <strong>단일 트랜잭션</strong>으로 합칠 수 있음</li>
+        <li>· 온체인 approve 트랜잭션을 제거하고, nonce로 재사용을 방지하며, deadline으로 시간을 제한하여 <strong>프론트러닝 위험을 크게 완화</strong></li>
+        <li>· <span class="text-blue-500 text-xs">주의:</span> permit 서명도 mempool에서 추출될 수 있으므로 완벽한 방지는 아닙니다</li>
+      </ul>
+      <div class="bg-gray-900 text-gray-100 rounded p-3 font-mono text-xs overflow-x-auto">
+        <pre><code>import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
+
+contract PermitToken is ERC20, ERC20Permit {
+    constructor() ERC20("Permit", "PMT") ERC20Permit("Permit") {
+        _mint(msg.sender, 1000 * 10**18);
+    }
+}
+// 프론트엔드: permit() 서명 → 릴레이어가 대신 트랜잭션 제출</code></pre>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 보안 주의사항: receive/fallback + 배포 전 체크리스트 -->
+<div class="bg-white rounded-lg shadow-sm border p-6 mb-4">
+  <h2 class="text-xl font-bold text-gray-800 mb-4">보안 주의사항</h2>
+
+  <!-- receive/fallback 경고 -->
+  <div class="border border-red-200 bg-red-50 rounded-lg p-4 mb-4">
+    <p class="font-bold text-red-800 mb-2">ETH 전송 주의: receive() / fallback() 함수</p>
+    <p class="text-sm text-red-700 mb-2">
+      ERC20 컨트랙트에는 기본적으로 <code class="bg-red-100 px-1 rounded text-xs">receive()</code>나
+      <code class="bg-red-100 px-1 rounded text-xs">fallback()</code> 함수가 없습니다.
+      <strong>실수로 ETH를 ERC20 컨트랙트 주소로 직접 전송하면 영구적으로 잠기게 됩니다.</strong>
+      이는 초보자가 자주 겪는 실수이므로 특히 주의하세요.
+    </p>
+    <ul class="text-xs text-red-700 space-y-1">
+      <li>· ETH를 전송할 때는 반드시 <strong>지갑 주소(EOA)</strong>로 보내세요.</li>
+      <li>· ERC20 토큰을 전송할 때는 <code class="bg-red-100 px-1 rounded">transfer()</code> 함수를 사용하세요.</li>
+      <li>· 컨트랙트에 ETH 수신 기능이 필요하면 <code class="bg-red-100 px-1 rounded">receive() external payable</code>를 명시적으로 구현하세요.</li>
+    </ul>
+  </div>
+
+  <!-- 배포 전 보안 체크리스트 -->
+  <div class="border border-orange-200 bg-orange-50 rounded-lg p-4">
+    <p class="font-bold text-orange-800 mb-2">배포 전 보안 체크리스트</p>
+    <ul class="text-sm text-orange-700 space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-orange-500 mt-0.5">&#9679;</span>
+        <span><strong>Owner 키 관리:</strong> 컨트랙트 Owner의 개인키를 안전하게 보관하세요. 분실 시 mint, pause 등의 관리 기능을 영영 사용할 수 없습니다.</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-orange-500 mt-0.5">&#9679;</span>
+        <span><strong>무제한 mint 위험:</strong> MyTokenExtended의 mint 함수에는 발행량 상한이 없습니다. 프로덕션에서는 <code class="bg-orange-100 px-1 rounded text-xs">ERC20Capped</code>로 MAX_SUPPLY를 설정하거나, 타임락/멀티시그를 적용하세요.</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-orange-500 mt-0.5">&#9679;</span>
+        <span><strong>소스코드 검증:</strong> 배포 후 반드시 Etherscan에서 컨트랙트 소스코드를 검증(Verify)하세요. 미검증 컨트랙트는 사용자가 코드를 확인할 수 없어 신뢰도가 떨어집니다.</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-orange-500 mt-0.5">&#9679;</span>
+        <span><strong>테스트:</strong> 배포 전 Hardhat이나 Foundry로 단위 테스트를 작성하여 transfer 성공/실패, 권한 검증 등을 확인하세요.</span>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- 토글 및 진행률 스크립트 -->
+<script>
+  // 완료된 단계 추적 (localStorage 영속)
+  const PROGRESS_KEY = 'erc20-tutorial-progress';
+  const TOTAL_STEPS = 5;
+  const completedSteps = new Set();
+
+  // localStorage에서 진행 상황 복원
+  (function restoreProgress() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '[]');
+      if (Array.isArray(saved)) {
+        saved.forEach(function(step) { completedSteps.add(step); });
+        // 완료 체크 버튼 상태 복원
+        completedSteps.forEach(function(stepNum) {
+          const btn = document.querySelector('.check-btn[data-step="' + stepNum + '"]');
+          if (btn) {
+            btn.classList.remove('border-gray-300', 'text-gray-500');
+            btn.classList.add('border-green-500', 'text-green-600', 'bg-green-50');
+            btn.textContent = '완료!';
+          }
+        });
+        updateProgress();
+      }
+    } catch { /* 손상 데이터 무시 */ }
+  })();
+
+  // 단계 완료 처리
+  function markComplete(btn, stepNum) {
+    if (completedSteps.has(stepNum)) {
+      completedSteps.delete(stepNum);
+      btn.classList.remove('border-green-500', 'text-green-600', 'bg-green-50');
+      btn.classList.add('border-gray-300', 'text-gray-500');
+      btn.textContent = '완료 체크';
+    } else {
+      completedSteps.add(stepNum);
+      btn.classList.remove('border-gray-300', 'text-gray-500');
+      btn.classList.add('border-green-500', 'text-green-600', 'bg-green-50');
+      btn.textContent = '완료!';
+    }
+    // localStorage에 저장
+    try { localStorage.setItem(PROGRESS_KEY, JSON.stringify([...completedSteps])); } catch {}
+    updateProgress();
+  }
+
+  // 진행률 바 업데이트
+  function updateProgress() {
+    const pct = (completedSteps.size / TOTAL_STEPS) * 100;
+    document.getElementById('tutorial-progress').style.width = pct + '%';
+    document.getElementById('progress-label').textContent =
+      completedSteps.size + ' / ' + TOTAL_STEPS + ' 단계 완료';
+  }
+
+  // 설명 모드 토글 (쉽게/기술적)
+  function toggleExplanation(btn, mode, stepId) {
+    const simplePanel = document.getElementById(stepId + '-simple');
+    const techPanel = document.getElementById(stepId + '-technical');
+    const allBtns = btn.closest('.flex').querySelectorAll('.toggle-btn');
+
+    // 모든 버튼 비활성화
+    allBtns.forEach(function(b) {
+      b.classList.remove('active-toggle', 'bg-blue-600', 'text-white', 'border-blue-600');
+      b.classList.add('border-gray-300', 'text-gray-500');
+    });
+
+    // 클릭한 버튼 활성화
+    btn.classList.add('active-toggle', 'bg-blue-600', 'text-white', 'border-blue-600');
+    btn.classList.remove('border-gray-300', 'text-gray-500');
+
+    if (mode === 'simple') {
+      simplePanel.classList.remove('hidden');
+      techPanel.classList.add('hidden');
+    } else {
+      techPanel.classList.remove('hidden');
+      simplePanel.classList.add('hidden');
+    }
+  }
+
+  // 코드 복사
+  function copyCode(btn) {
+    const pre = btn.parentElement.querySelector('pre');
+    const text = pre ? pre.textContent : '';
+    navigator.clipboard.writeText(text).then(function() {
+      const original = btn.textContent;
+      btn.textContent = '복사됨!';
+      btn.classList.add('bg-green-600');
+      setTimeout(function() {
+        btn.textContent = original;
+        btn.classList.remove('bg-green-600');
+      }, 1500);
+    });
+  }
+</script>
+
+<!-- 토글 버튼 기본 스타일 (Tailwind 보조) -->
+<style>
+  .active-toggle {
+    background-color: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+  }
+  .explanation-panel.hidden {
+    display: none;
+  }
+</style>
+
+    </div>
+
+    <!-- ──────────────────────────────────────
+         탭 3: 배포 (다른 에이전트가 채울 영역)
+         ────────────────────────────────────── -->
+    <div id="tab-deploy" class="tab-content hidden" role="tabpanel" aria-label="배포">
+      <!-- Remix IDE 배포 가이드 콘텐츠 (tab-deploy 탭 내부에 삽입) -->
+
+<!-- 상단 안내 -->
+<div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+  <p class="text-blue-800 text-sm font-medium">MetaMask 지갑과 Remix IDE를 이용하여 ERC20 토큰을 실제 테스트넷에 배포합니다. 순서대로 따라해 주세요.</p>
+</div>
+
+<!-- Step 1: Remix IDE 접속 -->
+<div class="bg-white rounded-lg shadow-sm border p-6 mb-4">
+  <div class="flex items-center gap-3 mb-4">
+    <span class="bg-indigo-600 text-white text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0">1</span>
+    <h2 class="text-lg font-bold text-gray-800">Remix IDE 접속</h2>
+  </div>
+
+  <p class="text-gray-700 text-sm mb-3">
+    브라우저에서 Remix IDE에 접속합니다. 별도 설치 없이 웹 브라우저만으로 스마트 컨트랙트를 개발하고 배포할 수 있습니다.
+  </p>
+
+  <a
+    href="https://remix.ethereum.org"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+  >
+    Remix IDE 열기 (새 탭)
+  </a>
+
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+    <p class="text-blue-800 text-sm">
+      <strong>팁:</strong> Chrome 또는 Firefox 브라우저를 사용하세요. MetaMask 확장 프로그램이 설치되어 있어야 합니다.
+    </p>
+  </div>
+</div>
+
+<!-- Step 2: 새 파일 생성 및 코드 붙여넣기 -->
+<div class="bg-white rounded-lg shadow-sm border p-6 mb-4">
+  <div class="flex items-center gap-3 mb-4">
+    <span class="bg-indigo-600 text-white text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0">2</span>
+    <h2 class="text-lg font-bold text-gray-800">새 파일 생성 &rarr; MyToken.sol 코드 붙여넣기</h2>
+  </div>
+
+  <ol class="text-sm text-gray-700 space-y-2 mb-4">
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">1.</span>
+      좌측 파일 탐색기에서 <strong>contracts</strong> 폴더를 우클릭합니다.
+    </li>
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">2.</span>
+      <strong>New File</strong>을 클릭하고 파일명을 <code class="bg-gray-100 px-1 rounded">MyToken.sol</code>로 입력합니다.
+    </li>
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">3.</span>
+      아래 코드를 전체 복사하여 편집기에 붙여넣습니다.
+    </li>
+  </ol>
+
+  <div class="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto font-mono text-sm relative">
+    <button class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-gray-200 text-xs px-2 py-1 rounded" onclick="copyCode(this)">코드 복사</button>
+    <pre><code>// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+contract MyToken is ERC20 {
+    constructor(uint256 initialSupply) ERC20("My Token", "MTK") {
+        _mint(msg.sender, initialSupply * 10 ** decimals());
+    }
+}</code></pre>
+  </div>
+
+  <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
+    <p class="text-yellow-800 text-sm">
+      <strong>주의:</strong> Remix는 기본적으로 OpenZeppelin 라이브러리를 자동으로 불러올 수 있습니다.
+      만약 import 오류가 발생하면 <strong>DEPS &rarr; Install</strong> 버튼을 클릭하거나,
+      좌측 <strong>Plugin Manager</strong>에서 <strong>DEPS</strong> 플러그인을 활성화하세요.
+    </p>
+  </div>
+</div>
+
+<!-- Step 3: 컴파일러 설정 -->
+<div class="bg-white rounded-lg shadow-sm border p-6 mb-4">
+  <div class="flex items-center gap-3 mb-4">
+    <span class="bg-indigo-600 text-white text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0">3</span>
+    <h2 class="text-lg font-bold text-gray-800">컴파일러 설정</h2>
+  </div>
+
+  <ol class="text-sm text-gray-700 space-y-2 mb-4">
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">1.</span>
+      좌측 사이드바에서 <strong>Solidity Compiler</strong> 아이콘(&#9650; 모양)을 클릭합니다.
+    </li>
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">2.</span>
+      <strong>COMPILER</strong> 드롭다운에서 <code class="bg-gray-100 px-1 rounded">0.8.20</code> 이상 버전을 선택합니다.
+    </li>
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">3.</span>
+      <strong>Compile MyToken.sol</strong> 버튼을 클릭합니다.
+    </li>
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">4.</span>
+      컴파일 성공 시 아이콘에 초록색 체크 표시가 나타납니다.
+    </li>
+  </ol>
+
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+    <p class="text-blue-800 text-sm">
+      <strong>팁:</strong> <strong>Auto compile</strong> 체크박스를 활성화하면 코드 수정 시 자동으로 컴파일됩니다.
+      <strong>Enable optimization</strong>도 체크하면 가스 비용을 줄일 수 있습니다.
+    </p>
+  </div>
+</div>
+
+<!-- Step 4: 배포 환경 선택 -->
+<div class="bg-white rounded-lg shadow-sm border p-6 mb-4">
+  <div class="flex items-center gap-3 mb-4">
+    <span class="bg-indigo-600 text-white text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0">4</span>
+    <h2 class="text-lg font-bold text-gray-800">배포 환경: Injected Provider - MetaMask 선택</h2>
+  </div>
+
+  <ol class="text-sm text-gray-700 space-y-2 mb-4">
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">1.</span>
+      좌측 사이드바에서 <strong>Deploy &amp; Run Transactions</strong> 아이콘(&#9654; 모양)을 클릭합니다.
+    </li>
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">2.</span>
+      <strong>ENVIRONMENT</strong> 드롭다운에서 <code class="bg-gray-100 px-1 rounded">Injected Provider - MetaMask</code>를 선택합니다.
+    </li>
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">3.</span>
+      MetaMask 팝업이 열리면 <strong>연결</strong>을 클릭합니다.
+    </li>
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">4.</span>
+      MetaMask에서 테스트넷(Sepolia 등)이 선택되어 있는지 확인합니다.
+    </li>
+  </ol>
+
+  <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+    <p class="text-yellow-800 text-sm">
+      <strong>주의:</strong> 실제 이더(ETH)를 사용하지 않으려면 반드시 <strong>테스트넷(Sepolia)</strong>을 사용하세요.
+      테스트넷 ETH는 <a href="https://sepoliafaucet.com" target="_blank" class="underline">SepoliaFaucet</a>에서 무료로 받을 수 있습니다.
+    </p>
+  </div>
+</div>
+
+<!-- Step 5: 생성자 인자 입력 및 Deploy -->
+<div class="bg-white rounded-lg shadow-sm border p-6 mb-4">
+  <div class="flex items-center gap-3 mb-4">
+    <span class="bg-indigo-600 text-white text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0">5</span>
+    <h2 class="text-lg font-bold text-gray-800">생성자 인자 입력 &rarr; Deploy</h2>
+  </div>
+
+  <ol class="text-sm text-gray-700 space-y-2 mb-4">
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">1.</span>
+      <strong>CONTRACT</strong> 드롭다운에서 <code class="bg-gray-100 px-1 rounded">MyToken</code>이 선택되어 있는지 확인합니다.
+    </li>
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">2.</span>
+      <strong>Deploy</strong> 버튼 옆 입력란에 초기 발행량을 입력합니다.
+      <code class="bg-gray-100 px-1 rounded">1000</code> 입력 시 1,000 MTK가 발행됩니다.
+    </li>
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">3.</span>
+      <strong>Deploy</strong> 버튼을 클릭합니다.
+    </li>
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">4.</span>
+      MetaMask 팝업에서 가스 비용을 확인하고 <strong>확인</strong>을 클릭합니다.
+    </li>
+  </ol>
+
+  <div class="bg-gray-900 text-gray-100 rounded-lg p-4 font-mono text-sm relative">
+    <p class="text-gray-400 text-xs mb-1">// 생성자 인자 예시</p>
+    <pre><code>initialSupply: 1000</code></pre>
+    <p class="text-gray-400 text-xs mt-2">// → 배포자 지갑에 1000 MTK (1000 * 10^18 wei) 발행</p>
+  </div>
+
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+    <p class="text-blue-800 text-sm">
+      <strong>팁:</strong> 트랜잭션이 제출되면 MetaMask에서 Activity 탭에서 진행 상황을 확인할 수 있습니다.
+      보통 10~30초 내에 완료됩니다.
+    </p>
+  </div>
+</div>
+
+<!-- Step 6: 배포된 컨트랙트 주소 확인 -->
+<div class="bg-white rounded-lg shadow-sm border p-6 mb-4">
+  <div class="flex items-center gap-3 mb-4">
+    <span class="bg-indigo-600 text-white text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0">6</span>
+    <h2 class="text-lg font-bold text-gray-800">배포된 컨트랙트 주소 확인</h2>
+  </div>
+
+  <ol class="text-sm text-gray-700 space-y-2 mb-4">
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">1.</span>
+      Remix 화면 하단 <strong>콘솔(Terminal)</strong>에서 트랜잭션 결과를 확인합니다.
+    </li>
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">2.</span>
+      배포 성공 후 <strong>Deployed Contracts</strong> 섹션에 컨트랙트가 나타납니다.
+    </li>
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">3.</span>
+      컨트랙트 이름 옆 <strong>복사 아이콘</strong>을 클릭하여 주소를 복사합니다.
+    </li>
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">4.</span>
+      아래 저장 폼에 붙여넣기 하세요.
+    </li>
+  </ol>
+
+  <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+    <p class="text-yellow-800 text-sm">
+      <strong>주의:</strong> 컨트랙트 주소는 <code class="bg-yellow-100 px-1 rounded">0x</code>로 시작하는 42자리 16진수입니다.
+      주소를 잘못 저장하면 토큰을 다시 찾을 수 없으니 반드시 정확히 복사하세요.
+    </p>
+  </div>
+</div>
+
+<!-- Step 7: MetaMask에서 토큰 가져오기 -->
+<div class="bg-white rounded-lg shadow-sm border p-6 mb-4">
+  <div class="flex items-center gap-3 mb-4">
+    <span class="bg-indigo-600 text-white text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0">7</span>
+    <h2 class="text-lg font-bold text-gray-800">MetaMask에서 "토큰 가져오기" &rarr; 주소 입력</h2>
+  </div>
+
+  <ol class="text-sm text-gray-700 space-y-2 mb-4">
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">1.</span>
+      MetaMask를 열고 <strong>Tokens</strong> 탭으로 이동합니다.
+    </li>
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">2.</span>
+      하단의 <strong>토큰 가져오기(Import tokens)</strong>를 클릭합니다.
+    </li>
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">3.</span>
+      <strong>토큰 계약 주소</strong> 필드에 6단계에서 복사한 컨트랙트 주소를 붙여넣습니다.
+    </li>
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">4.</span>
+      토큰 심볼(<code class="bg-gray-100 px-1 rounded">MTK</code>)과 소수점(18)이 자동으로 입력됩니다.
+    </li>
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">5.</span>
+      <strong>토큰 추가</strong>를 클릭하면 MetaMask 지갑에서 MTK 잔액을 확인할 수 있습니다.
+    </li>
+  </ol>
+
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+    <p class="text-blue-800 text-sm">
+      <strong>팁:</strong> 토큰이 자동으로 감지되지 않으면 <strong>Custom Token</strong> 탭에서
+      컨트랙트 주소를 직접 입력하세요.
+    </p>
+  </div>
+</div>
+
+<!-- Step 8: Etherscan 소스코드 검증 (Verify) -->
+<div class="bg-white rounded-lg shadow-sm border p-6 mb-4">
+  <div class="flex items-center gap-3 mb-4">
+    <span class="bg-indigo-600 text-white text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0">8</span>
+    <h2 class="text-lg font-bold text-gray-800">Etherscan에서 소스코드 검증 (Verify)</h2>
+  </div>
+
+  <p class="text-gray-700 text-sm mb-3">
+    배포된 컨트랙트의 소스코드를 Etherscan에 등록하면 누구나 코드를 열람할 수 있어 <strong>투명성과 신뢰도</strong>가 높아집니다.
+    검증되지 않은 컨트랙트는 바이트코드만 표시되어 사용자가 기능을 확인할 수 없습니다.
+  </p>
+
+  <ol class="text-sm text-gray-700 space-y-2 mb-4">
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">1.</span>
+      <a href="https://sepolia.etherscan.io" target="_blank" rel="noopener" class="text-blue-500 hover:underline">sepolia.etherscan.io</a>에 접속하여 배포한 컨트랙트 주소를 검색합니다.
+    </li>
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">2.</span>
+      <strong>Contract</strong> 탭 → <strong>Verify and Publish</strong> 링크를 클릭합니다.
+    </li>
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">3.</span>
+      컴파일러 버전(<code class="bg-gray-100 px-1 rounded">0.8.20</code>), 라이선스(MIT)를 선택하고 소스코드를 붙여넣습니다.
+    </li>
+    <li class="flex gap-2">
+      <span class="text-indigo-600 font-bold shrink-0">4.</span>
+      <strong>Verify and Publish</strong> 버튼을 클릭하면 검증이 완료됩니다.
+    </li>
+  </ol>
+
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+    <p class="text-blue-800 text-sm">
+      <strong>팁:</strong> Remix IDE의 <strong>Etherscan - Contract Verification</strong> 플러그인을 사용하면
+      IDE에서 바로 검증할 수 있습니다. Hardhat/Foundry를 사용하는 경우
+      <code class="bg-blue-100 px-1 rounded text-xs">npx hardhat verify</code> 또는
+      <code class="bg-blue-100 px-1 rounded text-xs">forge verify-contract</code> 명령으로 자동 검증이 가능합니다.
+    </p>
+  </div>
+</div>
+
+<!-- 대체 배포 방법 안내 (Hardhat / Foundry) -->
+<div class="bg-white rounded-lg shadow-sm border p-6 mb-4">
+  <h3 class="text-lg font-bold text-gray-800 mb-3">참고: 로컬 개발 환경으로 배포하기</h3>
+  <p class="text-sm text-gray-600 mb-4">
+    Remix IDE 외에도 실무에서 널리 사용되는 로컬 개발 도구가 있습니다.
+    프로젝트 규모가 커지면 아래 도구 중 하나를 사용하는 것을 권장합니다.
+  </p>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Hardhat -->
+    <div class="border border-gray-200 rounded-lg p-4">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded">Hardhat</span>
+      </div>
+      <p class="text-xs text-gray-600 mb-2">JavaScript/TypeScript 기반 개발 환경. 테스트, 디버깅, 배포 자동화를 지원합니다.</p>
+      <div class="bg-gray-900 text-gray-100 rounded p-2 font-mono text-xs overflow-x-auto">
+        <code>npx hardhat init
+npx hardhat compile
+npx hardhat run scripts/deploy.js --network sepolia</code>
+      </div>
+    </div>
+    <!-- Foundry -->
+    <div class="border border-gray-200 rounded-lg p-4">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="bg-red-100 text-red-800 text-xs font-bold px-2 py-1 rounded">Foundry</span>
+      </div>
+      <p class="text-xs text-gray-600 mb-2">Rust 기반 고속 도구. Solidity로 테스트를 작성할 수 있어 가스 최적화에 유리합니다.</p>
+      <div class="bg-gray-900 text-gray-100 rounded p-2 font-mono text-xs overflow-x-auto">
+        <code>forge init
+forge build
+forge create src/MyToken.sol:MyToken --rpc-url $SEPOLIA_RPC</code>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 컨트랙트 주소 저장 폼 -->
+<div class="bg-white rounded-lg shadow-sm border p-6 mb-4">
+  <h3 class="text-lg font-bold text-gray-800 mb-4">배포한 컨트랙트 주소 저장</h3>
+
+  <div class="flex flex-col sm:flex-row gap-3 mb-4">
+    <input
+      id="deploy-token-address"
+      type="text"
+      placeholder="0x..."
+      class="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
+    />
+    <button
+      onclick="saveTokenAddress()"
+      class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors whitespace-nowrap"
+    >
+      저장
+    </button>
+  </div>
+
+  <div id="address-saved-msg" class="hidden bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+    <p class="text-green-700 text-sm font-medium">컨트랙트 주소가 저장되었습니다.</p>
+    <p id="saved-address-display" class="text-green-600 text-xs font-mono mt-1"></p>
+  </div>
+
+  <div class="flex flex-wrap gap-3">
+    <button
+      onclick="addTokenToMetamask()"
+      class="flex items-center gap-2 border border-orange-400 text-orange-600 hover:bg-orange-50 text-sm font-medium px-5 py-2 rounded-lg transition-colors"
+    >
+      MetaMask에 토큰 추가
+    </button>
+    <button
+      onclick="switchTab('tab-interact')"
+      class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors"
+    >
+      인터랙션 탭으로 이동 &rarr;
+    </button>
+  </div>
+
+  <p class="text-xs text-gray-400 mt-3">
+    * 저장된 주소는 브라우저 로컬 스토리지에 보관되며, 인터랙션·대시보드 탭에 자동 입력됩니다.
+  </p>
+</div>
+
+<!-- 배포 완료 체크리스트 (localStorage 영속) -->
+<div class="bg-white rounded-lg shadow-sm border p-6 mb-4">
+  <h3 class="text-lg font-bold text-gray-800 mb-4">배포 완료 체크리스트</h3>
+  <div class="space-y-3" id="deploy-checklist">
+    <label class="flex items-center gap-3 cursor-pointer">
+      <input type="checkbox" class="deploy-check w-4 h-4 text-indigo-600 rounded" data-idx="0" />
+      <span class="text-sm text-gray-700">Remix IDE에 코드를 붙여넣고 컴파일했습니다.</span>
+    </label>
+    <label class="flex items-center gap-3 cursor-pointer">
+      <input type="checkbox" class="deploy-check w-4 h-4 text-indigo-600 rounded" data-idx="1" />
+      <span class="text-sm text-gray-700">MetaMask를 Sepolia 테스트넷에 연결했습니다.</span>
+    </label>
+    <label class="flex items-center gap-3 cursor-pointer">
+      <input type="checkbox" class="deploy-check w-4 h-4 text-indigo-600 rounded" data-idx="2" />
+      <span class="text-sm text-gray-700">컨트랙트를 성공적으로 배포했습니다.</span>
+    </label>
+    <label class="flex items-center gap-3 cursor-pointer">
+      <input type="checkbox" class="deploy-check w-4 h-4 text-indigo-600 rounded" data-idx="3" />
+      <span class="text-sm text-gray-700">컨트랙트 주소를 복사하여 저장했습니다.</span>
+    </label>
+    <label class="flex items-center gap-3 cursor-pointer">
+      <input type="checkbox" class="deploy-check w-4 h-4 text-indigo-600 rounded" data-idx="4" />
+      <span class="text-sm text-gray-700">MetaMask에서 MTK 토큰 잔액을 확인했습니다.</span>
+    </label>
+  </div>
+</div>
+<script>
+  // 배포 체크리스트 localStorage 영속
+  (function initDeployChecklist() {
+    const CHECKLIST_KEY = 'erc20-tutorial-deploy-checklist';
+    const checks = document.querySelectorAll('.deploy-check');
+    // 복원
+    try {
+      const saved = JSON.parse(localStorage.getItem(CHECKLIST_KEY) || '[]');
+      if (Array.isArray(saved)) {
+        checks.forEach(function(cb) {
+          if (saved.includes(Number(cb.dataset.idx))) cb.checked = true;
+        });
+      }
+    } catch {}
+    // 저장
+    checks.forEach(function(cb) {
+      cb.addEventListener('change', function() {
+        var state = [];
+        checks.forEach(function(c) { if (c.checked) state.push(Number(c.dataset.idx)); });
+        try { localStorage.setItem(CHECKLIST_KEY, JSON.stringify(state)); } catch {}
+      });
+    });
+  })();
+</script>
+
+<!-- 배포 관련 스크립트 -->
+<script>
+  // 페이지 로드 시 저장된 주소 복원
+  (function restoreSavedAddress() {
+    // ContractStorage 또는 레거시 키에서 복원
+    let saved = '';
+    try {
+      const stored = localStorage.getItem('erc20-tutorial-contracts');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && parsed.token) saved = parsed.token;
+      }
+    } catch { /* ignore */ }
+    if (!saved) saved = localStorage.getItem('deployedTokenAddress') || '';
+    if (saved) {
+      document.getElementById('deploy-token-address').value = saved;
+      showSavedMessage(saved);
+    }
+  })();
+
+  // 컨트랙트 주소 저장
+  function saveTokenAddress() {
+    const addr = document.getElementById('deploy-token-address').value.trim();
+    if (!addr) {
+      alert('컨트랙트 주소를 입력해 주세요.');
+      return;
+    }
+    if (!/^0x[0-9a-fA-F]{40}$/.test(addr)) {
+      alert('올바른 이더리움 주소 형식이 아닙니다.\n0x로 시작하는 42자리 주소를 입력하세요.');
+      return;
+    }
+    // EIP-55 체크섬 검증 (오타 방지)
+    try {
+      window.ethers.getAddress(addr);
+    } catch {
+      alert('주소 체크섬이 올바르지 않습니다. 주소를 다시 확인해 주세요.');
+      return;
+    }
+    // 통합 키에 저장 (다른 탭과 공유)
+    try {
+      const stored = localStorage.getItem('erc20-tutorial-contracts');
+      const data = stored ? JSON.parse(stored) : { token: '', faucet: '' };
+      data.token = addr;
+      localStorage.setItem('erc20-tutorial-contracts', JSON.stringify(data));
+    } catch { /* ignore */ }
+    localStorage.setItem('deployedTokenAddress', addr);
+    showSavedMessage(addr);
+
+    // Interact 탭의 토큰 주소 입력란에 자동 채움
+    const interactInput = document.getElementById('interact-token-address');
+    if (interactInput) interactInput.value = addr;
+
+    // Dashboard 탭의 토큰 주소 입력란에도 자동 채움
+    const dashboardInput = document.getElementById('dashboard-token-address');
+    if (dashboardInput) dashboardInput.value = addr;
+  }
+
+  // 저장 완료 메시지 표시
+  function showSavedMessage(addr) {
+    const msgEl = document.getElementById('address-saved-msg');
+    const displayEl = document.getElementById('saved-address-display');
+    displayEl.textContent = addr;
+    msgEl.classList.remove('hidden');
+  }
+
+  // MetaMask에 토큰 추가 (EIP-747)
+  async function addTokenToMetamask() {
+    const addr = document.getElementById('deploy-token-address').value.trim();
+    if (!addr) {
+      alert('먼저 컨트랙트 주소를 입력하고 저장해 주세요.');
+      return;
+    }
+    if (!window.ethereum) {
+      alert('MetaMask가 설치되어 있지 않습니다.\nhttps://metamask.io 에서 설치하세요.');
+      return;
+    }
+    try {
+      const wasAdded = await window.ethereum.request({
+        method: 'wallet_watchAsset',
+        params: {
+          type: 'ERC20',
+          options: {
+            address: addr,
+            symbol: 'MTK',
+            decimals: 18,
+          },
+        },
+      });
+      if (wasAdded) {
+        alert('MTK 토큰이 MetaMask에 성공적으로 추가되었습니다!');
+      } else {
+        alert('토큰 추가를 취소했습니다.');
+      }
+    } catch (err) {
+      alert('MetaMask 연결 중 오류가 발생했습니다: ' + err.message);
+    }
+  }
+
+  // 코드 복사 (tutorial-content.html과 동일한 함수, 중복 선언 방지)
+  if (typeof copyCode === 'undefined') {
+    function copyCode(btn) {
+      const pre = btn.parentElement.querySelector('pre');
+      const text = pre ? pre.textContent : '';
+      navigator.clipboard.writeText(text).then(function() {
+        const original = btn.textContent;
+        btn.textContent = '복사됨!';
+        btn.classList.add('bg-green-600');
+        setTimeout(function() {
+          btn.textContent = original;
+          btn.classList.remove('bg-green-600');
+        }, 1500);
+      });
+    }
+  }
+</script>
+
+    </div>
+
+    <!-- ──────────────────────────────────────
+         탭 4: 인터랙션 (다른 에이전트가 채울 영역)
+         ────────────────────────────────────── -->
+    <div id="tab-interact" class="tab-content hidden" role="tabpanel" aria-label="인터랙션">
+<!-- 인터랙티브 섹션: 토큰 상호작용 -->
+<!-- 퍼셋/퀴즈는 독립 최상위 탭(tab-faucet, tab-quiz)으로 이동됨 -->
+
+<!-- ===================== 토큰 상호작용 ===================== -->
+<div id="panel-interact">
+
+  <!-- 컨트랙트 주소 입력 -->
+  <div class="bg-white rounded-lg shadow-sm border p-6 mb-4">
+    <h3 class="text-lg font-semibold text-gray-800 mb-1">토큰 컨트랙트 주소</h3>
+    <p class="text-sm text-gray-500 mb-3">상호작용할 ERC20 토큰의 컨트랙트 주소를 입력하세요.</p>
+    <div class="flex flex-col sm:flex-row gap-3">
+      <input
+        id="interact-token-address"
+        type="text"
+        placeholder="0x..."
+        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono"
+      />
+      <button
+        onclick="InteractUI.applyAddress()"
+        class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-medium rounded-lg transition-colors duration-150 whitespace-nowrap"
+      >
+        적용
+      </button>
+    </div>
+    <p id="interact-address-error" class="hidden mt-2 text-sm text-red-600"></p>
+  </div>
+
+  <!-- 토큰 정보 카드 -->
+  <div id="token-info-card" class="hidden bg-indigo-50 border border-indigo-200 rounded-lg p-5 mb-4">
+    <div class="flex items-center gap-2 mb-3">
+      <div class="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center">
+        <span class="text-white text-xs font-bold" id="token-symbol-icon">?</span>
+      </div>
+      <div>
+        <h4 class="font-semibold text-gray-900" id="token-info-name">-</h4>
+        <p class="text-xs text-gray-500" id="token-info-address-short">-</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="bg-white rounded-md p-3 text-center">
+        <p class="text-xs text-gray-500 mb-1">이름</p>
+        <p class="text-sm font-semibold text-gray-800" id="token-info-name-val">-</p>
+      </div>
+      <div class="bg-white rounded-md p-3 text-center">
+        <p class="text-xs text-gray-500 mb-1">심볼</p>
+        <p class="text-sm font-semibold text-gray-800" id="token-info-symbol">-</p>
+      </div>
+      <div class="bg-white rounded-md p-3 text-center">
+        <p class="text-xs text-gray-500 mb-1">소수점</p>
+        <p class="text-sm font-semibold text-gray-800" id="token-info-decimals">-</p>
+      </div>
+      <div class="bg-white rounded-md p-3 text-center">
+        <p class="text-xs text-gray-500 mb-1">총 발행량</p>
+        <p class="text-sm font-semibold text-gray-800 truncate" id="token-info-supply">-</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 서브탭 네비게이션 -->
+  <div class="flex flex-wrap gap-2 mb-4">
+    <button
+      id="subtab-btn-transfer"
+      onclick="InteractUI.switchSubTab('transfer')"
+      class="px-4 py-2 text-sm font-medium rounded-md bg-indigo-600 text-white transition-all duration-150"
+    >
+      전송
+    </button>
+    <button
+      id="subtab-btn-approve"
+      onclick="InteractUI.switchSubTab('approve')"
+      class="px-4 py-2 text-sm font-medium rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all duration-150"
+    >
+      승인
+    </button>
+    <button
+      id="subtab-btn-allowance"
+      onclick="InteractUI.switchSubTab('allowance')"
+      class="px-4 py-2 text-sm font-medium rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all duration-150"
+    >
+      허용량 조회
+    </button>
+    <button
+      id="subtab-btn-balance"
+      onclick="InteractUI.switchSubTab('balance')"
+      class="px-4 py-2 text-sm font-medium rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all duration-150"
+    >
+      잔액 조회
+    </button>
+    <button
+      id="subtab-btn-transferFrom"
+      onclick="InteractUI.switchSubTab('transferFrom')"
+      class="px-4 py-2 text-sm font-medium rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all duration-150"
+    >
+      위임 전송
+    </button>
+    <button
+      id="subtab-btn-mint"
+      onclick="InteractUI.switchSubTab('mint')"
+      class="px-4 py-2 text-sm font-medium rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all duration-150"
+    >
+      발행
+    </button>
+    <button
+      id="subtab-btn-burn"
+      onclick="InteractUI.switchSubTab('burn')"
+      class="px-4 py-2 text-sm font-medium rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all duration-150"
+    >
+      소각
+    </button>
+  </div>
+
+  <!-- 전송 서브탭 -->
+  <div id="subtab-transfer" class="bg-white rounded-lg shadow-sm border p-6">
+    <h4 class="text-base font-semibold text-gray-800 mb-1">토큰 전송</h4>
+    <p class="text-sm text-gray-500 mb-4">
+      <code class="bg-gray-100 px-1 rounded text-xs">transfer(to, amount)</code>를 호출하여 토큰을 전송합니다.
+    </p>
+    <div class="space-y-3">
+      <div>
+        <label for="transfer-to" class="block text-xs font-medium text-gray-700 mb-1">받는 주소</label>
+        <input
+          id="transfer-to"
+          type="text"
+          placeholder="0x..."
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+        />
+      </div>
+      <div>
+        <label for="transfer-amount" class="block text-xs font-medium text-gray-700 mb-1">전송 수량</label>
+        <input
+          id="transfer-amount"
+          type="number"
+          placeholder="예: 100"
+          min="0"
+          step="any"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+      </div>
+      <button
+        onclick="InteractUI.transfer()"
+        class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-medium rounded-lg transition-colors duration-150"
+      >
+        전송
+      </button>
+    </div>
+    <!-- 트랜잭션 상태 -->
+    <div id="transfer-tx-status" class="hidden mt-4"></div>
+  </div>
+
+  <!-- 승인 서브탭 -->
+  <div id="subtab-approve" class="hidden bg-white rounded-lg shadow-sm border p-6">
+    <h4 class="text-base font-semibold text-gray-800 mb-1">토큰 위임 승인</h4>
+    <p class="text-sm text-gray-500 mb-4">
+      <code class="bg-gray-100 px-1 rounded text-xs">approve(spender, amount)</code>를 호출하여 다른 주소가 지정된 수량만큼 토큰을 사용할 수 있도록 승인합니다.
+    </p>
+    <div class="space-y-3">
+      <div>
+        <label for="approve-spender" class="block text-xs font-medium text-gray-700 mb-1">위임할 주소 (Spender)</label>
+        <input
+          id="approve-spender"
+          type="text"
+          placeholder="0x..."
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+        />
+      </div>
+      <div>
+        <label for="approve-amount" class="block text-xs font-medium text-gray-700 mb-1">승인 수량</label>
+        <input
+          id="approve-amount"
+          type="number"
+          placeholder="예: 1000"
+          min="0"
+          step="any"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+      </div>
+      <button
+        onclick="InteractUI.approve()"
+        class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-medium rounded-lg transition-colors duration-150"
+      >
+        승인
+      </button>
+    </div>
+    <!-- 트랜잭션 상태 -->
+    <div id="approve-tx-status" class="hidden mt-4"></div>
+    <!-- approve 프론트러닝 경고 -->
+    <div class="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+      <p class="text-red-800 text-sm font-medium mb-2">보안 주의: approve() 프론트러닝 취약점</p>
+      <p class="text-red-700 text-xs mb-2">
+        allowance를 A → B로 변경할 때, spender가 변경 트랜잭션을 감지하고 기존 A만큼을 먼저 사용한 뒤
+        새 B만큼 다시 사용할 수 있습니다 (총 A+B 탈취). 이를 <strong>프론트러닝 공격</strong>이라 합니다.
+      </p>
+      <p class="text-red-700 text-xs font-medium mb-1">안전한 패턴:</p>
+      <ul class="text-red-700 text-xs space-y-1 mb-2">
+        <li>· allowance를 <strong>0으로 먼저 초기화</strong>한 후 새 값을 설정 (2단계 approve). 단, 두 트랜잭션 사이에도 프론트러닝이 가능하므로 <strong>위험을 줄일 뿐 완전한 해결책은 아닙니다.</strong></li>
+        <li>· <strong>EIP-2612 permit()</strong>: 오프체인 서명으로 approve를 대체하여 온체인 approve 트랜잭션을 제거함으로써 <strong>프론트러닝 위험을 크게 완화</strong>합니다. (단, permit 서명 자체도 mempool에서 추출될 수 있으므로 완벽한 방지는 아닙니다.)</li>
+        <li>· <span class="text-red-500 text-xs">참고:</span> OpenZeppelin v4의 <code class="bg-red-100 px-1 rounded">increaseAllowance()</code> / <code class="bg-red-100 px-1 rounded">decreaseAllowance()</code>는 <strong>v5에서 제거</strong>되었습니다. 2단계 approve 또는 permit 방식을 사용하세요.</li>
+      </ul>
+      <div class="bg-red-100 rounded p-2">
+        <code class="text-xs text-red-800">// 안전한 2단계 approve 예시
+await token.approve(spender, 0);        // 1. 먼저 0으로 리셋
+await token.approve(spender, newAmount); // 2. 새 값 설정</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- 허용량 조회 서브탭 -->
+  <div id="subtab-allowance" class="hidden bg-white rounded-lg shadow-sm border p-6">
+    <h4 class="text-base font-semibold text-gray-800 mb-1">허용량 조회</h4>
+    <p class="text-sm text-gray-500 mb-4">
+      <code class="bg-gray-100 px-1 rounded text-xs">allowance(owner, spender)</code>를 호출하여 현재 위임된 수량을 확인합니다.
+    </p>
+    <div class="space-y-3">
+      <div>
+        <label for="allowance-owner" class="block text-xs font-medium text-gray-700 mb-1">소유자 주소 (Owner)</label>
+        <input
+          id="allowance-owner"
+          type="text"
+          placeholder="0x..."
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+        />
+      </div>
+      <div>
+        <label for="allowance-spender" class="block text-xs font-medium text-gray-700 mb-1">위임자 주소 (Spender)</label>
+        <input
+          id="allowance-spender"
+          type="text"
+          placeholder="0x..."
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+        />
+      </div>
+      <button
+        onclick="InteractUI.checkAllowance()"
+        class="w-full py-2.5 bg-gray-800 hover:bg-gray-900 active:bg-black text-white text-sm font-medium rounded-lg transition-colors duration-150"
+      >
+        조회
+      </button>
+    </div>
+    <!-- 조회 결과 -->
+    <div id="allowance-result" class="hidden mt-4 p-4 bg-gray-50 rounded-lg border">
+      <p class="text-xs text-gray-500 mb-1">허용량</p>
+      <p class="text-2xl font-bold text-gray-900" id="allowance-result-value">-</p>
+      <p class="text-xs text-gray-400 mt-1" id="allowance-result-symbol"></p>
+    </div>
+  </div>
+
+  <!-- 잔액 조회 서브탭 -->
+  <div id="subtab-balance" class="hidden bg-white rounded-lg shadow-sm border p-6">
+    <h4 class="text-base font-semibold text-gray-800 mb-1">잔액 조회</h4>
+    <p class="text-sm text-gray-500 mb-4">
+      <code class="bg-gray-100 px-1 rounded text-xs">balanceOf(address)</code>를 호출하여 특정 주소의 토큰 잔액을 확인합니다.
+    </p>
+    <div class="space-y-3">
+      <div>
+        <label for="balance-address" class="block text-xs font-medium text-gray-700 mb-1">조회할 주소</label>
+        <input
+          id="balance-address"
+          type="text"
+          placeholder="0x... (빈칸이면 내 주소)"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+        />
+      </div>
+      <button
+        onclick="InteractUI.checkBalance()"
+        class="w-full py-2.5 bg-gray-800 hover:bg-gray-900 active:bg-black text-white text-sm font-medium rounded-lg transition-colors duration-150"
+      >
+        잔액 조회
+      </button>
+    </div>
+    <div id="balance-result" class="hidden mt-4 p-4 bg-gray-50 rounded-lg border">
+      <p class="text-xs text-gray-500 mb-1">토큰 잔액</p>
+      <p class="text-2xl font-bold text-gray-900" id="balance-result-value">-</p>
+      <p class="text-xs text-gray-400 mt-1" id="balance-result-symbol"></p>
+    </div>
+  </div>
+
+  <!-- 위임 전송 서브탭 -->
+  <div id="subtab-transferFrom" class="hidden bg-white rounded-lg shadow-sm border p-6">
+    <h4 class="text-base font-semibold text-gray-800 mb-1">위임 전송 (transferFrom)</h4>
+    <p class="text-sm text-gray-500 mb-4">
+      <code class="bg-gray-100 px-1 rounded text-xs">transferFrom(from, to, amount)</code>: approve로 허가받은 토큰을 대신 전송합니다.
+    </p>
+    <div class="space-y-3">
+      <div>
+        <label for="transferFrom-from" class="block text-xs font-medium text-gray-700 mb-1">출처 주소 (From) — approve한 주소</label>
+        <input id="transferFrom-from" type="text" placeholder="0x..."
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono" />
+      </div>
+      <div>
+        <label for="transferFrom-to" class="block text-xs font-medium text-gray-700 mb-1">받는 주소 (To)</label>
+        <input id="transferFrom-to" type="text" placeholder="0x..."
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono" />
+      </div>
+      <div>
+        <label for="transferFrom-amount" class="block text-xs font-medium text-gray-700 mb-1">전송 수량</label>
+        <input id="transferFrom-amount" type="number" placeholder="예: 100" min="0" step="any"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+      </div>
+      <button
+        onclick="InteractUI.transferFrom()"
+        class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-medium rounded-lg transition-colors duration-150"
+      >
+        위임 전송
+      </button>
+    </div>
+    <div id="transferFrom-tx-status" class="hidden mt-4"></div>
+  </div>
+
+  <!-- 발행 서브탭 -->
+  <div id="subtab-mint" class="hidden bg-white rounded-lg shadow-sm border p-6">
+    <h4 class="text-base font-semibold text-gray-800 mb-1">토큰 발행 (mint)</h4>
+    <p class="text-sm text-gray-500 mb-2">
+      <code class="bg-gray-100 px-1 rounded text-xs">mint(to, amount)</code>: 새 토큰을 발행합니다. <strong>컨트랙트 소유자(onlyOwner)</strong>만 호출 가능합니다.
+    </p>
+    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+      <p class="text-yellow-800 text-xs"><strong>참고:</strong> 기본 MyToken은 mint 기능이 없습니다. MyTokenExtended(확장 버전)를 배포한 경우에만 사용 가능합니다.</p>
+    </div>
+    <div class="space-y-3">
+      <div>
+        <label for="mint-to" class="block text-xs font-medium text-gray-700 mb-1">받는 주소</label>
+        <input id="mint-to" type="text" placeholder="0x..."
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono" />
+      </div>
+      <div>
+        <label for="mint-amount" class="block text-xs font-medium text-gray-700 mb-1">발행 수량</label>
+        <input id="mint-amount" type="number" placeholder="예: 1000" min="0" step="any"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+      </div>
+      <button
+        onclick="InteractUI.mint()"
+        class="w-full py-2.5 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white text-sm font-medium rounded-lg transition-colors duration-150"
+      >
+        발행
+      </button>
+    </div>
+    <div id="mint-tx-status" class="hidden mt-4"></div>
+  </div>
+
+  <!-- 소각 서브탭 -->
+  <div id="subtab-burn" class="hidden bg-white rounded-lg shadow-sm border p-6">
+    <h4 class="text-base font-semibold text-gray-800 mb-1">토큰 소각 (burn)</h4>
+    <p class="text-sm text-gray-500 mb-2">
+      <code class="bg-gray-100 px-1 rounded text-xs">burn(amount)</code>: 내 토큰을 영구적으로 소각하여 총 발행량을 줄입니다.
+    </p>
+    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+      <p class="text-yellow-800 text-xs"><strong>참고:</strong> MyTokenExtended(ERC20Burnable 상속)를 배포한 경우에만 사용 가능합니다. 소각된 토큰은 복구할 수 없습니다.</p>
+    </div>
+    <div class="space-y-3">
+      <div>
+        <label for="burn-amount" class="block text-xs font-medium text-gray-700 mb-1">소각 수량</label>
+        <input id="burn-amount" type="number" placeholder="예: 100" min="0" step="any"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+      </div>
+      <button
+        onclick="InteractUI.burn()"
+        class="w-full py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-sm font-medium rounded-lg transition-colors duration-150"
+      >
+        소각
+      </button>
+    </div>
+    <div id="burn-tx-status" class="hidden mt-4"></div>
+  </div>
+
+</div>
+
+    </div>
+    <!-- /tab-interact -->
+
+    <!-- ──────────────────────────────────────
+         탭 5: 퍼셋 (다른 에이전트가 채울 영역)
+         ────────────────────────────────────── -->
+    <div id="tab-faucet" class="tab-content hidden" role="tabpanel" aria-label="퍼셋">
+<!-- faucet inner -->
+
+  <!-- 개념 설명 카드 -->
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-5 mb-4">
+    <div class="flex gap-3">
+      <span class="text-2xl flex-shrink-0">🚰</span>
+      <div>
+        <h4 class="font-semibold text-blue-900 mb-1">퍼셋(Faucet)이란?</h4>
+        <p class="text-sm text-blue-800 leading-relaxed">
+          퍼셋은 수도꼭지를 뜻합니다. 정수기에서 물을 받듯이, 테스트용 토큰을 무료로 지급받을 수 있는 스마트 컨트랙트입니다.
+          단, 남용을 막기 위해 <strong>쿨다운 시간</strong>이 있어 일정 시간이 지나야 다시 받을 수 있습니다.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 퍼셋 컨트랙트 주소 입력 -->
+  <div class="bg-white rounded-lg shadow-sm border p-6 mb-4">
+    <h3 class="text-lg font-semibold text-gray-800 mb-1">퍼셋 컨트랙트 주소</h3>
+    <p class="text-sm text-gray-500 mb-3">배포한 TokenFaucet 컨트랙트 주소를 입력하세요.</p>
+    <div class="flex flex-col sm:flex-row gap-3">
+      <input
+        id="faucet-address-input"
+        type="text"
+        placeholder="0x..."
+        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
+      />
+      <button
+        onclick="FaucetUI.applyAddress()"
+        class="px-5 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-medium rounded-lg transition-colors duration-150 whitespace-nowrap"
+      >
+        적용
+      </button>
+    </div>
+    <p id="faucet-address-error" class="hidden mt-2 text-sm text-red-600"></p>
+  </div>
+
+  <!-- 퍼셋 상태 카드 -->
+  <div id="faucet-status-card" class="hidden bg-white rounded-lg shadow-sm border p-6 mb-4">
+    <div class="flex items-center justify-between mb-4">
+      <h4 class="font-semibold text-gray-800">퍼셋 상태</h4>
+      <button
+        onclick="FaucetUI.refreshStatus()"
+        class="text-xs text-blue-600 hover:text-blue-700 font-medium"
+      >
+        새로고침
+      </button>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-blue-50 rounded-md p-4 text-center">
+        <p class="text-xs text-gray-500 mb-1">퍼셋 잔여량</p>
+        <p class="text-xl font-bold text-blue-700" id="faucet-balance">-</p>
+      </div>
+      <div class="bg-green-50 rounded-md p-4 text-center">
+        <p class="text-xs text-gray-500 mb-1">1회 배포량</p>
+        <p class="text-xl font-bold text-green-700" id="faucet-claim-amount">-</p>
+      </div>
+      <div class="bg-orange-50 rounded-md p-4 text-center">
+        <p class="text-xs text-gray-500 mb-1">쿨다운 시간</p>
+        <p class="text-xl font-bold text-orange-700" id="faucet-cooldown">-</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 클레임 섹션 -->
+  <div id="faucet-claim-section" class="hidden bg-white rounded-lg shadow-sm border p-6 mb-4">
+    <div class="flex flex-col items-center gap-4">
+      <button
+        id="claim-btn"
+        onclick="FaucetUI.claim()"
+        class="px-8 py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-base font-semibold rounded-xl transition-colors duration-150 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        🚰 토큰 받기
+      </button>
+      <!-- 쿨다운 타이머 -->
+      <div id="cooldown-timer" class="hidden text-center">
+        <p class="text-sm text-gray-500 mb-1">다음 요청까지</p>
+        <p class="text-2xl font-mono font-bold text-orange-600" id="cooldown-display">--:--:--</p>
+      </div>
+    </div>
+    <!-- 트랜잭션 상태 -->
+    <div id="claim-status" class="hidden mt-4"></div>
+  </div>
+
+  <!-- TokenFaucet.sol 소스 코드 -->
+  <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+    <div class="flex items-center justify-between px-6 py-4 border-b bg-gray-50">
+      <div class="flex items-center gap-2">
+        <span class="text-sm font-semibold text-gray-700">TokenFaucet.sol</span>
+        <span class="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full font-medium">Solidity</span>
+      </div>
+    </div>
+    <pre class="p-6 overflow-x-auto text-sm leading-relaxed"><code class="text-gray-800 font-mono">// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+
+/**
+ * @title TokenFaucet
+ * @dev 테스트용 토큰을 주기적으로 지급하는 퍼셋 컨트랙트
+ *      SafeERC20으로 transfer 반환값 검증, ReentrancyGuard로 재진입 방어
+ */
+contract TokenFaucet is Ownable, ReentrancyGuard {
+  using SafeERC20 for IERC20;
+  IERC20 public token;
+  uint256 public claimAmount;
+  uint256 public cooldownTime;
+
+  // 주소별 마지막 클레임 시각 기록
+  mapping(address =&gt; uint256) private _lastClaimed;
+
+  event TokensClaimed(
+    address indexed claimant,
+    uint256 amount,
+    uint256 timestamp
+  );
+
+  constructor(
+    address tokenAddress,
+    uint256 _claimAmount,
+    uint256 _cooldownTime
+  ) Ownable(msg.sender) {
+    token = IERC20(tokenAddress);
+    claimAmount = _claimAmount;
+    cooldownTime = _cooldownTime;
+  }
+
+  /**
+   * @dev 퍼셋 현재 잔액 조회
+   */
+  function faucetBalance() external view returns (uint256) {
+    return token.balanceOf(address(this));
+  }
+
+  /**
+   * @dev 다음 클레임 가능 시각 조회
+   */
+  function nextClaimTime(address account)
+    external view returns (uint256)
+  {
+    return _lastClaimed[account] + cooldownTime;
+  }
+
+  /**
+   * @dev 토큰 클레임 - 쿨다운 확인 후 지급
+   */
+  // CEI 패턴: Checks → Effects → Interactions
+  function claim() external nonReentrant returns (bool) {
+    // 1. Checks (조건 검증)
+    require(
+      block.timestamp >= _lastClaimed[msg.sender] + cooldownTime,
+      "Faucet: cooldown active"
+    );
+    require(
+      token.balanceOf(address(this)) >= claimAmount,
+      "Faucet: insufficient balance"
+    );
+
+    // 2. Effects (상태 변경을 외부 호출보다 먼저!)
+    _lastClaimed[msg.sender] = block.timestamp;
+
+    // 3. Interactions (SafeERC20으로 반환값 자동 검증)
+    token.safeTransfer(msg.sender, claimAmount);
+
+    emit TokensClaimed(msg.sender, claimAmount, block.timestamp);
+    return true;
+  }
+
+  /**
+   * @dev 오너만 클레임 수량 변경 가능
+   */
+  function setClaimAmount(uint256 amount) external onlyOwner {
+    claimAmount = amount;
+  }
+
+  /**
+   * @dev 오너만 쿨다운 시간 변경 가능
+   */
+  function setCooldownTime(uint256 time) external onlyOwner {
+    cooldownTime = time;
+  }
+
+  /**
+   * @dev 오너가 퍼셋 잔액 회수
+   */
+  function withdraw() external onlyOwner nonReentrant {
+    uint256 balance = token.balanceOf(address(this));
+    token.safeTransfer(owner(), balance);
+  }
+}</code></pre>
+    <!-- 보안 수정 사항 안내 -->
+    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
+      <p class="text-yellow-800 text-sm font-medium mb-2">보안 체크포인트</p>
+      <ul class="text-yellow-700 text-xs space-y-1">
+        <li>· <strong>SafeERC20</strong>: <code class="bg-yellow-100 px-1 rounded">transfer()</code> 반환값을 자동 검증합니다. 비표준 토큰(USDT 등)도 안전하게 처리합니다.</li>
+        <li>· <strong>ReentrancyGuard</strong>: <code class="bg-yellow-100 px-1 rounded">nonReentrant</code> modifier로 재진입 공격을 방어합니다.</li>
+        <li>· <strong>CEI 패턴</strong>: Checks → Effects → Interactions 순서로 상태 변경이 외부 호출보다 먼저 실행됩니다.</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+
+    <!-- ──────────────────────────────────────
+         탭 6: 대시보드 (다른 에이전트가 채울 영역)
+         ────────────────────────────────────── -->
+    <div id="tab-dashboard" class="tab-content hidden" role="tabpanel" aria-label="대시보드">
+      <!-- 토큰 컨트랙트 주소 입력 섹션 -->
+<div class="bg-white rounded-lg shadow-sm border p-6 mb-4">
+  <h3 class="text-lg font-semibold text-gray-800 mb-3">토큰 컨트랙트 주소</h3>
+  <div class="flex flex-col sm:flex-row gap-3">
+    <input
+      id="dashboard-token-address"
+      type="text"
+      placeholder="0x..."
+      class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
+    />
+    <button
+      onclick="Dashboard.loadData()"
+      id="dashboard-load-btn"
+      class="px-5 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-medium rounded-lg transition-colors duration-150 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      데이터 불러오기
+    </button>
+  </div>
+  <!-- 에러 메시지 -->
+  <p id="dashboard-error" class="hidden mt-2 text-sm text-red-600"></p>
+</div>
+
+<!-- 로딩 오버레이 -->
+<div id="dashboard-loading" class="hidden mb-6">
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3">
+    <svg class="animate-spin h-5 w-5 text-blue-600 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+    </svg>
+    <span class="text-sm text-blue-700 font-medium">데이터를 불러오는 중...</span>
+  </div>
+</div>
+
+<!-- 통계 카드 (3열 그리드) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+  <!-- 총 전송 횟수 -->
+  <div id="stat-transfers" class="bg-white rounded-lg shadow-sm border p-5">
+    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">총 전송 횟수</p>
+    <p class="stat-value text-2xl font-bold text-gray-800">-</p>
+  </div>
+  <!-- 고유 주소 수 -->
+  <div id="stat-addresses" class="bg-white rounded-lg shadow-sm border p-5">
+    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">고유 주소 수</p>
+    <p class="stat-value text-2xl font-bold text-gray-800">-</p>
+  </div>
+  <!-- 총 전송량 -->
+  <div id="stat-volume" class="bg-white rounded-lg shadow-sm border p-5">
+    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">총 전송량</p>
+    <p class="stat-value text-2xl font-bold text-gray-800">-</p>
+  </div>
+</div>
+
+<!-- 차트 섹션 (2열 그리드) -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+  <!-- 전송량 추이 바 차트 -->
+  <div class="bg-white rounded-lg shadow-sm border p-6">
+    <h3 class="text-base font-semibold text-gray-800 mb-4">전송량 추이</h3>
+    <div class="h-64 relative">
+      <!-- 빈 상태 -->
+      <div id="transfer-chart-empty" class="absolute inset-0 flex items-center justify-center text-gray-400 text-sm">
+        데이터가 없습니다
+      </div>
+      <canvas id="transfer-chart" class="hidden"></canvas>
+    </div>
+  </div>
+  <!-- 보유자 분포 파이 차트 -->
+  <div class="bg-white rounded-lg shadow-sm border p-6">
+    <h3 class="text-base font-semibold text-gray-800 mb-1">보유자 분포</h3>
+    <p class="text-xs text-yellow-600 mb-3">⚠️ 최근 블록 이벤트 기반 근사치이며, 실제 잔액과 다를 수 있습니다.</p>
+    <div class="h-64 relative">
+      <!-- 빈 상태 -->
+      <div id="holder-chart-empty" class="absolute inset-0 flex items-center justify-center text-gray-400 text-sm">
+        데이터가 없습니다
+      </div>
+      <canvas id="holder-chart" class="hidden"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- 거래 내역 테이블 -->
+<div class="bg-white rounded-lg shadow-sm border p-6">
+  <h3 class="text-base font-semibold text-gray-800 mb-4">거래 내역</h3>
+
+  <!-- 부분 히스토리 경고 배너 -->
+  <div
+    id="partial-history-warning"
+    class="hidden bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 text-sm text-yellow-800"
+  >
+    <p class="mb-2">⚠️ 최근 약 1,000 블록의 데이터만 표시됩니다. 전체 히스토리가 아닙니다.</p>
+    <p class="text-xs text-yellow-700">
+      <strong>전체 히스토리가 필요하다면:</strong>
+      <a href="https://docs.etherscan.io/api-endpoints/accounts" target="_blank" rel="noopener" class="underline">Etherscan API</a>로 전체 토큰 전송 내역을 조회하거나,
+      <a href="https://thegraph.com/docs/" target="_blank" rel="noopener" class="underline">The Graph</a> 서브그래프를 생성하여
+      커스텀 인덱싱된 온체인 데이터를 GraphQL로 쿼리할 수 있습니다.
+    </p>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table id="tx-table" class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-gray-200">
+          <th class="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">From</th>
+          <th class="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">To</th>
+          <th class="text-right py-2 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">수량</th>
+          <th class="text-right py-2 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">블록</th>
+          <th class="text-right py-2 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tx Hash</th>
+        </tr>
+      </thead>
+      <tbody id="tx-table-body" class="divide-y divide-gray-100">
+        <!-- 데이터가 JS로 동적 삽입됨 -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 데이터 없음 메시지 -->
+  <p id="no-tx-message" class="text-center text-gray-500 py-8 hidden">
+    아직 거래 내역이 없습니다.
+  </p>
+</div>
+
+    </div>
+    </div>
+
+  </main>
+  <!-- /main -->
+
+  <!-- ══════════════════════════════════════════
+       푸터 (하단 고정)
+       ══════════════════════════════════════════ -->
+  <footer class="bg-white border-t border-gray-200 py-4 mt-auto">
+    <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between
+                gap-2 text-sm text-gray-400">
+      <span>블록체인 실습 | ERC20 토큰 튜토리얼</span>
+      <div class="flex items-center gap-3">
+        <span>Sepolia Testnet</span>
+        <span>·</span>
+        <span>Powered by Ethers.js v6</span>
+        <span>·</span>
+        <span>Tailwind CSS</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ══════════════════════════════════════════
+       스크립트 플레이스홀더 (다른 에이전트가 채울 영역)
+       ══════════════════════════════════════════ -->
+
+  <script>
+/**
+ * Web3Engine - 이더리움 DApp Web3 연결 엔진
+ * ethers.js v6 (CDN) 기반으로 MetaMask 연결 및 ERC20 토큰 상호작용을 처리합니다.
+ * Sepolia 테스트넷 전용
+ */
+
+// ERC20 표준 ABI - 토큰 정보 조회 및 전송 기능
+const ERC20_ABI = [
+  // 읽기 함수
+  "function name() view returns (string)",
+  "function symbol() view returns (string)",
+  "function decimals() view returns (uint8)",
+  "function totalSupply() view returns (uint256)",
+  "function balanceOf(address account) view returns (uint256)",
+  "function allowance(address owner, address spender) view returns (uint256)",
+
+  // 쓰기 함수
+  "function transfer(address to, uint256 amount) returns (bool)",
+  "function approve(address spender, uint256 amount) returns (bool)",
+  "function transferFrom(address from, address to, uint256 amount) returns (bool)",
+
+  // 이벤트
+  "event Transfer(address indexed from, address indexed to, uint256 value)",
+  "event Approval(address indexed owner, address indexed spender, uint256 value)",
+];
+
+// Mintable/Burnable 확장 ABI - mint, burn 기능 (MyTokenExtended용)
+const MINTABLE_ABI = [
+  "function mint(address to, uint256 amount)",
+  "function burn(uint256 amount)",
+  "function burnFrom(address account, uint256 amount)",
+  "function owner() view returns (address)",
+];
+
+// Faucet 컨트랙트 ABI - 테스트 토큰 지급 기능
+const FAUCET_ABI = [
+  // 읽기 함수
+  "function faucetBalance() view returns (uint256)",
+  "function claimAmount() view returns (uint256)",
+  "function cooldownTime() view returns (uint256)",
+  "function nextClaimTime(address account) view returns (uint256)",
+
+  // 쓰기 함수
+  "function claim() returns (bool)",
+
+  // 이벤트
+  "event TokensClaimed(address indexed claimant, uint256 amount, uint256 timestamp)",
+];
+
+// Sepolia 테스트넷 체인 ID
+const SEPOLIA_CHAIN_ID = 11155111;
+const SEPOLIA_CHAIN_ID_HEX = "0xaa36a7";
+
+const Web3Engine = {
+  // ===== 상태 =====
+  provider: null,
+  signer: null,
+  account: null,
+  chainId: null,
+
+  // UI 업데이트용 콜백 (외부에서 주입)
+  onAccountChanged: null,
+  onChainChanged: null,
+  onConnectionChanged: null,
+
+  // 연결 상태 확인
+  isConnected() {
+    return !!(this.signer && this.account);
+  },
+
+  // 현재 상태 객체 반환 (UI 업데이트용)
+  getState() {
+    return {
+      connected: this.isConnected(),
+      address: this.account,
+      network: this.chainId === SEPOLIA_CHAIN_ID ? "sepolia" : "unknown",
+      chainId: this.chainId,
+    };
+  },
+
+  // ===== 내부 헬퍼 =====
+
+  /**
+   * ethers 글로벌 객체를 반환합니다. (CDN 로드 확인)
+   */
+  _getEthers() {
+    if (typeof window.ethers === "undefined") {
+      throw new Error("ethers.js가 로드되지 않았습니다. CDN 스크립트를 확인하세요.");
+    }
+    return window.ethers;
+  },
+
+  /**
+   * MetaMask(window.ethereum)가 설치되어 있는지 확인합니다.
+   */
+  _checkMetaMask() {
+    if (typeof window.ethereum === "undefined") {
+      throw new Error("MetaMask가 설치되어 있지 않습니다. MetaMask를 설치 후 다시 시도하세요.");
+    }
+  },
+
+  /**
+   * 연결 상태를 확인합니다. 연결되지 않으면 에러를 던집니다.
+   */
+  _checkConnection() {
+    if (!this.signer || !this.account) {
+      throw new Error("지갑이 연결되어 있지 않습니다. 먼저 지갑을 연결하세요.");
+    }
+  },
+
+  // ===== 연결 관련 =====
+
+  /**
+   * MetaMask 지갑을 연결합니다.
+   * @returns {Promise<string>} 연결된 계정 주소
+   */
+  async connect() {
+    try {
+      this._checkMetaMask();
+      const ethers = this._getEthers();
+
+      // BrowserProvider로 MetaMask 연결
+      this.provider = new ethers.BrowserProvider(window.ethereum);
+
+      // 계정 접근 권한 요청
+      const accounts = await this.provider.send("eth_requestAccounts", []);
+      if (!accounts || accounts.length === 0) {
+        throw new Error("MetaMask에서 계정 접근이 거부되었습니다.");
+      }
+
+      this.signer = await this.provider.getSigner();
+      this.account = await this.signer.getAddress();
+
+      // 현재 체인 ID 조회
+      const network = await this.provider.getNetwork();
+      this.chainId = Number(network.chainId);
+
+      // MetaMask 이벤트 리스너 등록
+      this._registerEventListeners();
+
+      // 연결 상태 콜백 호출
+      if (typeof this.onConnectionChanged === "function") {
+        this.onConnectionChanged(this.getState());
+      }
+
+      return this.account;
+    } catch (error) {
+      // 사용자가 직접 거부한 경우
+      if (error.code === 4001) {
+        throw new Error("사용자가 MetaMask 연결 요청을 거부했습니다.");
+      }
+      throw new Error(`지갑 연결 실패: ${error.message}`);
+    }
+  },
+
+  /**
+   * 지갑 연결을 해제합니다. (상태 초기화)
+   */
+  async disconnect() {
+    try {
+      // 이벤트 리스너 제거
+      if (window.ethereum) {
+        window.ethereum.removeListener("accountsChanged", this._handleAccountsChanged);
+        window.ethereum.removeListener("chainChanged", this._handleChainChanged);
+      }
+
+      // 상태 초기화
+      this.provider = null;
+      this.signer = null;
+      this.account = null;
+      this.chainId = null;
+
+      // 연결 해제 콜백 호출
+      if (typeof this.onConnectionChanged === "function") {
+        this.onConnectionChanged(this.getState());
+      }
+    } catch (error) {
+      throw new Error(`연결 해제 실패: ${error.message}`);
+    }
+  },
+
+  /**
+   * Sepolia 테스트넷으로 네트워크를 전환합니다.
+   */
+  async switchToSepolia() {
+    try {
+      this._checkMetaMask();
+
+      try {
+        // 기존 네트워크로 전환 시도
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: SEPOLIA_CHAIN_ID_HEX }],
+        });
+      } catch (switchError) {
+        // 네트워크가 MetaMask에 등록되지 않은 경우 추가
+        if (switchError.code === 4902) {
+          await window.ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: SEPOLIA_CHAIN_ID_HEX,
+                chainName: "Sepolia Test Network",
+                nativeCurrency: {
+                  name: "SepoliaETH",
+                  symbol: "ETH",
+                  decimals: 18,
+                },
+                rpcUrls: ["https://rpc.sepolia.org"],
+                blockExplorerUrls: ["https://sepolia.etherscan.io"],
+              },
+            ],
+          });
+        } else {
+          throw switchError;
+        }
+      }
+    } catch (error) {
+      if (error.code === 4001) {
+        throw new Error("사용자가 네트워크 전환을 거부했습니다.");
+      }
+      throw new Error(`Sepolia 네트워크 전환 실패: ${error.message}`);
+    }
+  },
+
+  /**
+   * 현재 네트워크가 Sepolia인지 확인합니다.
+   * @returns {boolean}
+   */
+  isCorrectNetwork() {
+    return this.chainId === SEPOLIA_CHAIN_ID;
+  },
+
+  // ===== ERC20 읽기 함수 (가스비 없음) =====
+
+  /**
+   * ERC20 토큰의 기본 정보를 조회합니다.
+   * @param {string} tokenAddress - 토큰 컨트랙트 주소
+   * @returns {Promise<{name: string, symbol: string, decimals: number, totalSupply: string}>}
+   */
+  async getTokenInfo(tokenAddress) {
+    try {
+      if (!this.provider) {
+        throw new Error("프로바이더가 연결되어 있지 않습니다.");
+      }
+      const ethers = this._getEthers();
+      const contract = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
+
+      // 병렬로 토큰 정보 조회
+      const [name, symbol, decimals, totalSupply] = await Promise.all([
+        contract.name(),
+        contract.symbol(),
+        contract.decimals(),
+        contract.totalSupply(),
+      ]);
+
+      return {
+        name,
+        symbol,
+        decimals: Number(decimals),
+        totalSupply: ethers.formatUnits(totalSupply, decimals),
+      };
+    } catch (error) {
+      throw new Error(`토큰 정보 조회 실패 (${tokenAddress}): ${error.message}`);
+    }
+  },
+
+  /**
+   * 특정 계정의 ERC20 토큰 잔액을 조회합니다.
+   * @param {string} tokenAddress - 토큰 컨트랙트 주소
+   * @param {string} account - 조회할 계정 주소
+   * @returns {Promise<string>} 포맷된 잔액 문자열
+   */
+  async getBalance(tokenAddress, account) {
+    try {
+      if (!this.provider) {
+        throw new Error("프로바이더가 연결되어 있지 않습니다.");
+      }
+      const ethers = this._getEthers();
+      const contract = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
+
+      const [balance, decimals] = await Promise.all([
+        contract.balanceOf(account),
+        contract.decimals(),
+      ]);
+
+      return ethers.formatUnits(balance, decimals);
+    } catch (error) {
+      throw new Error(`토큰 잔액 조회 실패: ${error.message}`);
+    }
+  },
+
+  /**
+   * ERC20 토큰의 위임 허용량(allowance)을 조회합니다.
+   * @param {string} tokenAddress - 토큰 컨트랙트 주소
+   * @param {string} owner - 토큰 소유자 주소
+   * @param {string} spender - 위임받은 지출자 주소
+   * @returns {Promise<string>} 포맷된 허용량 문자열
+   */
+  async getAllowance(tokenAddress, owner, spender) {
+    try {
+      if (!this.provider) {
+        throw new Error("프로바이더가 연결되어 있지 않습니다.");
+      }
+      const ethers = this._getEthers();
+      const contract = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
+
+      const [allowance, decimals] = await Promise.all([
+        contract.allowance(owner, spender),
+        contract.decimals(),
+      ]);
+
+      return ethers.formatUnits(allowance, decimals);
+    } catch (error) {
+      throw new Error(`허용량 조회 실패: ${error.message}`);
+    }
+  },
+
+  // ===== ERC20 쓰기 함수 (가스비 필요) =====
+
+  /**
+   * ERC20 토큰을 전송합니다.
+   * @param {string} tokenAddress - 토큰 컨트랙트 주소
+   * @param {string} to - 수신자 주소
+   * @param {string} amount - 전송할 수량 (사람이 읽을 수 있는 단위)
+   * @param {number} decimals - 토큰의 소수점 자릿수
+   * @returns {Promise<{hash: string, wait: Function}>} 트랜잭션 객체
+   */
+  async transfer(tokenAddress, to, amount, decimals) {
+    try {
+      this._checkConnection();
+      if (!this.isCorrectNetwork()) {
+        throw new Error("Sepolia 네트워크에서만 트랜잭션을 실행할 수 있습니다.");
+      }
+      const ethers = this._getEthers();
+      const contract = new ethers.Contract(tokenAddress, ERC20_ABI, this.signer);
+
+      const parsedAmount = ethers.parseUnits(amount.toString(), decimals);
+      const tx = await contract.transfer(to, parsedAmount);
+
+      return {
+        hash: tx.hash,
+        wait: () => tx.wait(),
+      };
+    } catch (error) {
+      if (error.code === 4001) {
+        throw new Error("사용자가 트랜잭션을 거부했습니다.");
+      }
+      throw new Error(`토큰 전송 실패: ${error.message}`);
+    }
+  },
+
+  /**
+   * ERC20 토큰 지출 권한을 위임합니다.
+   * @param {string} tokenAddress - 토큰 컨트랙트 주소
+   * @param {string} spender - 지출 권한을 받을 주소
+   * @param {string} amount - 허용할 수량 (사람이 읽을 수 있는 단위)
+   * @param {number} decimals - 토큰의 소수점 자릿수
+   * @returns {Promise<{hash: string, wait: Function}>} 트랜잭션 객체
+   */
+  async approve(tokenAddress, spender, amount, decimals) {
+    try {
+      this._checkConnection();
+      if (!this.isCorrectNetwork()) {
+        throw new Error("Sepolia 네트워크에서만 트랜잭션을 실행할 수 있습니다.");
+      }
+      const ethers = this._getEthers();
+      const contract = new ethers.Contract(tokenAddress, ERC20_ABI, this.signer);
+
+      const parsedAmount = ethers.parseUnits(amount.toString(), decimals);
+      const tx = await contract.approve(spender, parsedAmount);
+
+      return {
+        hash: tx.hash,
+        wait: () => tx.wait(),
+      };
+    } catch (error) {
+      if (error.code === 4001) {
+        throw new Error("사용자가 트랜잭션을 거부했습니다.");
+      }
+      throw new Error(`토큰 승인(approve) 실패: ${error.message}`);
+    }
+  },
+
+  /**
+   * 위임된 권한으로 ERC20 토큰을 전송합니다.
+   * @param {string} tokenAddress - 토큰 컨트랙트 주소
+   * @param {string} from - 토큰 출처 주소 (approve한 주소)
+   * @param {string} to - 수신자 주소
+   * @param {string} amount - 전송할 수량 (사람이 읽을 수 있는 단위)
+   * @param {number} decimals - 토큰의 소수점 자릿수
+   * @returns {Promise<{hash: string, wait: Function}>} 트랜잭션 객체
+   */
+  async transferFrom(tokenAddress, from, to, amount, decimals) {
+    try {
+      this._checkConnection();
+      if (!this.isCorrectNetwork()) {
+        throw new Error("Sepolia 네트워크에서만 트랜잭션을 실행할 수 있습니다.");
+      }
+      const ethers = this._getEthers();
+      const contract = new ethers.Contract(tokenAddress, ERC20_ABI, this.signer);
+
+      const parsedAmount = ethers.parseUnits(amount.toString(), decimals);
+      const tx = await contract.transferFrom(from, to, parsedAmount);
+
+      return {
+        hash: tx.hash,
+        wait: () => tx.wait(),
+      };
+    } catch (error) {
+      if (error.code === 4001) {
+        throw new Error("사용자가 트랜잭션을 거부했습니다.");
+      }
+      throw new Error(`위임 전송(transferFrom) 실패: ${error.message}`);
+    }
+  },
+
+  // ===== Mintable/Burnable 확장 기능 =====
+
+  /**
+   * 토큰을 새로 발행합니다 (onlyOwner).
+   * @param {string} tokenAddress - 토큰 컨트랙트 주소
+   * @param {string} to - 수신자 주소
+   * @param {string} amount - 발행할 수량
+   * @param {number} decimals - 토큰의 소수점 자릿수
+   * @returns {Promise<{hash: string, wait: Function}>}
+   */
+  async mint(tokenAddress, to, amount, decimals) {
+    try {
+      this._checkConnection();
+      if (!this.isCorrectNetwork()) {
+        throw new Error("Sepolia 네트워크에서만 트랜잭션을 실행할 수 있습니다.");
+      }
+      const ethers = this._getEthers();
+      const contract = new ethers.Contract(tokenAddress, [...ERC20_ABI, ...MINTABLE_ABI], this.signer);
+      const parsedAmount = ethers.parseUnits(amount.toString(), decimals);
+      const tx = await contract.mint(to, parsedAmount);
+      return { hash: tx.hash, wait: () => tx.wait() };
+    } catch (error) {
+      if (error.code === 4001) throw new Error("사용자가 트랜잭션을 거부했습니다.");
+      throw new Error(`토큰 발행(mint) 실패: ${error.message}`);
+    }
+  },
+
+  /**
+   * 토큰을 소각합니다.
+   * @param {string} tokenAddress - 토큰 컨트랙트 주소
+   * @param {string} amount - 소각할 수량
+   * @param {number} decimals - 토큰의 소수점 자릿수
+   * @returns {Promise<{hash: string, wait: Function}>}
+   */
+  async burn(tokenAddress, amount, decimals) {
+    try {
+      this._checkConnection();
+      if (!this.isCorrectNetwork()) {
+        throw new Error("Sepolia 네트워크에서만 트랜잭션을 실행할 수 있습니다.");
+      }
+      const ethers = this._getEthers();
+      const contract = new ethers.Contract(tokenAddress, [...ERC20_ABI, ...MINTABLE_ABI], this.signer);
+      const parsedAmount = ethers.parseUnits(amount.toString(), decimals);
+      const tx = await contract.burn(parsedAmount);
+      return { hash: tx.hash, wait: () => tx.wait() };
+    } catch (error) {
+      if (error.code === 4001) throw new Error("사용자가 트랜잭션을 거부했습니다.");
+      throw new Error(`토큰 소각(burn) 실패: ${error.message}`);
+    }
+  },
+
+  // ===== 퍼셋 (Faucet) 관련 =====
+
+  /**
+   * 퍼셋 컨트랙트의 현재 상태를 조회합니다.
+   * @param {string} faucetAddress - 퍼셋 컨트랙트 주소
+   * @returns {Promise<{balance: string, claimAmount: string, cooldownTime: number, nextClaimTime: number}>}
+   */
+  async getFaucetStatus(faucetAddress) {
+    try {
+      if (!this.provider) {
+        throw new Error("프로바이더가 연결되어 있지 않습니다.");
+      }
+      const ethers = this._getEthers();
+      const contract = new ethers.Contract(faucetAddress, FAUCET_ABI, this.provider);
+
+      // 병렬로 퍼셋 상태 조회
+      const [balance, claimAmount, cooldownTime] = await Promise.all([
+        contract.faucetBalance(),
+        contract.claimAmount(),
+        contract.cooldownTime(),
+      ]);
+
+      // 연결된 계정이 있으면 다음 클레임 가능 시간도 조회
+      let nextClaimTime = 0;
+      if (this.account) {
+        try {
+          nextClaimTime = Number(await contract.nextClaimTime(this.account));
+        } catch {
+          // nextClaimTime 조회 실패 시 0으로 유지
+          nextClaimTime = 0;
+        }
+      }
+
+      return {
+        // 퍼셋 잔액 (18 decimals 기준)
+        balance: ethers.formatUnits(balance, 18),
+        // 1회 지급량
+        claimAmount: ethers.formatUnits(claimAmount, 18),
+        // 쿨다운 시간 (초 단위)
+        cooldownTime: Number(cooldownTime),
+        // 다음 클레임 가능 시각 (Unix timestamp)
+        nextClaimTime,
+      };
+    } catch (error) {
+      throw new Error(`퍼셋 상태 조회 실패: ${error.message}`);
+    }
+  },
+
+  /**
+   * 퍼셋에서 테스트 토큰을 클레임합니다.
+   * @param {string} faucetAddress - 퍼셋 컨트랙트 주소
+   * @returns {Promise<{hash: string, wait: Function}>} 트랜잭션 객체
+   */
+  async claimFaucet(faucetAddress) {
+    try {
+      this._checkConnection();
+      if (!this.isCorrectNetwork()) {
+        throw new Error("Sepolia 네트워크에서만 퍼셋을 사용할 수 있습니다.");
+      }
+      const ethers = this._getEthers();
+      const contract = new ethers.Contract(faucetAddress, FAUCET_ABI, this.signer);
+
+      const tx = await contract.claim();
+
+      return {
+        hash: tx.hash,
+        wait: () => tx.wait(),
+      };
+    } catch (error) {
+      if (error.code === 4001) {
+        throw new Error("사용자가 트랜잭션을 거부했습니다.");
+      }
+      throw new Error(`퍼셋 클레임 실패: ${error.message}`);
+    }
+  },
+
+  // ===== 이벤트 로그 =====
+
+  /**
+   * ERC20 Transfer 이벤트 로그를 조회합니다.
+   * @param {string} tokenAddress - 토큰 컨트랙트 주소
+   * @param {number|string} fromBlock - 조회 시작 블록 번호 (기본값: 'latest'로부터 최근 1000블록)
+   * @returns {Promise<Array<{from: string, to: string, value: string, blockNumber: number, txHash: string}>>}
+   */
+  async getTransferEvents(tokenAddress, fromBlock) {
+    try {
+      if (!this.provider) {
+        throw new Error("프로바이더가 연결되어 있지 않습니다.");
+      }
+      const ethers = this._getEthers();
+      const contract = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
+
+      const latestBlock = await this.provider.getBlockNumber();
+      let startBlock = fromBlock;
+      if (startBlock === undefined || startBlock === null) {
+        startBlock = Math.max(0, latestBlock - 1000);
+      }
+
+      // decimals 조회 (포맷용)
+      const decimals = await contract.decimals();
+
+      // 배치 분할 조회 (200블록 단위, 최신→과거 역순, RPC 제한 방어)
+      const BATCH_SIZE = 200;
+      const MAX_EVENTS = 500;
+      const filter = contract.filters.Transfer();
+      let allEvents = [];
+      let batchFailures = 0;
+
+      // 최신 블록부터 역순으로 조회하여 최근 이벤트를 우선 수집
+      for (let end = latestBlock; end >= startBlock; end -= BATCH_SIZE) {
+        const batchStart = Math.max(end - BATCH_SIZE + 1, startBlock);
+        try {
+          const batch = await contract.queryFilter(filter, batchStart, end);
+          allEvents = allEvents.concat(batch);
+          if (allEvents.length >= MAX_EVENTS) {
+            allEvents = allEvents.slice(0, MAX_EVENTS);
+            break;
+          }
+        } catch {
+          batchFailures++;
+          continue;
+        }
+      }
+
+      // 블록 번호 오름차순 정렬 (역순 조회 후 정렬)
+      allEvents.sort((a, b) => a.blockNumber - b.blockNumber);
+
+      // 배치 실패 정보를 결과에 포함
+      if (batchFailures > 0) {
+        console.warn(`Transfer 이벤트 조회: ${batchFailures}개 배치 실패 (일부 데이터 누락 가능)`);
+      }
+
+      // 이벤트 데이터 정형화 (rawValue: bigint 보존)
+      return allEvents.map((event) => ({
+        from: event.args[0],
+        to: event.args[1],
+        value: ethers.formatUnits(event.args[2], decimals),
+        rawValue: event.args[2], // bigint 원본값 보존
+        blockNumber: event.blockNumber,
+        txHash: event.transactionHash,
+        decimals: Number(decimals),
+      }));
+    } catch (error) {
+      throw new Error(`Transfer 이벤트 조회 실패: ${error.message}`);
+    }
+  },
+
+  // ===== 유틸리티 =====
+
+  /**
+   * 최소 단위(wei) 값을 사람이 읽을 수 있는 단위로 변환합니다.
+   * @param {bigint|string} value - 변환할 값
+   * @param {number} decimals - 소수점 자릿수
+   * @returns {string}
+   */
+  formatUnits(value, decimals) {
+    try {
+      const ethers = this._getEthers();
+      return ethers.formatUnits(value, decimals);
+    } catch (error) {
+      throw new Error(`단위 변환(formatUnits) 실패: ${error.message}`);
+    }
+  },
+
+  /**
+   * 사람이 읽을 수 있는 단위를 최소 단위(wei)로 변환합니다.
+   * @param {string|number} value - 변환할 값
+   * @param {number} decimals - 소수점 자릿수
+   * @returns {bigint}
+   */
+  parseUnits(value, decimals) {
+    try {
+      const ethers = this._getEthers();
+      return ethers.parseUnits(value.toString(), decimals);
+    } catch (error) {
+      throw new Error(`단위 변환(parseUnits) 실패: ${error.message}`);
+    }
+  },
+
+  /**
+   * 이더리움 주소를 단축 형태로 표시합니다.
+   * @param {string} addr - 이더리움 주소 (0x...)
+   * @returns {string} 예: 0x1234...5678
+   */
+  shortenAddress(addr) {
+    if (!addr || addr.length < 10) return addr || "";
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  },
+
+  /**
+   * Sepolia Etherscan 트랜잭션 URL을 생성합니다.
+   * @param {string} hash - 트랜잭션 해시
+   * @returns {string} Etherscan URL
+   */
+  getEtherscanTxUrl(hash) {
+    return `https://sepolia.etherscan.io/tx/${hash}`;
+  },
+
+  // ===== 내부 이벤트 핸들러 =====
+
+  /**
+   * MetaMask 계정 변경 이벤트 핸들러
+   * @param {string[]} accounts - 변경된 계정 목록
+   */
+  _handleAccountsChanged(accounts) {
+    if (accounts.length === 0) {
+      // 모든 계정 연결 해제됨
+      Web3Engine.account = null;
+      Web3Engine.signer = null;
+
+      if (typeof Web3Engine.onConnectionChanged === "function") {
+        Web3Engine.onConnectionChanged(Web3Engine.getState());
+      }
+    } else {
+      // 계정이 변경됨
+      Web3Engine.account = accounts[0];
+
+      // signer 갱신
+      if (Web3Engine.provider) {
+        Web3Engine.provider.getSigner().then((signer) => {
+          Web3Engine.signer = signer;
+        });
+      }
+
+      if (typeof Web3Engine.onAccountChanged === "function") {
+        Web3Engine.onAccountChanged(accounts[0]);
+      }
+    }
+  },
+
+  /**
+   * MetaMask 체인 변경 이벤트 핸들러
+   * @param {string} chainIdHex - 16진수 체인 ID 문자열
+   */
+  _handleChainChanged(chainIdHex) {
+    Web3Engine.chainId = parseInt(chainIdHex, 16);
+
+    // provider 갱신
+    if (window.ethereum) {
+      const ethers = window.ethers;
+      if (ethers) {
+        Web3Engine.provider = new ethers.BrowserProvider(window.ethereum);
+        Web3Engine.provider.getSigner().then((signer) => {
+          Web3Engine.signer = signer;
+        });
+      }
+    }
+
+    if (typeof Web3Engine.onChainChanged === "function") {
+      Web3Engine.onChainChanged(Web3Engine.chainId);
+    }
+  },
+
+  /**
+   * MetaMask 이벤트 리스너를 등록합니다.
+   */
+  _registerEventListeners() {
+    if (!window.ethereum) return;
+
+    // 중복 등록 방지를 위해 기존 리스너 제거 후 재등록
+    window.ethereum.removeListener("accountsChanged", this._handleAccountsChanged);
+    window.ethereum.removeListener("chainChanged", this._handleChainChanged);
+
+    window.ethereum.on("accountsChanged", this._handleAccountsChanged);
+    window.ethereum.on("chainChanged", this._handleChainChanged);
+  },
+};
+
+</script>
+  <script>
+/**
+ * Dashboard - ERC20 거래 내역 대시보드 로직
+ * Chart.js v4 + Web3Engine을 사용하여 전송 이벤트 시각화
+ */
+
+const Dashboard = {
+  // Chart.js 인스턴스 (재렌더링 시 destroy 후 재생성)
+  transferChart: null,
+  holderChart: null,
+
+  // 마지막으로 조회한 Transfer 이벤트 목록
+  events: [],
+
+  // 차트 색상 팔레트
+  CHART_COLORS: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#6b7280'],
+
+  /**
+   * 로딩 상태를 토글합니다.
+   * @param {boolean} isLoading - 로딩 중 여부
+   */
+  _setLoading(isLoading) {
+    const loadingEl = document.getElementById('dashboard-loading');
+    const loadBtn = document.getElementById('dashboard-load-btn');
+    if (loadingEl) loadingEl.classList.toggle('hidden', !isLoading);
+    if (loadBtn) loadBtn.disabled = isLoading;
+  },
+
+  /**
+   * 에러 메시지를 표시합니다.
+   * @param {string} message - 에러 메시지 (빈 문자열이면 숨김)
+   */
+  _showError(message) {
+    const errorEl = document.getElementById('dashboard-error');
+    if (!errorEl) return;
+    if (message) {
+      errorEl.textContent = message;
+      errorEl.classList.remove('hidden');
+    } else {
+      errorEl.textContent = '';
+      errorEl.classList.add('hidden');
+    }
+  },
+
+  /**
+   * 데이터 불러오기 메인 함수
+   * 컨트랙트 주소로 Transfer 이벤트를 조회하고 UI를 갱신합니다.
+   */
+  async loadData() {
+    // 에러 초기화
+    this._showError('');
+
+    // 지갑 연결 여부 확인
+    if (!Web3Engine.account) {
+      this._showError('지갑을 먼저 연결해 주세요.');
+      return;
+    }
+
+    // 컨트랙트 주소 유효성 확인
+    const tokenAddress = document.getElementById('dashboard-token-address')?.value?.trim();
+    if (!tokenAddress || !tokenAddress.startsWith('0x') || tokenAddress.length !== 42) {
+      this._showError('컨트랙트 주소를 입력해 주세요.');
+      return;
+    }
+
+    try {
+      this._setLoading(true);
+
+      // Transfer 이벤트 조회 (최근 1000블록)
+      const events = await Web3Engine.getTransferEvents(tokenAddress);
+      this.events = events;
+
+      // 부분 히스토리 경고 표시 (항상 표시 - 최근 1000블록만 조회)
+      const warningEl = document.getElementById('partial-history-warning');
+      if (warningEl) warningEl.classList.remove('hidden');
+
+      // 통계 카드 업데이트
+      this.updateStats(events);
+
+      // 차트 렌더링
+      this.renderTransferChart(events);
+      this.renderHolderChart(events);
+
+      // 거래 내역 테이블 렌더링
+      this.renderTable(events);
+
+    } catch (error) {
+      this._showError(`데이터 불러오기 실패: ${error.message}`);
+    } finally {
+      this._setLoading(false);
+    }
+  },
+
+  /**
+   * 통계 카드를 업데이트합니다.
+   * - 총 전송 횟수
+   * - 고유 주소 수 (from + to 합산)
+   * - 총 전송량 합계
+   * @param {Array} events - Transfer 이벤트 배열
+   */
+  updateStats(events) {
+    // 총 전송 횟수
+    const totalTransfers = events.length;
+
+    // 고유 주소 수 (from, to 모두 포함)
+    const addressSet = new Set();
+    events.forEach(ev => {
+      addressSet.add(ev.from.toLowerCase());
+      addressSet.add(ev.to.toLowerCase());
+    });
+    const uniqueAddresses = addressSet.size;
+
+    // 총 전송량 합계 (bigint 정밀 계산)
+    let totalVolumeRaw = 0n;
+    let decimals = 18;
+    events.forEach(ev => {
+      if (ev.rawValue) {
+        totalVolumeRaw += BigInt(ev.rawValue);
+        if (ev.decimals) decimals = ev.decimals;
+      }
+    });
+
+    // bigint → 사람이 읽을 수 있는 문자열 변환
+    const formatBigIntVolume = (raw, dec) => {
+      const divisor = 10n ** BigInt(dec);
+      const whole = raw / divisor;
+      const frac = raw % divisor;
+      const fracStr = frac.toString().padStart(dec, '0').slice(0, 4);
+      return `${whole.toLocaleString('ko-KR')}.${fracStr}`;
+    };
+
+    // DOM 업데이트
+    const transferEl = document.querySelector('#stat-transfers .stat-value');
+    const addressEl = document.querySelector('#stat-addresses .stat-value');
+    const volumeEl = document.querySelector('#stat-volume .stat-value');
+
+    if (transferEl) transferEl.textContent = totalTransfers.toLocaleString('ko-KR');
+    if (addressEl) addressEl.textContent = uniqueAddresses.toLocaleString('ko-KR');
+    if (volumeEl) {
+      volumeEl.textContent = formatBigIntVolume(totalVolumeRaw, decimals);
+    }
+  },
+
+  /**
+   * 전송량 추이 바 차트를 렌더링합니다.
+   * 블록 범위를 10구간으로 나누어 각 구간의 전송 횟수를 표시합니다.
+   * @param {Array} events - Transfer 이벤트 배열
+   */
+  renderTransferChart(events) {
+    const canvas = document.getElementById('transfer-chart');
+    const emptyEl = document.getElementById('transfer-chart-empty');
+    if (!canvas) return;
+
+    // 기존 차트 destroy
+    if (this.transferChart) {
+      this.transferChart.destroy();
+      this.transferChart = null;
+    }
+
+    // 데이터 없음 처리
+    if (!events || events.length === 0) {
+      canvas.classList.add('hidden');
+      if (emptyEl) emptyEl.classList.remove('hidden');
+      return;
+    }
+
+    if (emptyEl) emptyEl.classList.add('hidden');
+    canvas.classList.remove('hidden');
+
+    // 블록 번호 범위 계산
+    const blockNumbers = events.map(ev => ev.blockNumber);
+    const minBlock = Math.min(...blockNumbers);
+    const maxBlock = Math.max(...blockNumbers);
+    const range = Math.max(maxBlock - minBlock, 1);
+
+    // 10구간으로 분할
+    const SEGMENT_COUNT = 10;
+    const segmentSize = range / SEGMENT_COUNT;
+
+    // 각 구간별 전송 횟수 집계
+    const segmentCounts = new Array(SEGMENT_COUNT).fill(0);
+    events.forEach(ev => {
+      const idx = Math.min(
+        Math.floor((ev.blockNumber - minBlock) / segmentSize),
+        SEGMENT_COUNT - 1
+      );
+      segmentCounts[idx]++;
+    });
+
+    // 구간 레이블 생성 (블록 번호 범위)
+    const labels = Array.from({ length: SEGMENT_COUNT }, (_, i) => {
+      const start = Math.floor(minBlock + i * segmentSize);
+      return `#${start.toLocaleString('ko-KR')}`;
+    });
+
+    // Chart.js 바 차트 생성
+    this.transferChart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: '전송 횟수',
+          data: segmentCounts,
+          backgroundColor: 'rgba(59, 130, 246, 0.7)',
+          borderColor: 'rgba(59, 130, 246, 1)',
+          borderWidth: 1,
+          borderRadius: 4,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: (items) => `블록 ${items[0].label} 부근`,
+              label: (item) => `전송 횟수: ${item.raw}건`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            ticks: {
+              maxRotation: 45,
+              font: { size: 10 },
+            },
+            grid: { display: false },
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 1,
+              font: { size: 11 },
+            },
+            title: {
+              display: true,
+              text: '전송 건수',
+              font: { size: 11 },
+            },
+          },
+        },
+      },
+    });
+  },
+
+  /**
+   * 보유자 분포 파이 차트를 렌더링합니다.
+   * Transfer 이벤트에서 주소별 순 잔액 변화를 추정합니다.
+   * (from → 감소, to → 증가)
+   * 상위 5개 주소 + "기타"로 구성됩니다.
+   * @param {Array} events - Transfer 이벤트 배열
+   */
+  renderHolderChart(events) {
+    const canvas = document.getElementById('holder-chart');
+    const emptyEl = document.getElementById('holder-chart-empty');
+    if (!canvas) return;
+
+    // 기존 차트 destroy
+    if (this.holderChart) {
+      this.holderChart.destroy();
+      this.holderChart = null;
+    }
+
+    // 데이터 없음 처리
+    if (!events || events.length === 0) {
+      canvas.classList.add('hidden');
+      if (emptyEl) emptyEl.classList.remove('hidden');
+      return;
+    }
+
+    if (emptyEl) emptyEl.classList.add('hidden');
+    canvas.classList.remove('hidden');
+
+    // 주소별 순 잔액 추정 (bigint 정밀 계산, from: 차감, to: 증가)
+    // ⚠️ 최근 블록 이벤트 기반 근사치이며, 실제 잔액과 다를 수 있습니다.
+    const balanceMap = {};
+    let decimals = 18;
+    events.forEach(ev => {
+      if (!ev.rawValue) return;
+      const raw = BigInt(ev.rawValue);
+      if (ev.decimals) decimals = ev.decimals;
+      const from = ev.from.toLowerCase();
+      const to = ev.to.toLowerCase();
+
+      balanceMap[from] = (balanceMap[from] || 0n) - raw;
+      balanceMap[to] = (balanceMap[to] || 0n) + raw;
+    });
+
+    // bigint를 차트용 숫자로 변환 (소수점 4자리)
+    const toChartNum = (raw) => {
+      const divisor = 10n ** BigInt(decimals);
+      const whole = Number(raw / divisor);
+      const frac = Number((raw % divisor) * 10000n / divisor) / 10000;
+      return whole + frac;
+    };
+
+    // 양수 잔액만 추출하고 내림차순 정렬
+    const positiveEntries = Object.entries(balanceMap)
+      .filter(([, bal]) => bal > 0n)
+      .sort(([, a], [, b]) => (b > a ? 1 : b < a ? -1 : 0));
+
+    if (positiveEntries.length === 0) {
+      canvas.classList.add('hidden');
+      if (emptyEl) {
+        emptyEl.textContent = '잔액 데이터를 계산할 수 없습니다';
+        emptyEl.classList.remove('hidden');
+      }
+      return;
+    }
+
+    // 상위 5개 + 기타
+    const TOP_N = 5;
+    const top5 = positiveEntries.slice(0, TOP_N);
+    const others = positiveEntries.slice(TOP_N);
+    const othersTotal = others.reduce((sum, [, bal]) => sum + bal, 0n);
+
+    const labels = top5.map(([addr]) => Web3Engine.shortenAddress(addr));
+    const data = top5.map(([, bal]) => toChartNum(bal));
+
+    if (othersTotal > 0n) {
+      labels.push('기타');
+      data.push(toChartNum(othersTotal));
+    }
+
+    // Chart.js 파이 차트 생성
+    this.holderChart = new Chart(canvas, {
+      type: 'pie',
+      data: {
+        labels,
+        datasets: [{
+          data,
+          backgroundColor: this.CHART_COLORS.slice(0, labels.length),
+          borderColor: '#ffffff',
+          borderWidth: 2,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              font: { size: 11 },
+              padding: 12,
+              boxWidth: 12,
+            },
+          },
+          tooltip: {
+            callbacks: {
+              label: (item) => {
+                const total = item.dataset.data.reduce((a, b) => a + b, 0);
+                const pct = total > 0 ? ((item.raw / total) * 100).toFixed(1) : 0;
+                return ` ${item.raw.toLocaleString('ko-KR')} (${pct}%)`;
+              },
+            },
+          },
+        },
+      },
+    });
+  },
+
+  /**
+   * 거래 내역 테이블을 렌더링합니다.
+   * 주소는 축약 형태로, Tx Hash는 Etherscan 링크로 표시합니다.
+   * @param {Array} events - Transfer 이벤트 배열
+   */
+  renderTable(events) {
+    const tbody = document.getElementById('tx-table-body');
+    const noMsgEl = document.getElementById('no-tx-message');
+    const tableEl = document.getElementById('tx-table');
+    if (!tbody) return;
+
+    // 기존 행 초기화
+    tbody.innerHTML = '';
+
+    // 데이터 없음 처리
+    if (!events || events.length === 0) {
+      if (tableEl) tableEl.classList.add('hidden');
+      if (noMsgEl) noMsgEl.classList.remove('hidden');
+      return;
+    }
+
+    if (tableEl) tableEl.classList.remove('hidden');
+    if (noMsgEl) noMsgEl.classList.add('hidden');
+
+    // 최신 블록 순으로 정렬 (내림차순)
+    const sorted = [...events].sort((a, b) => b.blockNumber - a.blockNumber);
+
+    sorted.forEach(ev => {
+      const etherscanUrl = Web3Engine.getEtherscanTxUrl(ev.txHash);
+      const shortHash = ev.txHash
+        ? `${ev.txHash.slice(0, 8)}...${ev.txHash.slice(-6)}`
+        : '-';
+
+      // 수량 포맷 (value 문자열 사용, parseFloat 회피)
+      const formattedValue = ev.value || '0';
+
+      // XSS 방어: DOM API로 요소 생성
+      const tr = document.createElement('tr');
+      tr.className = 'hover:bg-gray-50 transition-colors';
+
+      const tdFrom = document.createElement('td');
+      tdFrom.className = 'py-2 px-3 font-mono text-xs text-gray-700';
+      tdFrom.title = String(ev.from || '');
+      tdFrom.textContent = Web3Engine.shortenAddress(ev.from);
+
+      const tdTo = document.createElement('td');
+      tdTo.className = 'py-2 px-3 font-mono text-xs text-gray-700';
+      tdTo.title = String(ev.to || '');
+      tdTo.textContent = Web3Engine.shortenAddress(ev.to);
+
+      const tdValue = document.createElement('td');
+      tdValue.className = 'py-2 px-3 text-xs text-right text-gray-800 font-medium';
+      tdValue.textContent = formattedValue;
+
+      const tdBlock = document.createElement('td');
+      tdBlock.className = 'py-2 px-3 text-xs text-right text-gray-500';
+      tdBlock.textContent = ev.blockNumber.toLocaleString('ko-KR');
+
+      const tdHash = document.createElement('td');
+      tdHash.className = 'py-2 px-3 text-xs text-right';
+      const link = document.createElement('a');
+      link.href = etherscanUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.className = 'text-blue-600 hover:text-blue-800 hover:underline font-mono';
+      link.textContent = shortHash;
+      tdHash.appendChild(link);
+
+      tr.appendChild(tdFrom);
+      tr.appendChild(tdTo);
+      tr.appendChild(tdValue);
+      tr.appendChild(tdBlock);
+      tr.appendChild(tdHash);
+      tbody.appendChild(tr);
+    });
+  },
+};
+
+</script>
+  <script>
+/**
+ * interactive-logic.js
+ * 인터랙티브 섹션 로직: 토큰 상호작용 / 퍼셋
+ * Web3Engine 전역 객체를 사용합니다.
+ */
+
+// ============================================================
+// 탭 전환 유틸리티
+// ============================================================
+const InteractiveTab = {
+  /**
+   * 최상위 탭 전환 (interact / faucet)
+   * @param {string} tabName - 전환할 탭 이름
+   */
+  switchTab(tabName) {
+    const panels = document.querySelectorAll('.tab-panel');
+    panels.forEach((panel) => panel.classList.add('hidden'));
+
+    const buttons = ['interact', 'faucet'];
+    buttons.forEach((name) => {
+      const btn = document.getElementById(`tab-btn-${name}`);
+      if (!btn) return;
+      if (name === tabName) {
+        btn.classList.add('bg-white', 'text-gray-900', 'shadow-sm');
+        btn.classList.remove('text-gray-600', 'hover:text-gray-900');
+      } else {
+        btn.classList.remove('bg-white', 'text-gray-900', 'shadow-sm');
+        btn.classList.add('text-gray-600', 'hover:text-gray-900');
+      }
+    });
+
+    const target = document.getElementById(`panel-${tabName}`);
+    if (target) target.classList.remove('hidden');
+  },
+};
+
+// ============================================================
+// localStorage 헬퍼 - 컨트랙트 주소 저장
+// ============================================================
+const ContractStorage = {
+  KEY: 'erc20-tutorial-contracts',
+
+  /** @returns {{ token: string, faucet: string }} */
+  load() {
+    try {
+      return JSON.parse(localStorage.getItem(this.KEY) || '{}');
+    } catch {
+      return {};
+    }
+  },
+
+  /**
+   * 특정 키의 주소를 저장합니다.
+   * @param {'token'|'faucet'} key
+   * @param {string} address
+   */
+  save(key, address) {
+    const data = this.load();
+    data[key] = address;
+    localStorage.setItem(this.KEY, JSON.stringify(data));
+  },
+};
+
+// ============================================================
+// A. 토큰 상호작용 모듈
+// ============================================================
+const InteractUI = {
+  tokenAddress: '',
+  tokenDecimals: 18,
+  tokenSymbol: '',
+
+  /**
+   * 주소 적용: localStorage 저장 + 토큰 정보 조회 + 카드 업데이트
+   */
+  async applyAddress() {
+    const input = document.getElementById('interact-token-address');
+    const errorEl = document.getElementById('interact-address-error');
+
+    const address = (input?.value || '').trim();
+
+    // 오류 초기화
+    if (errorEl) {
+      errorEl.textContent = '';
+      errorEl.classList.add('hidden');
+    }
+
+    if (!address) {
+      this._showError(errorEl, '컨트랙트 주소를 입력하세요.');
+      return;
+    }
+
+    if (!address.startsWith('0x') || address.length !== 42) {
+      this._showError(errorEl, '올바른 이더리움 주소 형식이 아닙니다. (0x로 시작하는 42자리)');
+      return;
+    }
+
+    // EIP-55 체크섬 검증
+    try {
+      window.ethers.getAddress(address);
+    } catch {
+      this._showError(errorEl, '주소 체크섬이 올바르지 않습니다. 주소를 다시 확인해 주세요.');
+      return;
+    }
+
+    try {
+      ContractStorage.save('token', address);
+      this.tokenAddress = address;
+
+      const info = await Web3Engine.getTokenInfo(address);
+      this.tokenDecimals = info.decimals;
+      this.tokenSymbol = info.symbol;
+
+      this._updateInfoCard(address, info);
+    } catch (err) {
+      this._showError(errorEl, `토큰 정보 조회 실패: ${err.message}`);
+    }
+  },
+
+  /**
+   * 서브탭 전환 (transfer / approve / allowance)
+   * @param {'transfer'|'approve'|'allowance'} tab
+   */
+  switchSubTab(tab) {
+    const tabs = ['transfer', 'approve', 'allowance', 'balance', 'transferFrom', 'mint', 'burn'];
+    tabs.forEach((name) => {
+      const panel = document.getElementById(`subtab-${name}`);
+      const btn = document.getElementById(`subtab-btn-${name}`);
+      if (!panel || !btn) return;
+
+      if (name === tab) {
+        panel.classList.remove('hidden');
+        btn.classList.add('bg-indigo-600', 'text-white');
+        btn.classList.remove('bg-gray-100', 'text-gray-600', 'hover:bg-gray-200');
+      } else {
+        panel.classList.add('hidden');
+        btn.classList.remove('bg-indigo-600', 'text-white');
+        btn.classList.add('bg-gray-100', 'text-gray-600', 'hover:bg-gray-200');
+      }
+    });
+  },
+
+  /**
+   * 토큰 전송 트랜잭션 실행
+   */
+  async transfer() {
+    const to = (document.getElementById('transfer-to')?.value || '').trim();
+    const amount = (document.getElementById('transfer-amount')?.value || '').trim();
+    const statusId = 'transfer-tx-status';
+
+    if (!this._validateTxPreconditions(statusId)) return;
+    if (!this._isValidAddress(to)) {
+      this.showTxStatus(statusId, 'error', null, '올바른 주소를 입력하세요. (0x로 시작하는 42자리)');
+      return;
+    }
+    if (!this._isValidAmount(amount)) {
+      this.showTxStatus(statusId, 'error', null, '올바른 양수 값을 입력하세요.');
+      return;
+    }
+
+    this.showTxStatus(statusId, 'pending');
+    try {
+      const tx = await Web3Engine.transfer(this.tokenAddress, to, amount, this.tokenDecimals);
+      this.showTxStatus(statusId, 'confirming', tx.hash);
+      await tx.wait();
+      this.showTxStatus(statusId, 'success', tx.hash);
+    } catch (err) {
+      this.showTxStatus(statusId, 'error', null, err.message);
+    }
+  },
+
+  /**
+   * 토큰 승인(approve) 트랜잭션 실행
+   */
+  async approve() {
+    const spender = (document.getElementById('approve-spender')?.value || '').trim();
+    const amount = (document.getElementById('approve-amount')?.value || '').trim();
+    const statusId = 'approve-tx-status';
+
+    if (!this._validateTxPreconditions(statusId)) return;
+    if (!this._isValidAddress(spender)) {
+      this.showTxStatus(statusId, 'error', null, '올바른 위임 주소를 입력하세요. (0x로 시작하는 42자리)');
+      return;
+    }
+    if (!this._isValidAmount(amount)) {
+      this.showTxStatus(statusId, 'error', null, '올바른 양수 값을 입력하세요.');
+      return;
+    }
+
+    this.showTxStatus(statusId, 'pending');
+    try {
+      const tx = await Web3Engine.approve(this.tokenAddress, spender, amount, this.tokenDecimals);
+      this.showTxStatus(statusId, 'confirming', tx.hash);
+      await tx.wait();
+      this.showTxStatus(statusId, 'success', tx.hash);
+    } catch (err) {
+      this.showTxStatus(statusId, 'error', null, err.message);
+    }
+  },
+
+  /**
+   * 허용량(allowance) 조회
+   */
+  async checkAllowance() {
+    const owner = (document.getElementById('allowance-owner')?.value || '').trim();
+    const spender = (document.getElementById('allowance-spender')?.value || '').trim();
+    const resultEl = document.getElementById('allowance-result');
+    const valueEl = document.getElementById('allowance-result-value');
+    const symbolEl = document.getElementById('allowance-result-symbol');
+
+    if (!this.tokenAddress) {
+      alert('먼저 토큰 주소를 적용하세요.');
+      return;
+    }
+    if (!owner || !spender) {
+      alert('소유자 주소와 위임자 주소를 모두 입력하세요.');
+      return;
+    }
+
+    try {
+      const allowance = await Web3Engine.getAllowance(this.tokenAddress, owner, spender);
+      if (resultEl) resultEl.classList.remove('hidden');
+      if (valueEl) valueEl.textContent = Number(allowance).toLocaleString('ko-KR', { maximumFractionDigits: 6 });
+      if (symbolEl) symbolEl.textContent = this.tokenSymbol || '';
+    } catch (err) {
+      if (resultEl) resultEl.classList.remove('hidden');
+      if (valueEl) valueEl.textContent = '조회 실패';
+      if (symbolEl) symbolEl.textContent = err.message;
+    }
+  },
+
+  /**
+   * 잔액(balanceOf) 조회
+   */
+  async checkBalance() {
+    let address = (document.getElementById('balance-address')?.value || '').trim();
+    const resultEl = document.getElementById('balance-result');
+    const valueEl = document.getElementById('balance-result-value');
+    const symbolEl = document.getElementById('balance-result-symbol');
+
+    if (!this.tokenAddress) { alert('먼저 토큰 주소를 적용하세요.'); return; }
+    if (!address) {
+      if (!Web3Engine.account) { alert('주소를 입력하거나 지갑을 연결하세요.'); return; }
+      address = Web3Engine.account;
+    }
+
+    try {
+      const balance = await Web3Engine.getBalance(this.tokenAddress, address);
+      if (resultEl) resultEl.classList.remove('hidden');
+      if (valueEl) valueEl.textContent = Number(balance).toLocaleString('ko-KR', { maximumFractionDigits: 6 });
+      if (symbolEl) symbolEl.textContent = `${this.tokenSymbol} (${Web3Engine.shortenAddress(address)})`;
+    } catch (err) {
+      if (resultEl) resultEl.classList.remove('hidden');
+      if (valueEl) valueEl.textContent = '조회 실패';
+      if (symbolEl) symbolEl.textContent = err.message;
+    }
+  },
+
+  /**
+   * 위임 전송(transferFrom) 트랜잭션 실행
+   */
+  async transferFrom() {
+    const from = (document.getElementById('transferFrom-from')?.value || '').trim();
+    const to = (document.getElementById('transferFrom-to')?.value || '').trim();
+    const amount = (document.getElementById('transferFrom-amount')?.value || '').trim();
+    const statusId = 'transferFrom-tx-status';
+
+    if (!this._validateTxPreconditions(statusId)) return;
+    if (!this._isValidAddress(from) || !this._isValidAddress(to)) {
+      this.showTxStatus(statusId, 'error', null, '올바른 주소를 입력하세요. (0x로 시작하는 42자리)');
+      return;
+    }
+    if (!this._isValidAmount(amount)) {
+      this.showTxStatus(statusId, 'error', null, '올바른 양수 값을 입력하세요.');
+      return;
+    }
+
+    this.showTxStatus(statusId, 'pending');
+    try {
+      const tx = await Web3Engine.transferFrom(this.tokenAddress, from, to, amount, this.tokenDecimals);
+      this.showTxStatus(statusId, 'confirming', tx.hash);
+      await tx.wait();
+      this.showTxStatus(statusId, 'success', tx.hash);
+    } catch (err) {
+      this.showTxStatus(statusId, 'error', null, err.message);
+    }
+  },
+
+  /**
+   * 토큰 발행(mint) 트랜잭션 실행
+   */
+  async mint() {
+    const to = (document.getElementById('mint-to')?.value || '').trim();
+    const amount = (document.getElementById('mint-amount')?.value || '').trim();
+    const statusId = 'mint-tx-status';
+
+    if (!this._validateTxPreconditions(statusId)) return;
+    if (!this._isValidAddress(to)) {
+      this.showTxStatus(statusId, 'error', null, '올바른 주소를 입력하세요. (0x로 시작하는 42자리)');
+      return;
+    }
+    if (!this._isValidAmount(amount)) {
+      this.showTxStatus(statusId, 'error', null, '올바른 양수 값을 입력하세요.');
+      return;
+    }
+
+    this.showTxStatus(statusId, 'pending');
+    try {
+      const tx = await Web3Engine.mint(this.tokenAddress, to, amount, this.tokenDecimals);
+      this.showTxStatus(statusId, 'confirming', tx.hash);
+      await tx.wait();
+      this.showTxStatus(statusId, 'success', tx.hash);
+    } catch (err) {
+      this.showTxStatus(statusId, 'error', null, err.message);
+    }
+  },
+
+  /**
+   * 토큰 소각(burn) 트랜잭션 실행
+   */
+  async burn() {
+    const amount = (document.getElementById('burn-amount')?.value || '').trim();
+    const statusId = 'burn-tx-status';
+
+    if (!this._validateTxPreconditions(statusId)) return;
+    if (!this._isValidAmount(amount)) {
+      this.showTxStatus(statusId, 'error', null, '올바른 양수 값을 입력하세요.');
+      return;
+    }
+
+    this.showTxStatus(statusId, 'pending');
+    try {
+      const tx = await Web3Engine.burn(this.tokenAddress, amount, this.tokenDecimals);
+      this.showTxStatus(statusId, 'confirming', tx.hash);
+      await tx.wait();
+      this.showTxStatus(statusId, 'success', tx.hash);
+    } catch (err) {
+      this.showTxStatus(statusId, 'error', null, err.message);
+    }
+  },
+
+  /**
+   * 트랜잭션 상태 표시
+   * @param {string} containerId - 상태를 표시할 컨테이너 ID
+   * @param {'pending'|'confirming'|'success'|'error'} status
+   * @param {string|null} hash - 트랜잭션 해시
+   * @param {string} [message] - 추가 메시지 (오류 설명 등)
+   */
+  showTxStatus(containerId, status, hash = null, message = '') {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+
+    el.classList.remove('hidden');
+
+    const configs = {
+      pending: {
+        bg: 'bg-blue-50 border-blue-200',
+        text: 'text-blue-800',
+        icon: '⏳',
+        msg: '트랜잭션 전송 중...',
+      },
+      confirming: {
+        bg: 'bg-yellow-50 border-yellow-200',
+        text: 'text-yellow-800',
+        icon: '🔄',
+        msg: '블록 확인 중...',
+      },
+      success: {
+        bg: 'bg-green-50 border-green-200',
+        text: 'text-green-800',
+        icon: '✅',
+        msg: '성공!',
+      },
+      error: {
+        bg: 'bg-red-50 border-red-200',
+        text: 'text-red-800',
+        icon: '❌',
+        msg: message || '트랜잭션 실패',
+      },
+    };
+
+    const cfg = configs[status] || configs.error;
+    // XSS 방어: DOM API로 안전하게 렌더링
+    if (hash && !/^0x[0-9a-fA-F]{64}$/.test(hash)) hash = null;
+
+    el.innerHTML = '';
+    const wrapper = document.createElement('div');
+    wrapper.className = `border rounded-lg p-3 ${cfg.bg}`;
+    const msgP = document.createElement('p');
+    msgP.className = `${cfg.text} text-sm font-medium`;
+    msgP.textContent = `${cfg.icon} ${cfg.msg}`;
+    wrapper.appendChild(msgP);
+    if (hash) {
+      const link = document.createElement('a');
+      link.href = Web3Engine.getEtherscanTxUrl(hash);
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.className = 'block mt-1 text-xs underline opacity-75 break-all';
+      link.textContent = hash;
+      wrapper.appendChild(link);
+    }
+    el.appendChild(wrapper);
+  },
+
+  // ---- 내부 헬퍼 ----
+
+  /**
+   * 토큰 정보 카드를 업데이트합니다.
+   * @param {string} address
+   * @param {{ name: string, symbol: string, decimals: number, totalSupply: string }} info
+   */
+  _updateInfoCard(address, info) {
+    const card = document.getElementById('token-info-card');
+    if (!card) return;
+
+    card.classList.remove('hidden');
+
+    const set = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = val;
+    };
+
+    set('token-symbol-icon', info.symbol.slice(0, 3).toUpperCase());
+    set('token-info-name', `${info.name} (${info.symbol})`);
+    set('token-info-address-short', Web3Engine.shortenAddress(address));
+    set('token-info-name-val', info.name);
+    set('token-info-symbol', info.symbol);
+    set('token-info-decimals', info.decimals);
+    set('token-info-supply', Number(info.totalSupply).toLocaleString('ko-KR', { maximumFractionDigits: 2 }));
+  },
+
+  /**
+   * 트랜잭션 실행 전 공통 사전 조건 검사
+   * @param {string} statusId
+   * @returns {boolean}
+   */
+  _validateTxPreconditions(statusId) {
+    if (!this.tokenAddress) {
+      this.showTxStatus(statusId, 'error', null, '먼저 토큰 주소를 적용하세요.');
+      return false;
+    }
+    if (!Web3Engine.account) {
+      this.showTxStatus(statusId, 'error', null, '지갑이 연결되어 있지 않습니다. 먼저 지갑을 연결하세요.');
+      return false;
+    }
+    return true;
+  },
+
+  /**
+   * 오류 메시지를 표시합니다.
+   * @param {HTMLElement|null} el
+   * @param {string} msg
+   */
+  _showError(el, msg) {
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.remove('hidden');
+  },
+
+  /** 주소 형식 검증 (EIP-55 체크섬 포함) */
+  _isValidAddress(addr) {
+    if (!addr || !/^0x[0-9a-fA-F]{40}$/.test(addr)) return false;
+    try {
+      // ethers.getAddress()로 EIP-55 체크섬 검증 (오타 방지)
+      window.ethers.getAddress(addr);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  /** 수량 검증 (양수 숫자) */
+  _isValidAmount(amount) {
+    const num = Number(amount);
+    return !isNaN(num) && num > 0;
+  },
+};
+
+// ============================================================
+// B. 퍼셋(Faucet) 모듈
+// ============================================================
+const FaucetUI = {
+  faucetAddress: '',
+  cooldownInterval: null,
+
+  /**
+   * 퍼셋 주소 적용: localStorage 저장 + 상태 조회 + 카드 업데이트
+   */
+  async applyAddress() {
+    const input = document.getElementById('faucet-address-input');
+    const errorEl = document.getElementById('faucet-address-error');
+
+    const address = (input?.value || '').trim();
+
+    if (errorEl) {
+      errorEl.textContent = '';
+      errorEl.classList.add('hidden');
+    }
+
+    if (!address) {
+      this._showError(errorEl, '퍼셋 컨트랙트 주소를 입력하세요.');
+      return;
+    }
+
+    if (!address.startsWith('0x') || address.length !== 42) {
+      this._showError(errorEl, '올바른 이더리움 주소 형식이 아닙니다. (0x로 시작하는 42자리)');
+      return;
+    }
+
+    // EIP-55 체크섬 검증
+    try {
+      window.ethers.getAddress(address);
+    } catch {
+      this._showError(errorEl, '주소 체크섬이 올바르지 않습니다. 주소를 다시 확인해 주세요.');
+      return;
+    }
+
+    ContractStorage.save('faucet', address);
+    this.faucetAddress = address;
+
+    await this.refreshStatus();
+  },
+
+  /**
+   * 퍼셋 클레임 트랜잭션 실행
+   */
+  async claim() {
+    const statusEl = document.getElementById('claim-status');
+    const claimBtn = document.getElementById('claim-btn');
+
+    if (!this.faucetAddress) {
+      alert('먼저 퍼셋 주소를 적용하세요.');
+      return;
+    }
+    if (!Web3Engine.account) {
+      alert('지갑이 연결되어 있지 않습니다. 먼저 지갑을 연결하세요.');
+      return;
+    }
+
+    if (claimBtn) claimBtn.disabled = true;
+    this._showTxStatus(statusEl, 'pending');
+
+    try {
+      const tx = await Web3Engine.claimFaucet(this.faucetAddress);
+      this._showTxStatus(statusEl, 'confirming', tx.hash);
+      await tx.wait();
+      this._showTxStatus(statusEl, 'success', tx.hash);
+
+      // 클레임 성공 후 상태 갱신
+      await this.refreshStatus();
+    } catch (err) {
+      this._showTxStatus(statusEl, 'error', null, err.message);
+      if (claimBtn) claimBtn.disabled = false;
+    }
+  },
+
+  /**
+   * 퍼셋 상태 새로고침
+   */
+  async refreshStatus() {
+    if (!this.faucetAddress) return;
+
+    try {
+      const status = await Web3Engine.getFaucetStatus(this.faucetAddress);
+
+      // 상태 카드 표시
+      const statusCard = document.getElementById('faucet-status-card');
+      const claimSection = document.getElementById('faucet-claim-section');
+      if (statusCard) statusCard.classList.remove('hidden');
+      if (claimSection) claimSection.classList.remove('hidden');
+
+      // 값 업데이트
+      const setEl = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
+
+      const balanceNum = Number(status.balance);
+      const claimAmountNum = Number(status.claimAmount);
+      const cooldownHours = Math.round(status.cooldownTime / 3600);
+
+      setEl('faucet-balance', balanceNum.toLocaleString('ko-KR', { maximumFractionDigits: 2 }));
+      setEl('faucet-claim-amount', claimAmountNum.toLocaleString('ko-KR', { maximumFractionDigits: 2 }));
+      setEl('faucet-cooldown', cooldownHours >= 1 ? `${cooldownHours}시간` : `${status.cooldownTime}초`);
+
+      // 쿨다운 처리
+      const now = Math.floor(Date.now() / 1000);
+      const remaining = status.nextClaimTime - now;
+
+      const claimBtn = document.getElementById('claim-btn');
+
+      if (remaining > 0) {
+        // 쿨다운 중
+        if (claimBtn) claimBtn.disabled = true;
+        this.startCooldownTimer(remaining);
+      } else {
+        // 클레임 가능
+        if (claimBtn) claimBtn.disabled = false;
+        this.stopCooldownTimer();
+      }
+    } catch (err) {
+      console.error('퍼셋 상태 조회 오류:', err.message);
+    }
+  },
+
+  /**
+   * 쿨다운 타이머 시작 (1초마다 HH:MM:SS 갱신)
+   * @param {number} remainingSeconds - 남은 초
+   */
+  startCooldownTimer(remainingSeconds) {
+    this.stopCooldownTimer();
+
+    const timerEl = document.getElementById('cooldown-timer');
+    const displayEl = document.getElementById('cooldown-display');
+    const claimBtn = document.getElementById('claim-btn');
+
+    if (timerEl) timerEl.classList.remove('hidden');
+
+    let seconds = remainingSeconds;
+
+    const update = () => {
+      if (seconds <= 0) {
+        this.stopCooldownTimer();
+        if (timerEl) timerEl.classList.add('hidden');
+        if (claimBtn) claimBtn.disabled = false;
+        return;
+      }
+
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+      const formatted = [
+        String(h).padStart(2, '0'),
+        String(m).padStart(2, '0'),
+        String(s).padStart(2, '0'),
+      ].join(':');
+
+      if (displayEl) displayEl.textContent = formatted;
+      seconds--;
+    };
+
+    update();
+    this.cooldownInterval = setInterval(update, 1000);
+  },
+
+  /**
+   * 쿨다운 타이머 정지
+   */
+  stopCooldownTimer() {
+    if (this.cooldownInterval !== null) {
+      clearInterval(this.cooldownInterval);
+      this.cooldownInterval = null;
+    }
+  },
+
+  // ---- 내부 헬퍼 ----
+
+  /**
+   * 퍼셋 트랜잭션 상태 표시
+   * @param {HTMLElement|null} el
+   * @param {'pending'|'confirming'|'success'|'error'} status
+   * @param {string|null} hash
+   * @param {string} [message]
+   */
+  _showTxStatus(el, status, hash = null, message = '') {
+    if (!el) return;
+    el.classList.remove('hidden');
+
+    const configs = {
+      pending: { bg: 'bg-blue-50 border-blue-200', text: 'text-blue-800', icon: '⏳', msg: '트랜잭션 전송 중...' },
+      confirming: { bg: 'bg-yellow-50 border-yellow-200', text: 'text-yellow-800', icon: '🔄', msg: '블록 확인 중...' },
+      success: { bg: 'bg-green-50 border-green-200', text: 'text-green-800', icon: '✅', msg: '토큰 수령 성공!' },
+      error: { bg: 'bg-red-50 border-red-200', text: 'text-red-800', icon: '❌', msg: message || '트랜잭션 실패' },
+    };
+
+    const cfg = configs[status] || configs.error;
+    // XSS 방어: DOM API로 안전하게 렌더링
+    if (hash && !/^0x[0-9a-fA-F]{64}$/.test(hash)) hash = null;
+
+    el.innerHTML = '';
+    const wrapper = document.createElement('div');
+    wrapper.className = `border rounded-lg p-3 ${cfg.bg}`;
+    const msgP = document.createElement('p');
+    msgP.className = `${cfg.text} text-sm font-medium`;
+    msgP.textContent = `${cfg.icon} ${cfg.msg}`;
+    wrapper.appendChild(msgP);
+    if (hash) {
+      const link = document.createElement('a');
+      link.href = Web3Engine.getEtherscanTxUrl(hash);
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.className = 'block mt-1 text-xs underline opacity-75 break-all';
+      link.textContent = hash;
+      wrapper.appendChild(link);
+    }
+    el.appendChild(wrapper);
+  },
+
+  _showError(el, msg) {
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.remove('hidden');
+  },
+};
+
+// ============================================================
+// 페이지 초기화 - localStorage에서 저장된 주소 복원
+// ============================================================
+(function initInteractive() {
+  const saved = ContractStorage.load();
+
+  // 저장된 토큰 주소 복원
+  if (saved.token) {
+    const tokenInput = document.getElementById('interact-token-address');
+    if (tokenInput) tokenInput.value = saved.token;
+  }
+
+  // 저장된 퍼셋 주소 복원
+  if (saved.faucet) {
+    const faucetInput = document.getElementById('faucet-address-input');
+    if (faucetInput) faucetInput.value = saved.faucet;
+  }
+})();
+
+</script>
+
+  <!-- ══════════════════════════════════════════
+       인라인 UI 스크립트
+       ══════════════════════════════════════════ -->
+  <script>
+    /* ───────────────────────────────────────────
+       탭 전환 로직
+    ___________________________________________ */
+    function switchTab(tabId) {
+      // 모든 탭 컨텐츠 숨기기
+      document.querySelectorAll('.tab-content').forEach(function(el) {
+        el.classList.add('hidden');
+      });
+
+      // 선택한 탭 표시
+      var target = document.getElementById(tabId);
+      if (target) {
+        target.classList.remove('hidden');
+      }
+
+      // 데스크톱 네비게이션 버튼 하이라이트 + aria-selected 업데이트
+      document.querySelectorAll('.nav-btn').forEach(function(btn) {
+        if (btn.dataset.tab === tabId) {
+          btn.setAttribute('aria-selected', 'true');
+          btn.classList.add('nav-active', 'bg-blue-600', 'text-white');
+          btn.classList.remove('text-gray-600', 'hover:bg-gray-100');
+        } else {
+          btn.setAttribute('aria-selected', 'false');
+          btn.classList.remove('nav-active', 'bg-blue-600', 'text-white');
+          btn.classList.add('text-gray-600', 'hover:bg-gray-100');
+        }
+      });
+
+      // 모바일 네비게이션 버튼 하이라이트 업데이트
+      document.querySelectorAll('.mob-nav-btn').forEach(function(btn) {
+        if (btn.dataset.tab === tabId) {
+          btn.classList.add('nav-active', 'bg-blue-50', 'text-blue-700');
+          btn.classList.remove('text-gray-600', 'hover:bg-gray-100');
+        } else {
+          btn.classList.remove('nav-active', 'bg-blue-50', 'text-blue-700');
+          btn.classList.add('text-gray-600', 'hover:bg-gray-100');
+        }
+      });
+    }
+
+    /* ───────────────────────────────────────────
+       모바일 햄버거 메뉴 토글
+    ___________________________________________ */
+    function toggleMobileMenu() {
+      var menu = document.getElementById('mobile-menu');
+      var hamburgerIcon = document.getElementById('hamburger-icon');
+      var closeIcon = document.getElementById('close-icon');
+
+      if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+        hamburgerIcon.classList.add('hidden');
+        closeIcon.classList.remove('hidden');
+      } else {
+        menu.classList.add('hidden');
+        hamburgerIcon.classList.remove('hidden');
+        closeIcon.classList.add('hidden');
+      }
+    }
+
+    /* ───────────────────────────────────────────
+       지갑 연결 버튼 핸들러
+       Web3Engine이 로드되면 실제 로직으로 교체됨
+    ___________________________________________ */
+    function handleWalletBtn() {
+      // Web3Engine이 초기화되기 전 기본 동작
+      if (typeof Web3Engine !== 'undefined') {
+        if (Web3Engine.isConnected()) {
+          Web3Engine.disconnect();
+        } else {
+          Web3Engine.connect();
+        }
+      } else {
+        // Web3Engine 미로드 시 안내
+        alert('지갑 연결 엔진을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');
+      }
+    }
+
+    /* ───────────────────────────────────────────
+       지갑 연결 상태에 따른 UI 업데이트
+       Web3Engine에서 onConnectionChanged 콜백으로 호출됨
+    ___________________________________________ */
+    function updateWalletUI(state) {
+      /*
+       * state 객체 구조 (Web3Engine에서 전달):
+       * {
+       *   connected: boolean,
+       *   address:   string | null,   // 0x로 시작하는 전체 주소
+       *   network:   string | null,   // 네트워크 이름 (예: 'sepolia')
+       *   chainId:   number | null,   // 체인 ID (예: 11155111)
+       * }
+       */
+
+      var btn      = document.getElementById('wallet-btn');
+      var btnText  = document.getElementById('wallet-btn-text');
+      var netBadge = document.getElementById('network-badge');
+      var netBadgeMobile = document.getElementById('network-badge-mobile');
+
+      if (state.connected && state.address) {
+        // 주소 축약 (앞 6자리 + ... + 뒤 4자리)
+        var shortAddr = state.address.slice(0, 6) + '...' + state.address.slice(-4);
+
+        // 버튼: 축약 주소 + 연결 해제
+        btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        btn.classList.add('bg-green-600', 'hover:bg-green-700');
+        btnText.textContent = shortAddr + ' · 연결 해제';
+
+        // 네트워크 배지 렌더링 (DOM API - XSS 안전)
+        var badge = buildNetworkBadge(state.chainId, state.network);
+        if (netBadge)       { netBadge.replaceChildren(badge); }
+        if (netBadgeMobile) { netBadgeMobile.replaceChildren(badge.cloneNode(true)); }
+      } else {
+        // 미연결 상태 복원
+        btn.classList.remove('bg-green-600', 'hover:bg-green-700');
+        btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        btnText.textContent = '🦊 메타마스크 연결';
+
+        if (netBadge)       netBadge.replaceChildren();
+        if (netBadgeMobile) netBadgeMobile.replaceChildren();
+      }
+    }
+
+    /* ───────────────────────────────────────────
+       네트워크 배지 DOM 생성 (innerHTML 제거, XSS 안전)
+    ___________________________________________ */
+    function buildNetworkBadge(chainId, networkName) {
+      var isSepolia = (chainId === 11155111);
+      var label     = networkName ? networkName.toUpperCase() : 'UNKNOWN';
+      var dotColor  = isSepolia ? 'bg-green-400' : 'bg-red-400';
+      var badgeColor = isSepolia
+        ? 'bg-green-50 text-green-700 border-green-200'
+        : 'bg-red-50 text-red-700 border-red-200';
+
+      // DOM API로 배지 생성
+      var span = document.createElement('span');
+      span.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ' + badgeColor;
+
+      var dot = document.createElement('span');
+      dot.className = dotColor + ' w-1.5 h-1.5 rounded-full';
+      span.appendChild(dot);
+
+      span.appendChild(document.createTextNode(label));
+
+      // Sepolia가 아닐 경우 전환 버튼 추가
+      if (!isSepolia) {
+        var switchBtnEl = document.createElement('button');
+        switchBtnEl.className = 'ml-1.5 text-xs underline hover:no-underline';
+        switchBtnEl.textContent = '전환';
+        switchBtnEl.addEventListener('click', switchToSepolia);
+        span.appendChild(switchBtnEl);
+      }
+
+      return span;
+    }
+
+    /* ───────────────────────────────────────────
+       Sepolia 네트워크 전환 요청
+    ___________________________________________ */
+    function switchToSepolia() {
+      if (typeof Web3Engine !== 'undefined' && Web3Engine.switchToSepolia) {
+        Web3Engine.switchToSepolia();
+      } else if (typeof window.ethereum !== 'undefined') {
+        // Web3Engine 없이 직접 요청
+        window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0xaa36a7' }], // 11155111 (hex)
+        }).catch(function(err) {
+          console.error('네트워크 전환 실패:', err);
+        });
+      }
+    }
+
+    /* ───────────────────────────────────────────
+       코드 블록 복사 버튼 이벤트 위임
+       동적으로 생성되는 코드 블록에도 대응
+    ___________________________________________ */
+    document.addEventListener('click', function(e) {
+      if (e.target && e.target.classList.contains('copy-btn')) {
+        var btn       = e.target;
+        var codeBlock = btn.closest('.code-block');
+        if (!codeBlock) return;
+
+        // <button> 자신을 제외한 텍스트만 복사
+        var codeText = Array.from(codeBlock.childNodes)
+          .filter(function(n) { return n !== btn; })
+          .map(function(n) { return n.textContent; })
+          .join('');
+
+        navigator.clipboard.writeText(codeText.trim()).then(function() {
+          var original = btn.textContent;
+          btn.textContent = '복사됨 ✓';
+          setTimeout(function() { btn.textContent = original; }, 1500);
+        }).catch(function() {
+          btn.textContent = '실패';
+          setTimeout(function() { btn.textContent = '복사'; }, 1500);
+        });
+      }
+    });
+
+    /* ───────────────────────────────────────────
+       초기화: 홈 탭 활성화 + Web3Engine 콜백 등록
+    ___________________________________________ */
+    (function init() {
+      // 초기 탭 하이라이트 설정 (홈)
+      switchTab('tab-home');
+
+      // Web3Engine 로드 대기 후 콜백 등록
+      // Web3Engine은 WEB3_ENGINE_SCRIPT가 삽입된 후 사용 가능
+      var web3Retries = 0;
+      function registerWeb3Callback() {
+        if (typeof Web3Engine !== 'undefined') {
+          Web3Engine.onConnectionChanged = updateWalletUI;
+          if (Web3Engine.isConnected()) {
+            updateWalletUI(Web3Engine.getState());
+          }
+        } else if (web3Retries++ < 25) {
+          // 200ms × 25 = 최대 5초 재시도
+          setTimeout(registerWeb3Callback, 200);
+        } else {
+          console.warn('Web3Engine 로드 타임아웃 (5초 초과)');
+        }
+      }
+
+      registerWeb3Callback();
+    })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,80 @@
+{
+  "project": "Sepolia Faucet Simulator - 극한 완성도 개선",
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "Wei(정수) 기반 연산 전환",
+      "priority": 1,
+      "passes": true,
+      "acceptanceCriteria": [
+        "BlockchainVM.createAccount의 balance가 정수(Wei)로 저장됨 (1 ETH = 1e18이 아닌 1e8 단위 사용으로 Number.MAX_SAFE_INTEGER 범위 유지)",
+        "FaucetContract의 deposit/withdraw/withdrawAll이 정수 연산만 사용 (toFixed 제거)",
+        "toEth(wei) 헬퍼 함수가 wei 정수를 ETH 문자열로 변환",
+        "toWei(eth) 헬퍼 함수가 ETH 숫자를 wei 정수로 변환",
+        "반복적인 deposit(0.1)+withdraw(0.01) 100회 사이클 후 잔액이 정확히 일치 (부동소수점 누적오차 0)"
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "에디터 Shift+Tab 역들여쓰기 + 다중 줄 들여쓰기",
+      "priority": 2,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Tab 키: 커서 위치에 2칸 공백 삽입 (기존 동작 유지)",
+        "Shift+Tab: 현재 줄 앞의 공백 최대 2칸 제거",
+        "여러 줄 선택 후 Tab: 선택된 모든 줄에 2칸 들여쓰기 추가",
+        "여러 줄 선택 후 Shift+Tab: 선택된 모든 줄에서 2칸 들여쓰기 제거",
+        "들여쓰기 후 선택 영역이 유지됨"
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "지갑 주소 복사 버튼",
+      "priority": 3,
+      "passes": true,
+      "acceptanceCriteria": [
+        "지갑 주소 옆에 복사 버튼(아이콘) 존재",
+        "클릭 시 navigator.clipboard.writeText로 전체 주소 복사",
+        "복사 성공 시 버튼 텍스트가 일시적으로 '복사됨'으로 변경 후 1.5초 뒤 복원",
+        "지갑 미선택 시 복사 버튼 비활성화 또는 숨김",
+        "clipboard API 미지원 환경에서 fallback(execCommand) 또는 에러 표시"
+      ]
+    },
+    {
+      "id": "US-004",
+      "title": "초기 온보딩 UX",
+      "priority": 4,
+      "passes": true,
+      "acceptanceCriteria": [
+        "첫 로드 시 Faucet 탭에 온보딩 안내 메시지 표시 (사용 방법 3단계)",
+        "안내 내용: 1.지갑 생성 → 2.ETH Claim → 3.에디터에서 컨트랙트 수정/배포",
+        "지갑 생성 후 온보딩 메시지 자동 숨김",
+        "온보딩 영역이 기존 UI 레이아웃을 깨지 않음",
+        "'다시 보지 않기' 또는 닫기 버튼 존재"
+      ]
+    },
+    {
+      "id": "US-005",
+      "title": "차트 초기 데이터 표시",
+      "priority": 5,
+      "passes": true,
+      "acceptanceCriteria": [
+        "init() 후 차트에 최소 1개의 데이터 포인트 표시 (Genesis 입금 10 ETH)",
+        "차트가 빈 상태로 표시되지 않음",
+        "페이지 로드 직후 차트가 렌더링됨 (새로고침 클릭 불필요)"
+      ]
+    },
+    {
+      "id": "US-006",
+      "title": "전역 변수 IIFE 캡슐화",
+      "priority": 6,
+      "passes": true,
+      "acceptanceCriteria": [
+        "모든 JS 코드가 IIFE 또는 블록 스코프로 감싸짐",
+        "인라인 onclick이 addEventListener로 전환됨",
+        "브라우저 콘솔에서 vm, contract, wallets 등 직접 접근 불가",
+        "모든 기능(지갑 생성, claim, deposit, withdrawAll, 쿨다운, 에디터 deploy, 트랜잭션 로그)이 정상 동작"
+      ]
+    }
+  ]
+}

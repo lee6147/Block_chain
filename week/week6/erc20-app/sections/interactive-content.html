@@ -1,0 +1,771 @@
+<!-- 인터랙티브 섹션: 토큰 상호작용 / 퍼셋 / 퀴즈 -->
+
+<!-- 탭 네비게이션 -->
+<div class="flex gap-1 mb-6 bg-gray-100 p-1 rounded-lg">
+  <button
+    id="tab-btn-interact"
+    onclick="InteractiveTab.switchTab('interact')"
+    class="flex-1 py-2 px-4 text-sm font-medium rounded-md bg-white text-gray-900 shadow-sm transition-all duration-150"
+  >
+    토큰 상호작용
+  </button>
+  <button
+    id="tab-btn-faucet"
+    onclick="InteractiveTab.switchTab('faucet')"
+    class="flex-1 py-2 px-4 text-sm font-medium rounded-md text-gray-600 hover:text-gray-900 transition-all duration-150"
+  >
+    퍼셋 (Faucet)
+  </button>
+  <button
+    id="tab-btn-quiz"
+    onclick="InteractiveTab.switchTab('quiz')"
+    class="flex-1 py-2 px-4 text-sm font-medium rounded-md text-gray-600 hover:text-gray-900 transition-all duration-150"
+  >
+    퀴즈
+  </button>
+</div>
+
+<!-- ===================== A. 토큰 상호작용 탭 ===================== -->
+<div id="tab-interact" class="tab-panel">
+
+  <!-- 컨트랙트 주소 입력 -->
+  <div class="bg-white rounded-lg shadow-sm border p-6 mb-4">
+    <h3 class="text-lg font-semibold text-gray-800 mb-1">토큰 컨트랙트 주소</h3>
+    <p class="text-sm text-gray-500 mb-3">상호작용할 ERC20 토큰의 컨트랙트 주소를 입력하세요.</p>
+    <div class="flex flex-col sm:flex-row gap-3">
+      <input
+        id="interact-token-address"
+        type="text"
+        placeholder="0x..."
+        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono"
+      />
+      <button
+        onclick="InteractUI.applyAddress()"
+        class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-medium rounded-lg transition-colors duration-150 whitespace-nowrap"
+      >
+        적용
+      </button>
+    </div>
+    <p id="interact-address-error" class="hidden mt-2 text-sm text-red-600"></p>
+  </div>
+
+  <!-- 토큰 정보 카드 -->
+  <div id="token-info-card" class="hidden bg-indigo-50 border border-indigo-200 rounded-lg p-5 mb-4">
+    <div class="flex items-center gap-2 mb-3">
+      <div class="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center">
+        <span class="text-white text-xs font-bold" id="token-symbol-icon">?</span>
+      </div>
+      <div>
+        <h4 class="font-semibold text-gray-900" id="token-info-name">-</h4>
+        <p class="text-xs text-gray-500" id="token-info-address-short">-</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="bg-white rounded-md p-3 text-center">
+        <p class="text-xs text-gray-500 mb-1">이름</p>
+        <p class="text-sm font-semibold text-gray-800" id="token-info-name-val">-</p>
+      </div>
+      <div class="bg-white rounded-md p-3 text-center">
+        <p class="text-xs text-gray-500 mb-1">심볼</p>
+        <p class="text-sm font-semibold text-gray-800" id="token-info-symbol">-</p>
+      </div>
+      <div class="bg-white rounded-md p-3 text-center">
+        <p class="text-xs text-gray-500 mb-1">소수점</p>
+        <p class="text-sm font-semibold text-gray-800" id="token-info-decimals">-</p>
+      </div>
+      <div class="bg-white rounded-md p-3 text-center">
+        <p class="text-xs text-gray-500 mb-1">총 발행량</p>
+        <p class="text-sm font-semibold text-gray-800 truncate" id="token-info-supply">-</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 서브탭 네비게이션 -->
+  <div class="flex gap-2 mb-4">
+    <button
+      id="subtab-btn-transfer"
+      onclick="InteractUI.switchSubTab('transfer')"
+      class="px-4 py-2 text-sm font-medium rounded-md bg-indigo-600 text-white transition-all duration-150"
+    >
+      전송
+    </button>
+    <button
+      id="subtab-btn-approve"
+      onclick="InteractUI.switchSubTab('approve')"
+      class="px-4 py-2 text-sm font-medium rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all duration-150"
+    >
+      승인
+    </button>
+    <button
+      id="subtab-btn-allowance"
+      onclick="InteractUI.switchSubTab('allowance')"
+      class="px-4 py-2 text-sm font-medium rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all duration-150"
+    >
+      허용량 조회
+    </button>
+    <button
+      id="subtab-btn-balance"
+      onclick="InteractUI.switchSubTab('balance')"
+      class="px-4 py-2 text-sm font-medium rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all duration-150"
+    >
+      잔액 조회
+    </button>
+    <button
+      id="subtab-btn-transferFrom"
+      onclick="InteractUI.switchSubTab('transferFrom')"
+      class="px-4 py-2 text-sm font-medium rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all duration-150"
+    >
+      위임 전송
+    </button>
+    <button
+      id="subtab-btn-mint"
+      onclick="InteractUI.switchSubTab('mint')"
+      class="px-4 py-2 text-sm font-medium rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all duration-150"
+    >
+      발행
+    </button>
+    <button
+      id="subtab-btn-burn"
+      onclick="InteractUI.switchSubTab('burn')"
+      class="px-4 py-2 text-sm font-medium rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all duration-150"
+    >
+      소각
+    </button>
+  </div>
+
+  <!-- 전송 서브탭 -->
+  <div id="subtab-transfer" class="bg-white rounded-lg shadow-sm border p-6">
+    <h4 class="text-base font-semibold text-gray-800 mb-1">토큰 전송</h4>
+    <p class="text-sm text-gray-500 mb-4">
+      <code class="bg-gray-100 px-1 rounded text-xs">transfer(to, amount)</code>를 호출하여 토큰을 전송합니다.
+    </p>
+    <div class="space-y-3">
+      <div>
+        <label class="block text-xs font-medium text-gray-700 mb-1">받는 주소</label>
+        <input
+          id="transfer-to"
+          type="text"
+          placeholder="0x..."
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+        />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-700 mb-1">전송 수량</label>
+        <input
+          id="transfer-amount"
+          type="number"
+          placeholder="예: 100"
+          min="0"
+          step="any"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+      </div>
+      <button
+        onclick="InteractUI.transfer()"
+        class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-medium rounded-lg transition-colors duration-150"
+      >
+        전송
+      </button>
+    </div>
+    <!-- 트랜잭션 상태 -->
+    <div id="transfer-tx-status" class="hidden mt-4"></div>
+  </div>
+
+  <!-- 승인 서브탭 -->
+  <div id="subtab-approve" class="hidden bg-white rounded-lg shadow-sm border p-6">
+    <h4 class="text-base font-semibold text-gray-800 mb-1">토큰 위임 승인</h4>
+    <p class="text-sm text-gray-500 mb-4">
+      <code class="bg-gray-100 px-1 rounded text-xs">approve(spender, amount)</code>를 호출하여 다른 주소가 지정된 수량만큼 토큰을 사용할 수 있도록 승인합니다.
+    </p>
+    <div class="space-y-3">
+      <div>
+        <label class="block text-xs font-medium text-gray-700 mb-1">위임할 주소 (Spender)</label>
+        <input
+          id="approve-spender"
+          type="text"
+          placeholder="0x..."
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+        />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-700 mb-1">승인 수량</label>
+        <input
+          id="approve-amount"
+          type="number"
+          placeholder="예: 1000"
+          min="0"
+          step="any"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+      </div>
+      <button
+        onclick="InteractUI.approve()"
+        class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-medium rounded-lg transition-colors duration-150"
+      >
+        승인
+      </button>
+    </div>
+    <!-- 트랜잭션 상태 -->
+    <div id="approve-tx-status" class="hidden mt-4"></div>
+    <!-- approve 프론트러닝 경고 -->
+    <div class="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+      <p class="text-red-800 text-sm font-medium mb-2">보안 주의: approve() 프론트러닝 취약점</p>
+      <p class="text-red-700 text-xs mb-2">
+        allowance를 A → B로 변경할 때, spender가 변경 트랜잭션을 감지하고 기존 A만큼을 먼저 사용한 뒤
+        새 B만큼 다시 사용할 수 있습니다 (총 A+B 탈취). 이를 <strong>프론트러닝 공격</strong>이라 합니다.
+      </p>
+      <p class="text-red-700 text-xs font-medium mb-1">안전한 패턴:</p>
+      <ul class="text-red-700 text-xs space-y-1 mb-2">
+        <li>· allowance를 <strong>0으로 먼저 초기화</strong>한 후 새 값을 설정 (2단계 approve)</li>
+        <li>· <code class="bg-red-100 px-1 rounded">increaseAllowance()</code> / <code class="bg-red-100 px-1 rounded">decreaseAllowance()</code> 사용</li>
+        <li>· <strong>EIP-2612 permit()</strong>: 오프체인 서명으로 approve를 대체</li>
+      </ul>
+      <div class="bg-red-100 rounded p-2">
+        <code class="text-xs text-red-800">// 안전한 2단계 approve 예시
+await token.approve(spender, 0);        // 1. 먼저 0으로 리셋
+await token.approve(spender, newAmount); // 2. 새 값 설정</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- 허용량 조회 서브탭 -->
+  <div id="subtab-allowance" class="hidden bg-white rounded-lg shadow-sm border p-6">
+    <h4 class="text-base font-semibold text-gray-800 mb-1">허용량 조회</h4>
+    <p class="text-sm text-gray-500 mb-4">
+      <code class="bg-gray-100 px-1 rounded text-xs">allowance(owner, spender)</code>를 호출하여 현재 위임된 수량을 확인합니다.
+    </p>
+    <div class="space-y-3">
+      <div>
+        <label class="block text-xs font-medium text-gray-700 mb-1">소유자 주소 (Owner)</label>
+        <input
+          id="allowance-owner"
+          type="text"
+          placeholder="0x..."
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+        />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-700 mb-1">위임자 주소 (Spender)</label>
+        <input
+          id="allowance-spender"
+          type="text"
+          placeholder="0x..."
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+        />
+      </div>
+      <button
+        onclick="InteractUI.checkAllowance()"
+        class="w-full py-2.5 bg-gray-800 hover:bg-gray-900 active:bg-black text-white text-sm font-medium rounded-lg transition-colors duration-150"
+      >
+        조회
+      </button>
+    </div>
+    <!-- 조회 결과 -->
+    <div id="allowance-result" class="hidden mt-4 p-4 bg-gray-50 rounded-lg border">
+      <p class="text-xs text-gray-500 mb-1">허용량</p>
+      <p class="text-2xl font-bold text-gray-900" id="allowance-result-value">-</p>
+      <p class="text-xs text-gray-400 mt-1" id="allowance-result-symbol"></p>
+    </div>
+  </div>
+
+  <!-- 잔액 조회 서브탭 -->
+  <div id="subtab-balance" class="hidden bg-white rounded-lg shadow-sm border p-6">
+    <h4 class="text-base font-semibold text-gray-800 mb-1">잔액 조회</h4>
+    <p class="text-sm text-gray-500 mb-4">
+      <code class="bg-gray-100 px-1 rounded text-xs">balanceOf(address)</code>를 호출하여 특정 주소의 토큰 잔액을 확인합니다.
+    </p>
+    <div class="space-y-3">
+      <div>
+        <label class="block text-xs font-medium text-gray-700 mb-1">조회할 주소</label>
+        <input
+          id="balance-address"
+          type="text"
+          placeholder="0x... (빈칸이면 내 주소)"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+        />
+      </div>
+      <button
+        onclick="InteractUI.checkBalance()"
+        class="w-full py-2.5 bg-gray-800 hover:bg-gray-900 active:bg-black text-white text-sm font-medium rounded-lg transition-colors duration-150"
+      >
+        조회
+      </button>
+    </div>
+    <!-- 조회 결과 -->
+    <div id="balance-result" class="hidden mt-4 p-4 bg-gray-50 rounded-lg border">
+      <p class="text-xs text-gray-500 mb-1">잔액</p>
+      <p class="text-2xl font-bold text-gray-900" id="balance-result-value">-</p>
+      <p class="text-xs text-gray-400 mt-1" id="balance-result-symbol"></p>
+    </div>
+  </div>
+
+  <!-- 위임 전송 서브탭 -->
+  <div id="subtab-transferFrom" class="hidden bg-white rounded-lg shadow-sm border p-6">
+    <h4 class="text-base font-semibold text-gray-800 mb-1">위임 전송</h4>
+    <p class="text-sm text-gray-500 mb-4">
+      <code class="bg-gray-100 px-1 rounded text-xs">transferFrom(from, to, amount)</code>를 호출하여 승인된 수량만큼 토큰을 대신 전송합니다.
+    </p>
+    <div class="space-y-3">
+      <div>
+        <label class="block text-xs font-medium text-gray-700 mb-1">보내는 주소 (From)</label>
+        <input
+          id="transferFrom-from"
+          type="text"
+          placeholder="0x..."
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+        />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-700 mb-1">받는 주소 (To)</label>
+        <input
+          id="transferFrom-to"
+          type="text"
+          placeholder="0x..."
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+        />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-700 mb-1">전송 수량</label>
+        <input
+          id="transferFrom-amount"
+          type="number"
+          placeholder="예: 100"
+          min="0"
+          step="any"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+      </div>
+      <button
+        onclick="InteractUI.transferFrom()"
+        class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-medium rounded-lg transition-colors duration-150"
+      >
+        위임 전송
+      </button>
+    </div>
+    <!-- 트랜잭션 상태 -->
+    <div id="transferFrom-tx-status" class="hidden mt-4"></div>
+  </div>
+
+  <!-- 발행 서브탭 -->
+  <div id="subtab-mint" class="hidden bg-white rounded-lg shadow-sm border p-6">
+    <h4 class="text-base font-semibold text-gray-800 mb-1">토큰 발행</h4>
+    <p class="text-sm text-gray-500 mb-4">
+      <code class="bg-gray-100 px-1 rounded text-xs">mint(to, amount)</code>를 호출하여 새 토큰을 발행합니다.
+    </p>
+    <!-- MyTokenExtended 전용 안내 -->
+    <div class="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+      <p class="text-yellow-800 text-xs font-medium">⚠️ MyTokenExtended 전용</p>
+      <p class="text-yellow-700 text-xs mt-1">mint() 함수는 표준 ERC20에 없으며, 오너 권한이 필요합니다. MyTokenExtended 또는 MyTokenMintable 컨트랙트에서만 사용 가능합니다.</p>
+    </div>
+    <div class="space-y-3">
+      <div>
+        <label class="block text-xs font-medium text-gray-700 mb-1">받는 주소 (To)</label>
+        <input
+          id="mint-to"
+          type="text"
+          placeholder="0x..."
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+        />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-700 mb-1">발행 수량</label>
+        <input
+          id="mint-amount"
+          type="number"
+          placeholder="예: 1000"
+          min="0"
+          step="any"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+      </div>
+      <button
+        onclick="InteractUI.mint()"
+        class="w-full py-2.5 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white text-sm font-medium rounded-lg transition-colors duration-150"
+      >
+        발행
+      </button>
+    </div>
+    <!-- 트랜잭션 상태 -->
+    <div id="mint-tx-status" class="hidden mt-4"></div>
+  </div>
+
+  <!-- 소각 서브탭 -->
+  <div id="subtab-burn" class="hidden bg-white rounded-lg shadow-sm border p-6">
+    <h4 class="text-base font-semibold text-gray-800 mb-1">토큰 소각</h4>
+    <p class="text-sm text-gray-500 mb-4">
+      <code class="bg-gray-100 px-1 rounded text-xs">burn(amount)</code>를 호출하여 내 토큰을 영구 소각합니다.
+    </p>
+    <!-- ERC20Burnable 안내 -->
+    <div class="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+      <p class="text-yellow-800 text-xs font-medium">⚠️ ERC20Burnable 확장 필요</p>
+      <p class="text-yellow-700 text-xs mt-1">burn() 함수는 OpenZeppelin의 ERC20Burnable 확장을 상속한 컨트랙트에서만 사용 가능합니다. 소각된 토큰은 복구할 수 없습니다.</p>
+    </div>
+    <div class="space-y-3">
+      <div>
+        <label class="block text-xs font-medium text-gray-700 mb-1">소각 수량</label>
+        <input
+          id="burn-amount"
+          type="number"
+          placeholder="예: 100"
+          min="0"
+          step="any"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+      </div>
+      <button
+        onclick="InteractUI.burn()"
+        class="w-full py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-sm font-medium rounded-lg transition-colors duration-150"
+      >
+        소각
+      </button>
+    </div>
+    <!-- 트랜잭션 상태 -->
+    <div id="burn-tx-status" class="hidden mt-4"></div>
+  </div>
+
+</div>
+
+<!-- ===================== B. 퍼셋 탭 ===================== -->
+<div id="tab-faucet" class="tab-panel hidden">
+
+  <!-- 개념 설명 카드 -->
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-5 mb-4">
+    <div class="flex gap-3">
+      <span class="text-2xl flex-shrink-0">🚰</span>
+      <div>
+        <h4 class="font-semibold text-blue-900 mb-1">퍼셋(Faucet)이란?</h4>
+        <p class="text-sm text-blue-800 leading-relaxed">
+          퍼셋은 수도꼭지를 뜻합니다. 정수기에서 물을 받듯이, 테스트용 토큰을 무료로 지급받을 수 있는 스마트 컨트랙트입니다.
+          단, 남용을 막기 위해 <strong>쿨다운 시간</strong>이 있어 일정 시간이 지나야 다시 받을 수 있습니다.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 퍼셋 컨트랙트 주소 입력 -->
+  <div class="bg-white rounded-lg shadow-sm border p-6 mb-4">
+    <h3 class="text-lg font-semibold text-gray-800 mb-1">퍼셋 컨트랙트 주소</h3>
+    <p class="text-sm text-gray-500 mb-3">배포한 TokenFaucet 컨트랙트 주소를 입력하세요.</p>
+    <div class="flex flex-col sm:flex-row gap-3">
+      <input
+        id="faucet-address-input"
+        type="text"
+        placeholder="0x..."
+        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
+      />
+      <button
+        onclick="FaucetUI.applyAddress()"
+        class="px-5 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-medium rounded-lg transition-colors duration-150 whitespace-nowrap"
+      >
+        적용
+      </button>
+    </div>
+    <p id="faucet-address-error" class="hidden mt-2 text-sm text-red-600"></p>
+  </div>
+
+  <!-- 퍼셋 상태 카드 -->
+  <div id="faucet-status-card" class="hidden bg-white rounded-lg shadow-sm border p-6 mb-4">
+    <div class="flex items-center justify-between mb-4">
+      <h4 class="font-semibold text-gray-800">퍼셋 상태</h4>
+      <button
+        onclick="FaucetUI.refreshStatus()"
+        class="text-xs text-blue-600 hover:text-blue-700 font-medium"
+      >
+        새로고침
+      </button>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-blue-50 rounded-md p-4 text-center">
+        <p class="text-xs text-gray-500 mb-1">퍼셋 잔여량</p>
+        <p class="text-xl font-bold text-blue-700" id="faucet-balance">-</p>
+      </div>
+      <div class="bg-green-50 rounded-md p-4 text-center">
+        <p class="text-xs text-gray-500 mb-1">1회 배포량</p>
+        <p class="text-xl font-bold text-green-700" id="faucet-claim-amount">-</p>
+      </div>
+      <div class="bg-orange-50 rounded-md p-4 text-center">
+        <p class="text-xs text-gray-500 mb-1">쿨다운 시간</p>
+        <p class="text-xl font-bold text-orange-700" id="faucet-cooldown">-</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 클레임 섹션 -->
+  <div id="faucet-claim-section" class="hidden bg-white rounded-lg shadow-sm border p-6 mb-4">
+    <div class="flex flex-col items-center gap-4">
+      <button
+        id="claim-btn"
+        onclick="FaucetUI.claim()"
+        class="px-8 py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-base font-semibold rounded-xl transition-colors duration-150 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        🚰 토큰 받기
+      </button>
+      <!-- 쿨다운 타이머 -->
+      <div id="cooldown-timer" class="hidden text-center">
+        <p class="text-sm text-gray-500 mb-1">다음 요청까지</p>
+        <p class="text-2xl font-mono font-bold text-orange-600" id="cooldown-display">--:--:--</p>
+      </div>
+    </div>
+    <!-- 트랜잭션 상태 -->
+    <div id="claim-status" class="hidden mt-4"></div>
+  </div>
+
+  <!-- TokenFaucet.sol 소스 코드 -->
+  <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+    <div class="flex items-center justify-between px-6 py-4 border-b bg-gray-50">
+      <div class="flex items-center gap-2">
+        <span class="text-sm font-semibold text-gray-700">TokenFaucet.sol</span>
+        <span class="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full font-medium">Solidity</span>
+      </div>
+    </div>
+    <pre class="p-6 overflow-x-auto text-sm leading-relaxed"><code class="text-gray-800 font-mono">// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+
+/**
+ * @title TokenFaucet
+ * @dev 테스트용 토큰을 주기적으로 지급하는 퍼셋 컨트랙트
+ *      SafeERC20으로 transfer 반환값 검증, ReentrancyGuard로 재진입 방어
+ */
+contract TokenFaucet is Ownable, ReentrancyGuard {
+  using SafeERC20 for IERC20;
+  IERC20 public token;
+  uint256 public claimAmount;
+  uint256 public cooldownTime;
+
+  // 주소별 마지막 클레임 시각 기록
+  mapping(address =&gt; uint256) private _lastClaimed;
+
+  event TokensClaimed(
+    address indexed claimant,
+    uint256 amount,
+    uint256 timestamp
+  );
+
+  constructor(
+    address tokenAddress,
+    uint256 _claimAmount,
+    uint256 _cooldownTime
+  ) Ownable(msg.sender) {
+    token = IERC20(tokenAddress);
+    claimAmount = _claimAmount;
+    cooldownTime = _cooldownTime;
+  }
+
+  /**
+   * @dev 퍼셋 현재 잔액 조회
+   */
+  function faucetBalance() external view returns (uint256) {
+    return token.balanceOf(address(this));
+  }
+
+  /**
+   * @dev 다음 클레임 가능 시각 조회
+   */
+  function nextClaimTime(address account)
+    external view returns (uint256)
+  {
+    return _lastClaimed[account] + cooldownTime;
+  }
+
+  /**
+   * @dev 토큰 클레임 - 쿨다운 확인 후 지급
+   */
+  // CEI 패턴: Checks → Effects → Interactions
+  function claim() external nonReentrant returns (bool) {
+    // 1. Checks (조건 검증)
+    require(
+      block.timestamp >= _lastClaimed[msg.sender] + cooldownTime,
+      "Faucet: cooldown active"
+    );
+    require(
+      token.balanceOf(address(this)) >= claimAmount,
+      "Faucet: insufficient balance"
+    );
+
+    // 2. Effects (상태 변경을 외부 호출보다 먼저!)
+    _lastClaimed[msg.sender] = block.timestamp;
+
+    // 3. Interactions (SafeERC20으로 반환값 자동 검증)
+    token.safeTransfer(msg.sender, claimAmount);
+
+    emit TokensClaimed(msg.sender, claimAmount, block.timestamp);
+    return true;
+  }
+
+  /**
+   * @dev 오너만 클레임 수량 변경 가능
+   */
+  function setClaimAmount(uint256 amount) external onlyOwner {
+    claimAmount = amount;
+  }
+
+  /**
+   * @dev 오너만 쿨다운 시간 변경 가능
+   */
+  function setCooldownTime(uint256 time) external onlyOwner {
+    cooldownTime = time;
+  }
+
+  /**
+   * @dev 오너가 퍼셋 잔액 회수
+   */
+  function withdraw() external onlyOwner nonReentrant {
+    uint256 balance = token.balanceOf(address(this));
+    token.safeTransfer(owner(), balance);
+  }
+}</code></pre>
+    <!-- 보안 수정 사항 안내 -->
+    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
+      <p class="text-yellow-800 text-sm font-medium mb-2">보안 체크포인트</p>
+      <ul class="text-yellow-700 text-xs space-y-1">
+        <li>· <strong>SafeERC20</strong>: <code class="bg-yellow-100 px-1 rounded">transfer()</code> 반환값을 자동 검증합니다. 비표준 토큰(USDT 등)도 안전하게 처리합니다.</li>
+        <li>· <strong>ReentrancyGuard</strong>: <code class="bg-yellow-100 px-1 rounded">nonReentrant</code> modifier로 재진입 공격을 방어합니다.</li>
+        <li>· <strong>CEI 패턴</strong>: Checks → Effects → Interactions 순서로 상태 변경이 외부 호출보다 먼저 실행됩니다.</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== C. 퀴즈 탭 ===================== -->
+<div id="tab-quiz" class="tab-panel hidden">
+
+  <!-- 퀴즈 진행 화면 -->
+  <div id="quiz-screen">
+
+    <!-- 진행률 바 -->
+    <div class="bg-white rounded-lg shadow-sm border p-4 mb-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-medium text-gray-700">
+          문제 <span id="quiz-current-num">1</span> / <span id="quiz-total-num">12</span>
+        </span>
+        <span class="text-sm text-gray-500">
+          점수: <span id="quiz-current-score" class="font-semibold text-indigo-600">0</span>
+        </span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2">
+        <div
+          id="quiz-progress-bar"
+          class="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+          style="width: 0%"
+        ></div>
+      </div>
+    </div>
+
+    <!-- 문제 카드 -->
+    <div id="quiz-card" class="bg-white rounded-lg shadow-sm border p-6">
+      <!-- 카테고리 뱃지 -->
+      <div class="mb-3">
+        <span
+          id="quiz-category-badge"
+          class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600"
+        >
+          개념
+        </span>
+      </div>
+      <!-- 문제 텍스트 -->
+      <h3 id="quiz-question" class="text-base font-semibold text-gray-900 mb-5 leading-relaxed">
+        문제 텍스트
+      </h3>
+      <!-- 선택지 -->
+      <div id="quiz-options" class="space-y-2">
+        <!-- JS로 동적 생성 -->
+      </div>
+      <!-- 정답/오답 피드백 -->
+      <div id="quiz-feedback" class="hidden mt-4 p-4 rounded-lg">
+        <p class="text-sm font-semibold mb-1" id="quiz-feedback-title"></p>
+        <p class="text-sm text-gray-700" id="quiz-feedback-explanation"></p>
+      </div>
+      <!-- 다음 문제 버튼 -->
+      <button
+        id="quiz-next-btn"
+        class="hidden mt-4 w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors duration-150"
+        onclick="QuizUI.next()"
+      >
+        다음 문제 →
+      </button>
+    </div>
+
+  </div>
+
+  <!-- 결과 화면 -->
+  <div id="quiz-result" class="hidden">
+
+    <div class="bg-white rounded-lg shadow-sm border p-8 text-center mb-4">
+      <!-- 점수 -->
+      <div class="text-6xl font-bold text-indigo-600 mb-2">
+        <span id="result-score">0</span><span class="text-3xl text-gray-400">/12</span>
+      </div>
+      <!-- 등급 뱃지 -->
+      <div class="mb-4">
+        <span id="result-grade-badge" class="px-4 py-1.5 text-sm font-bold rounded-full"></span>
+      </div>
+      <p id="result-grade-msg" class="text-gray-600 mb-6"></p>
+
+      <!-- 액션 버튼 -->
+      <div class="flex flex-col sm:flex-row gap-3 justify-center">
+        <button
+          onclick="QuizUI.reset()"
+          class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors duration-150"
+        >
+          다시 풀기
+        </button>
+        <button
+          onclick="InteractiveTab.switchTab('interact')"
+          class="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors duration-150"
+        >
+          토큰 실습하기
+        </button>
+      </div>
+    </div>
+
+    <!-- 카테고리별 성적 -->
+    <div class="bg-white rounded-lg shadow-sm border p-6 mb-4">
+      <h4 class="font-semibold text-gray-800 mb-4">카테고리별 성적</h4>
+      <div class="space-y-3">
+        <div>
+          <div class="flex justify-between text-sm mb-1">
+            <span class="text-gray-600">개념 (Concept)</span>
+            <span class="font-medium" id="cat-concept-score">0/4</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div id="cat-concept-bar" class="bg-blue-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+        </div>
+        <div>
+          <div class="flex justify-between text-sm mb-1">
+            <span class="text-gray-600">코드 (Code)</span>
+            <span class="font-medium" id="cat-code-score">0/4</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div id="cat-code-bar" class="bg-purple-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+        </div>
+        <div>
+          <div class="flex justify-between text-sm mb-1">
+            <span class="text-gray-600">실습 (Practice)</span>
+            <span class="font-medium" id="cat-practice-score">0/4</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div id="cat-practice-bar" class="bg-green-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 틀린 문제 목록 -->
+    <div id="wrong-answers-section" class="bg-white rounded-lg shadow-sm border p-6">
+      <h4 class="font-semibold text-gray-800 mb-4">틀린 문제 복습</h4>
+      <div id="wrong-answers-list" class="space-y-3">
+        <!-- JS로 동적 생성 -->
+      </div>
+    </div>
+
+  </div>
+
+</div>
