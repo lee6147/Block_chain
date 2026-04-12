@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Week6 Staking DApp</title>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+<style>
+  :root { --bg:#0f172a; --fg:#e2e8f0; --muted:#94a3b8; --accent:#38bdf8; --warn:#f97316; --err:#ef4444; --ok:#22c55e; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+         background:var(--bg); color:var(--fg); padding:16px; }
+  h1 { font-size:20px; margin:0 0 12px; }
+  .card { background:#1e293b; border-radius:8px; padding:14px; margin-bottom:12px; }
+  label { display:block; font-size:12px; color:var(--muted); margin-top:6px; }
+  input, button { font-size:14px; padding:8px 10px; border-radius:6px; border:1px solid #334155;
+                  background:#0f172a; color:var(--fg); width:100%; }
+  input:focus { outline:2px solid var(--accent); }
+  button { cursor:pointer; background:var(--accent); color:#0f172a; font-weight:600; border:none; margin-top:8px; }
+  button:disabled { opacity:0.5; cursor:not-allowed; }
+  .row { display:flex; gap:8px; }
+  .row > * { flex:1; }
+  .tabs { display:flex; gap:4px; margin-bottom:12px; }
+  .tabs button { background:#334155; color:var(--fg); }
+  .tabs button.active { background:var(--accent); color:#0f172a; }
+  .banner { padding:10px; border-radius:6px; margin-bottom:12px; font-size:14px; }
+  .banner.warn { background:#7c2d12; color:#fed7aa; }
+  .banner.ok   { background:#14532d; color:#bbf7d0; }
+  .banner.err  { background:#7f1d1d; color:#fecaca; }
+  pre { background:#0f172a; padding:8px; border-radius:6px; overflow:auto; font-size:12px; color:var(--muted); }
+  .hidden { display:none; }
+  small.muted { color:var(--muted); }
+</style>
+</head>
+<body>
+
+<h1>Week6 Staking DApp</h1>
+
+<div id="chainBanner" class="banner warn">네트워크 확인 중…</div>
+<div id="msg" class="banner hidden"></div>
+
+<div class="card">
+  <div class="row">
+    <div>
+      <label>지갑</label>
+      <input id="account" readonly placeholder="미연결" />
+    </div>
+    <div style="flex:0 0 140px">
+      <label>&nbsp;</label>
+      <button id="btnConnect">Connect</button>
+    </div>
+  </div>
+  <label>Faucet 주소 (조교 공지)</label>
+  <input id="addrFaucet" placeholder="0x..." />
+  <label>Token 주소 (학생 본인이 배포한 ERC20 또는 HNL)</label>
+  <input id="addrToken" placeholder="0x..." />
+  <label>Staking 주소 (학생 본인이 배포)</label>
+  <input id="addrStaking" placeholder="0x..." />
+  <button id="btnSaveAddrs">주소 저장 (localStorage)</button>
+</div>
+
+<div class="tabs">
+  <button data-tab="faucet" class="active">Faucet</button>
+  <button data-tab="token">Token</button>
+  <button data-tab="staking">Staking</button>
+</div>
+
+<!-- Faucet -->
+<div class="card tab" data-tab="faucet">
+  <div>다음 수령 가능: <span id="fNext">-</span></div>
+  <button id="btnRequest">requestTokens()</button>
+</div>
+
+<!-- Token -->
+<div class="card tab hidden" data-tab="token">
+  <div>내 잔액: <span id="tBal">-</span></div>
+  <div>Allowance → Staking: <span id="tAllow">-</span></div>
+  <label>Approve 수량 (사람이 읽는 값, 예: 100)</label>
+  <input id="tApproveAmt" value="100" />
+  <button id="btnApprove">approve(staking, amount)</button>
+</div>
+
+<!-- Staking -->
+<div class="card tab hidden" data-tab="staking">
+  <div>내 스테이킹: <span id="sAmt">-</span></div>
+  <div>Pending Reward: <span id="sPending">-</span></div>
+  <label>수량 (예: 10)</label>
+  <input id="sAmtInput" value="10" />
+  <div class="row">
+    <button id="btnStake">stake</button>
+    <button id="btnUnstake">unstake</button>
+  </div>
+  <button id="btnClaim">claimReward</button>
+</div>
+
+<small class="muted">Sepolia ChainId 0xaa36a7. 메인넷/로컬 네트워크에서는 쓰기 비활성화됩니다.</small>
+
+<script>
+const SEPOLIA_HEX = "0xaa36a7"; // 11155111
+
+// 최소 ABI
+const ERC20_ABI = [
+  "function balanceOf(address) view returns (uint256)",
+  "function allowance(address,address) view returns (uint256)",
+  "function approve(address,uint256) returns (bool)",
+  "function decimals() view returns (uint8)",
+  "function symbol() view returns (string)"
+];
+const FAUCET_ABI = [
+  "function requestTokens()",
+  "function nextAvailable(address) view returns (uint256)",
+  "function amountPerRequest() view returns (uint256)",
+  "function cooldown() view returns (uint256)"
+];
+const STAKING_ABI = [
+  "function stake(uint256)",
+  "function unstake(uint256)",
+  "function claimReward()",
+  "function pendingReward(address) view returns (uint256)",
+  "function users(address) view returns (uint256 amount,uint256 lastUpdate,uint256 accrued)"
+];
+
+let provider, signer, account, chainOk = false;
+let pollTimer = null;
+
+const $ = (id) => document.getElementById(id);
+function setMsg(text, cls) {
+  const m = $("msg");
+  m.textContent = text;
+  m.className = "banner " + cls;
+  m.classList.remove("hidden");
+  setTimeout(() => m.classList.add("hidden"), 6000);
+}
+function onErr(e) {
+  console.error(e);
+  setMsg(e.shortMessage || e.reason || e.message || String(e), "err");
+}
+
+// ---- tabs ----
+document.querySelectorAll(".tabs button").forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll(".tabs button").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    document.querySelectorAll(".tab").forEach(t => t.classList.add("hidden"));
+    document.querySelector(`.tab[data-tab="${b.dataset.tab}"]`).classList.remove("hidden");
+  };
+});
+
+// ---- localStorage 주소 ----
+["addrFaucet","addrToken","addrStaking"].forEach(k => {
+  const v = localStorage.getItem(k);
+  if (v) $(k).value = v;
+});
+$("btnSaveAddrs").onclick = () => {
+  ["addrFaucet","addrToken","addrStaking"].forEach(k =>
+    localStorage.setItem(k, $(k).value.trim()));
+  setMsg("주소 저장됨", "ok");
+  refreshAll();
+};
+
+// ---- connect ----
+$("btnConnect").onclick = async () => {
+  try {
+    if (!window.ethereum) throw new Error("MetaMask 없음");
+    provider = new ethers.BrowserProvider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    signer = await provider.getSigner();
+    account = await signer.getAddress();
+    $("account").value = account;
+    await checkChain();
+    startPolling();
+  } catch (e) { onErr(e); }
+};
+
+async function checkChain() {
+  try {
+    const cid = await window.ethereum.request({ method: "eth_chainId" });
+    chainOk = (cid?.toLowerCase() === SEPOLIA_HEX);
+    const b = $("chainBanner");
+    if (chainOk) {
+      b.className = "banner ok";
+      b.textContent = "Sepolia 연결 확인 (chainId " + cid + ")";
+    } else {
+      b.className = "banner warn";
+      b.textContent = "⚠ Sepolia가 아닙니다 (현재 " + cid + "). 쓰기 버튼이 잠깁니다.";
+    }
+    toggleWriteButtons();
+  } catch (e) { onErr(e); }
+}
+window.ethereum?.on?.("chainChanged", () => location.reload());
+window.ethereum?.on?.("accountsChanged", () => location.reload());
+
+function toggleWriteButtons() {
+  ["btnRequest","btnApprove","btnStake","btnUnstake","btnClaim"].forEach(id => {
+    $(id).disabled = !chainOk || !signer;
+  });
+}
+
+// ---- helpers ----
+function parseAmt(s) { return ethers.parseUnits(s || "0", 18); }
+function fmt(n) { return Number(ethers.formatUnits(n, 18)).toFixed(6); }
+function c(addr, abi) { return new ethers.Contract(addr, abi, signer || provider); }
+
+// ---- Faucet ----
+$("btnRequest").onclick = async () => {
+  try {
+    const tx = await c($("addrFaucet").value.trim(), FAUCET_ABI).requestTokens();
+    setMsg("Faucet tx 전송: " + tx.hash, "ok");
+    await tx.wait();
+    setMsg("Faucet 수령 완료", "ok");
+    refreshAll();
+  } catch (e) { onErr(e); }
+};
+
+// ---- Token ----
+$("btnApprove").onclick = async () => {
+  try {
+    const token = c($("addrToken").value.trim(), ERC20_ABI);
+    const tx = await token.approve($("addrStaking").value.trim(), parseAmt($("tApproveAmt").value));
+    setMsg("approve tx: " + tx.hash, "ok");
+    await tx.wait();
+    refreshAll();
+  } catch (e) { onErr(e); }
+};
+
+// ---- Staking ----
+$("btnStake").onclick = async () => {
+  try {
+    const tx = await c($("addrStaking").value.trim(), STAKING_ABI).stake(parseAmt($("sAmtInput").value));
+    setMsg("stake tx: " + tx.hash, "ok");
+    await tx.wait();
+    refreshAll();
+  } catch (e) { onErr(e); }
+};
+$("btnUnstake").onclick = async () => {
+  try {
+    const tx = await c($("addrStaking").value.trim(), STAKING_ABI).unstake(parseAmt($("sAmtInput").value));
+    setMsg("unstake tx: " + tx.hash, "ok");
+    await tx.wait();
+    refreshAll();
+  } catch (e) { onErr(e); }
+};
+$("btnClaim").onclick = async () => {
+  try {
+    const tx = await c($("addrStaking").value.trim(), STAKING_ABI).claimReward();
+    setMsg("claim tx: " + tx.hash, "ok");
+    await tx.wait();
+    refreshAll();
+  } catch (e) { onErr(e); }
+};
+
+// ---- 폴링 ----
+function startPolling() {
+  if (pollTimer) clearInterval(pollTimer);
+  refreshAll();
+  pollTimer = setInterval(refreshAll, 5000);
+}
+
+async function refreshAll() {
+  if (!account || !provider) return;
+  const tokenA = $("addrToken").value.trim();
+  const stakeA = $("addrStaking").value.trim();
+  const faucetA = $("addrFaucet").value.trim();
+
+  try {
+    if (ethers.isAddress(tokenA)) {
+      const t = new ethers.Contract(tokenA, ERC20_ABI, provider);
+      const [bal, allow] = await Promise.all([
+        t.balanceOf(account),
+        ethers.isAddress(stakeA) ? t.allowance(account, stakeA) : Promise.resolve(0n)
+      ]);
+      $("tBal").textContent = fmt(bal);
+      $("tAllow").textContent = fmt(allow);
+    }
+    if (ethers.isAddress(stakeA)) {
+      const s = new ethers.Contract(stakeA, STAKING_ABI, provider);
+      const [info, pending] = await Promise.all([s.users(account), s.pendingReward(account)]);
+      $("sAmt").textContent = fmt(info.amount);
+      $("sPending").textContent = fmt(pending);
+    }
+    if (ethers.isAddress(faucetA)) {
+      const f = new ethers.Contract(faucetA, FAUCET_ABI, provider);
+      const nxt = await f.nextAvailable(account);
+      if (nxt === 0n) $("fNext").textContent = "지금 가능";
+      else {
+        const left = Number(nxt) - Math.floor(Date.now()/1000);
+        $("fNext").textContent = left > 0 ? (left + "초 남음") : "지금 가능";
+      }
+    }
+  } catch (e) { /* 주소 미설정 등은 조용히 넘김 */ }
+}
+
+// 초기 체인 체크 시도
+if (window.ethereum) {
+  provider = new ethers.BrowserProvider(window.ethereum);
+  checkChain();
+}
+</script>
+</body>
+</html>
