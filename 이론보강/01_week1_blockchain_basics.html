@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Week 1 블록체인 기초: 공유 장부, 해시, 체인</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202a;
+      --muted: #5d6d7e;
+      --line: #d8dee6;
+      --panel: #ffffff;
+      --soft: #f6f8fb;
+      --brand: #1769aa;
+      --good: #16855f;
+      --bad: #c0392b;
+      --warn: #b36b00;
+      --shadow: 0 10px 24px rgba(23, 32, 42, .08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, "Noto Sans KR", sans-serif;
+      line-height: 1.65;
+      color: var(--ink);
+      background: #eef3f8;
+    }
+    header {
+      padding: 32px 20px 20px;
+      background: linear-gradient(135deg, #ffffff 0%, #e8f2fb 100%);
+      border-bottom: 1px solid var(--line);
+    }
+    .wrap { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
+    h1 { margin: 0 0 12px; font-size: clamp(28px, 4vw, 44px); line-height: 1.18; letter-spacing: 0; }
+    h2 { margin: 0 0 14px; font-size: 24px; }
+    h3 { margin: 0 0 10px; font-size: 19px; }
+    p { margin: 0 0 12px; }
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+    nav a, button {
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 9px 12px;
+      background: var(--panel);
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+    button.ghost { background: #fff; }
+    main { padding: 22px 0 42px; }
+    section {
+      margin: 18px 0;
+      padding: 22px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .card, .block {
+      padding: 16px;
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .guide {
+      margin-top: 12px;
+      padding: 14px;
+      border-left: 5px solid var(--brand);
+      border-radius: 8px;
+      background: #eef6ff;
+    }
+    .guide strong { display: block; margin-bottom: 4px; }
+    .data-view {
+      min-height: 150px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      white-space: pre-wrap;
+    }
+    .block {
+      position: relative;
+      transition: transform .22s ease, border-color .22s ease, background .22s ease;
+    }
+    .block.broken { border-color: var(--bad); background: #fff4f1; animation: pulseBad 1s ease-in-out; }
+    .block.valid { border-color: #9fd8c1; background: #f0fbf6; }
+    .label { display: block; margin: 10px 0 5px; font-weight: 700; color: var(--muted); }
+    input, textarea, select {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 9px 10px;
+      font: inherit;
+      background: #fff;
+      color: var(--ink);
+    }
+    textarea { resize: vertical; min-height: 78px; }
+    code, .mono {
+      font-family: Consolas, "Courier New", monospace;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .status { font-weight: 800; }
+    .good { color: var(--good); }
+    .bad { color: var(--bad); }
+    .warn { color: var(--warn); }
+    .flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #e9f2fb;
+      border: 1px solid #cfe1f2;
+      font-weight: 700;
+    }
+    .nodes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+    .node {
+      min-height: 88px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      font-weight: 700;
+      transition: transform .2s ease, background .2s ease;
+    }
+    .node.changed { background: #fff4f1; border-color: var(--bad); transform: translateY(-4px); }
+    .node.aligned { background: #eefaf4; border-color: #9fd8c1; }
+    .step-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin: 12px 0;
+    }
+    .step {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+    .step strong { display: block; margin-bottom: 4px; color: var(--brand); }
+    .note {
+      padding: 12px;
+      border: 1px solid #f0d6a8;
+      border-radius: 8px;
+      background: #fff8ed;
+    }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid var(--line); padding: 10px; vertical-align: top; }
+    th { background: #eef3f8; text-align: left; }
+    @keyframes pulseBad {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-3px); }
+      50% { transform: translateX(3px); }
+      100% { transform: translateX(0); }
+    }
+    @media (max-width: 760px) {
+      .grid, .two, .nodes, .step-list { grid-template-columns: 1fr; }
+      section { padding: 16px; }
+      nav a, button { width: 100%; justify-content: center; text-align: center; }
+      .controls { display: grid; grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Week 1. 블록체인 기초: 공유 장부, 해시, 체인</h1>
+      <p>블록체인은 여러 노드가 같은 원장 사본을 보관하고, 블록의 데이터와 이전 해시를 연결해 변경 시도를 빠르게 드러내는 구조다.</p>
+      <nav aria-label="주차 내비게이션">
+        <a href="#concept">핵심 개념</a>
+        <a href="#hash-sim">해시 시뮬레이터</a>
+        <a href="#ledger-sim">분산 장부 비교</a>
+        <a href="#api-chain-sim">API/체인 데이터 비교</a>
+        <a href="#practice">실습 연결</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="concept">
+      <h2>정석 개념 요약</h2>
+      <div class="grid">
+        <div class="card"><h3>블록</h3><p>거래나 상태 변경 기록을 일정 단위로 묶은 장부의 한 페이지다. 데이터, 이전 해시, 현재 해시가 함께 의미를 만든다.</p></div>
+        <div class="card"><h3>해시</h3><p>입력을 고정 길이 값으로 요약한 결과다. 같은 입력은 같은 해시를 만들지만, 한 글자만 바뀌어도 결과가 크게 바뀐다.</p></div>
+        <div class="card"><h3>체인</h3><p>현재 블록이 이전 블록의 해시를 기억하는 연결 구조다. 앞 블록이 바뀌면 뒤 블록의 이전 해시와 맞지 않아 연결이 깨진다.</p></div>
+        <div class="card"><h3>합의</h3><p>단순 과반수 손들기가 아니라, 각 노드가 같은 유효성 규칙을 적용하고 네트워크의 합의 방식과 최종성 조건을 통과한 기록을 정식 상태로 받아들이는 과정이다.</p></div>
+      </div>
+      <div class="guide">
+        <strong>개념 보강: 비유 → 정석 정의 → 확인 질문</strong>
+        <p>블록은 장부의 한 페이지, 해시는 데이터 지문, 체인은 이전 페이지 지문을 다음 페이지에 적는 고리다. 합의는 "많이 가진 쪽이 맞다"가 아니라 "정해진 검증 규칙을 통과한 후보 중 네트워크 규칙이 정식 기록으로 확정한 것"을 받아들이는 과정이다. 확인 질문은 간단하다. "데이터 한 글자가 바뀌면 어느 값이 바뀌고, 노드들은 무엇을 기준으로 정답을 고르는가?"</p>
+      </div>
+      <p>중앙화 시스템은 한 데이터베이스가 원본인 반면, 탈중앙화 블록체인은 여러 참여자가 정해진 규칙으로 올바른 기록을 선택한다. 그래서 블록체인은 단순 저장소가 아니라 기록, 검증 규칙, 네트워크 합의가 결합된 시스템이다.</p>
+    </section>
+
+    <section id="hash-sim">
+      <h2>시뮬레이터 1: 블록 데이터 수정과 해시 변경</h2>
+      <p><strong>왜 해보는가:</strong> 블록체인은 “수정이 물리적으로 불가능한 파일”이 아니라, 데이터가 바뀌면 해시와 연결 상태가 즉시 어긋나는 구조라는 점을 눈으로 확인해야 한다.</p>
+      <p><strong>해시 안전난간:</strong> 이 페이지의 hash는 변화 감지를 보여주는 교육용 단순 해시다. 실제 블록체인은 SHA-256, Keccak 계열처럼 충돌 저항성을 갖춘 암호학적 해시를 사용한다.</p>
+      <div class="guide"><strong>예측 → 실행 → 상태 변화 → 해석</strong><p>먼저 Block #2 문장을 바꾸면 hash가 바뀔 것이라고 예측한다. 실행 후 Block #3의 previousHash 불일치를 보고, 체인 다시 계산은 "로컬 구조를 다시 맞추는 과정"으로 해석한다. 실제 네트워크에서는 이것만으로 끝나지 않고 합의 규칙을 통과해야 정식 기록이 된다.</p></div>
+      <label class="label" for="block2Data">Block #2 거래 데이터</label>
+      <textarea id="block2Data">Alice -> Bob: 2 ETH</textarea>
+      <div class="controls">
+        <button class="primary" id="recalcChain">체인 다시 계산</button>
+        <button class="ghost" id="resetHash">초기화</button>
+      </div>
+      <div class="grid" id="blocks" aria-live="polite"></div>
+      <p><strong>실제 실습 연결:</strong> Week1 가격 조회 앱은 API 데이터를 읽고 화면에 표시했다. 블록체인 앱은 가격 대신 블록 번호, 거래 해시, 이전 해시 같은 검증 가능한 데이터를 읽고 표시한다.</p>
+    </section>
+
+    <section id="ledger-sim">
+      <h2>시뮬레이터 2: 중앙 장부와 분산 장부 비교</h2>
+      <p><strong>왜 해보는가:</strong> 한 서버만 원본이면 서버 기록이 바뀔 때 사용자는 그대로 받아들인다. 분산 장부에서는 각 노드가 자신이 받은 기록을 같은 규칙으로 검증하고, 임의로 바뀐 기록은 정식 상태와 어긋난 후보로 드러난다.</p>
+      <div class="guide"><strong>예측 → 실행 → 상태 변화 → 해석</strong><p>중앙 서버 수정은 사용자 모두의 화면이 바뀔 것으로 예측한다. 분산 장부에서 노드 하나만 임의 수정하면 "4표 대 1표"가 아니라 "같은 검증 규칙 결과와 불일치"가 표시된다. 실제 합의는 stake, hash power, validator set, finality 같은 네트워크별 규칙을 함께 본다.</p></div>
+      <div class="two">
+        <div class="card">
+          <h3>중앙 장부</h3>
+          <p>서버 원본: <span class="mono" id="centralValue">Block A: 정상 출석부</span></p>
+          <div class="flow"><span class="pill">사용자 1</span><span class="pill">사용자 2</span><span class="pill">사용자 3</span></div>
+        </div>
+        <div class="card">
+          <h3>분산 장부</h3>
+          <div class="nodes" id="nodes"></div>
+          <p id="nodeVerdict" class="status good">5개 노드가 같은 기록과 같은 검증 결과를 보관 중</p>
+          <div class="note">
+            <strong>합의 오해 방지</strong>
+            <p>이 화면은 불일치를 발견하는 입문 모델이다. 실제 블록체인은 노드 개수만 세지 않고 블록 형식, 이전 해시, 서명, 잔액, 수수료, 난이도나 지분, 최종성 규칙을 종합해 정식 기록을 판단한다.</p>
+          </div>
+        </div>
+      </div>
+      <div class="controls">
+        <button id="changeCentral">중앙 서버 데이터 수정</button>
+        <button id="changeNode">노드 하나만 임의 수정</button>
+        <button id="resetLedger">초기화</button>
+      </div>
+      <p><strong>실제 실습 연결:</strong> CoinGecko API 오류는 외부 API 서비스 문제이고, 블록체인 기록 불일치는 원장 검증 문제다. 둘을 구분해야 Week2 이후 RPC, explorer, 거래 실패를 정확히 해석할 수 있다.</p>
+      <p><strong>오해 방지:</strong> 여러 노드가 같은 값을 보인다는 표시는 "불일치가 적다"는 관찰일 뿐이다. 실제 네트워크에서는 단순 노드 수가 아니라 합의 규칙과 최종성 조건을 통과해야 정식 기록으로 인정된다.</p>
+    </section>
+
+    <section id="api-chain-sim">
+      <h2>시뮬레이터 3: API 데이터와 블록체인 데이터 읽기 비교</h2>
+      <p><strong>왜 해보는가:</strong> Week1 가격 앱과 블록체인 앱은 둘 다 데이터를 읽어 화면에 표시한다. 하지만 가격 API는 서비스 제공자의 응답이고, 블록체인 데이터는 네트워크가 합의한 원장 상태를 RPC나 Explorer로 읽는다는 차이가 있다.</p>
+      <div class="guide"><strong>예측 → 실행 → 상태 변화 → 해석</strong><p>가격 데이터 버튼은 표가 바뀔 것이라고 예측한다. 블록 데이터 버튼은 blockNumber, tx count, previousHash가 카드로 보일 것이라고 예측한다. 429 제한은 블록체인 실패가 아니라 API 서비스 제한으로 해석한다. 이 시뮬레이터는 실제 지갑, RPC, 체인을 호출하지 않는 모의 데이터다.</p></div>
+      <div class="step-list" aria-label="API와 체인 데이터 비교 순서">
+        <div class="step"><strong>1. 먼저 예측</strong><p>가격 API는 누가 값을 제공하는지, 블록 데이터는 어떤 필드로 검증 단서를 주는지 말해 본다.</p></div>
+        <div class="step"><strong>2. 버튼 실행</strong><p>왼쪽은 서비스 응답과 제한을 보고, 오른쪽은 블록 번호와 이전 해시 연결을 본다.</p></div>
+        <div class="step"><strong>3. 해석 분리</strong><p>API 오류, RPC 조회 실패, 체인 상태 변화, 거래 실패를 같은 문제로 묶지 않는다.</p></div>
+      </div>
+      <div class="two">
+        <div class="card">
+          <h3>CoinGecko API 흐름</h3>
+          <div class="flow"><span class="pill">fetch()</span><span class="pill">가격 JSON</span><span class="pill">가격 표</span></div>
+          <div class="controls">
+            <button id="readPrice">1. 가격 데이터 읽기</button>
+            <button id="rateLimit">2. 429 제한 해석</button>
+          </div>
+          <div id="priceView" class="data-view">대기 중: 먼저 "가격 데이터 읽기"를 누르고, 값의 출처가 API 서비스라는 점을 확인하세요.</div>
+        </div>
+        <div class="card">
+          <h3>RPC/Explorer 흐름</h3>
+          <div class="flow"><span class="pill">RPC</span><span class="pill">블록 JSON</span><span class="pill">검증 카드</span></div>
+          <div class="controls">
+            <button id="readBlock">1. 블록 데이터 읽기</button>
+            <button id="resetData">초기화</button>
+          </div>
+          <div id="blockDataView" class="data-view">대기 중: "블록 데이터 읽기"를 누르고, previousHash가 무엇을 검증하게 해 주는지 확인하세요.</div>
+        </div>
+      </div>
+      <p><strong>실제 실습에서 어디에 해당하는가:</strong> Week1의 <code>fetch()</code>, JSON 파싱, 429 오류 처리는 Week2 이후 RPC 조회와 Explorer 확인의 웹 기초다. 단, 데이터의 신뢰 원천은 서비스 API와 블록체인 원장으로 다르다.</p>
+      <p><strong>RPC/Explorer 안전난간:</strong> RPC와 Explorer는 체인 데이터를 읽는 창구다. 제공자 화면을 믿는 것과 직접 노드로 검증하는 것은 구분해야 하며, 중요한 판단에서는 네트워크, block number, finality 상태를 함께 확인한다.</p>
+    </section>
+
+    <section id="practice">
+      <h2>수업 실습과 연결</h2>
+      <table>
+        <thead><tr><th>Week1 실습 요소</th><th>블록체인 개념 연결</th></tr></thead>
+        <tbody>
+          <tr><td><code>fetch()</code> API 호출</td><td>RPC나 explorer API로 블록체인 데이터를 읽는 출발점이다.</td></tr>
+          <tr><td>JSON 파싱</td><td>블록, 트랜잭션, 잔액도 구조화된 데이터로 읽는다.</td></tr>
+          <tr><td>응답 상태와 429 제한</td><td>웹/API 문제와 블록체인 거래 실패를 분리해서 봐야 한다.</td></tr>
+          <tr><td>30초 자동 갱신</td><td>블록체인 상태도 새 블록 생성에 따라 계속 변한다.</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    const initialBlocks = [
+      { n: 1, data: 'Genesis: class ledger opened', prev: '00000000' },
+      { n: 2, data: 'Alice -> Bob: 2 ETH', prev: '' },
+      { n: 3, data: 'Bob -> Carol: 1 ETH', prev: '' }
+    ];
+    let chain = JSON.parse(JSON.stringify(initialBlocks));
+
+    function simpleHash(text) {
+      let hash = 2166136261;
+      for (let i = 0; i < text.length; i += 1) {
+        hash ^= text.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+      }
+      return (hash >>> 0).toString(16).padStart(8, '0');
+    }
+
+    function blockHash(block) {
+      return simpleHash(`${block.n}|${block.data}|${block.prev}`);
+    }
+
+    function seedChain() {
+      chain[0].prev = '00000000';
+      chain[1].prev = blockHash(chain[0]);
+      chain[2].prev = blockHash(chain[1]);
+    }
+    seedChain();
+
+    function renderBlocks() {
+      chain[1].data = document.getElementById('block2Data').value;
+      const hashes = chain.map(blockHash);
+      const host = document.getElementById('blocks');
+      host.innerHTML = '';
+      chain.forEach((block, index) => {
+        const expectedPrev = index === 0 ? '00000000' : hashes[index - 1];
+        const ok = block.prev === expectedPrev;
+        const div = document.createElement('div');
+        div.className = `block ${ok ? 'valid' : 'broken'}`;
+        div.innerHTML = `
+          <h3>Block #${block.n}</h3>
+          <p><strong>data</strong><br><span class="mono">${block.data}</span></p>
+          <p><strong>previousHash</strong><br><span class="mono">${block.prev}</span></p>
+          <p><strong>hash</strong><br><span class="mono">${hashes[index]}</span></p>
+          <p class="status ${ok ? 'good' : 'bad'}">${ok ? '연결 정상' : '이전 해시 불일치'}</p>
+        `;
+        host.appendChild(div);
+      });
+    }
+
+    function recalcFromBlock2() {
+      chain[1].data = document.getElementById('block2Data').value;
+      chain[1].prev = blockHash(chain[0]);
+      chain[2].prev = blockHash(chain[1]);
+      renderBlocks();
+    }
+
+    function resetHashSim() {
+      chain = JSON.parse(JSON.stringify(initialBlocks));
+      seedChain();
+      document.getElementById('block2Data').value = chain[1].data;
+      renderBlocks();
+    }
+
+    const nodeTexts = ['정상 기록', '정상 기록', '정상 기록', '정상 기록', '정상 기록'];
+    function renderNodes(changedIndex = -1) {
+      const host = document.getElementById('nodes');
+      host.innerHTML = '';
+      nodeTexts.forEach((text, index) => {
+        const node = document.createElement('div');
+        node.className = `node ${index === changedIndex ? 'changed' : 'aligned'}`;
+        node.textContent = `Node ${index + 1}\n${text}`;
+        host.appendChild(node);
+      });
+    }
+
+    document.getElementById('block2Data').addEventListener('input', renderBlocks);
+    document.getElementById('recalcChain').addEventListener('click', recalcFromBlock2);
+    document.getElementById('resetHash').addEventListener('click', resetHashSim);
+    document.getElementById('changeCentral').addEventListener('click', () => {
+      document.getElementById('centralValue').textContent = 'Block A: 수정된 출석부';
+    });
+    document.getElementById('changeNode').addEventListener('click', () => {
+      nodeTexts[2] = '혼자 수정됨';
+      renderNodes(2);
+      document.getElementById('nodeVerdict').className = 'status bad';
+      document.getElementById('nodeVerdict').textContent = '불일치 탐지: Node 3은 같은 검증 규칙 결과와 다릅니다. 이것은 단순 과반수 투표가 아니라 규칙 위반 후보를 발견한 상태입니다.';
+    });
+    document.getElementById('resetLedger').addEventListener('click', () => {
+      for (let i = 0; i < nodeTexts.length; i += 1) nodeTexts[i] = '정상 기록';
+      document.getElementById('centralValue').textContent = 'Block A: 정상 출석부';
+      document.getElementById('nodeVerdict').className = 'status good';
+      document.getElementById('nodeVerdict').textContent = '5개 노드가 같은 기록과 같은 검증 결과를 보관 중';
+      renderNodes();
+    });
+
+    document.getElementById('readPrice').addEventListener('click', () => {
+      document.getElementById('priceView').textContent = 'BTC: 67,200 USD\nETH: 3,420 USD\n출처: 가격 API 예시 응답\n초심자 행동: 값이 이상하면 API 상태, 네트워크 연결, 호출 횟수 제한을 먼저 확인한다.\n해석: 화면 표시는 API 제공자의 최신 응답에 의존한다.';
+    });
+    document.getElementById('rateLimit').addEventListener('click', () => {
+      document.getElementById('priceView').textContent = 'HTTP 429 Too Many Requests\n초심자 행동: 새로고침을 반복하지 말고 잠시 기다리거나 캐시, 백오프, 다른 데이터 출처를 검토한다.\n해석: 호출 제한 또는 서비스 정책 문제다. 블록체인 원장 자체가 실패한 것이 아니다.';
+    });
+    document.getElementById('readBlock').addEventListener('click', () => {
+      document.getElementById('blockDataView').textContent = 'blockNumber: 5829104\ntxCount: 128\npreviousHash: 0x7a34...91ef\nhash: 0x8bd2...c01a\n초심자 행동: blockNumber로 시점, txCount로 포함 거래 수, previousHash로 이전 블록 연결 단서를 확인한다.\n해석: 블록 데이터는 이전 해시와 현재 해시로 순서 검증이 가능하지만, 정식 확정 여부는 네트워크 합의와 finality 규칙을 함께 봐야 한다.';
+    });
+    document.getElementById('resetData').addEventListener('click', () => {
+      document.getElementById('priceView').textContent = '대기 중: 먼저 "가격 데이터 읽기"를 누르고, 값의 출처가 API 서비스라는 점을 확인하세요.';
+      document.getElementById('blockDataView').textContent = '대기 중: "블록 데이터 읽기"를 누르고, previousHash가 무엇을 검증하게 해 주는지 확인하세요.';
+    });
+
+    renderBlocks();
+    renderNodes();
+  </script>
+</body>
+</html>

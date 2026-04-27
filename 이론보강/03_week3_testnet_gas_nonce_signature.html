@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Week 3 테스트넷, Gas, Nonce, Signature</title>
+  <style>
+    :root {
+      --ink: #17212b;
+      --muted: #5d6b7a;
+      --line: #d8dee6;
+      --panel: #ffffff;
+      --soft: #f5f8fb;
+      --brand: #0f6f87;
+      --good: #16805c;
+      --bad: #bd362f;
+      --warn: #a36500;
+      --shadow: 0 10px 24px rgba(23, 33, 43, .08);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, "Noto Sans KR", sans-serif; line-height: 1.65; color: var(--ink); background: #eef3f5; }
+    header { padding: 32px 20px 20px; background: linear-gradient(135deg, #ffffff 0%, #e4f6f8 100%); border-bottom: 1px solid var(--line); }
+    .wrap { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
+    h1 { margin: 0 0 12px; font-size: clamp(27px, 4vw, 42px); line-height: 1.18; letter-spacing: 0; }
+    h2 { margin: 0 0 14px; font-size: 24px; }
+    h3 { margin: 0 0 10px; font-size: 19px; }
+    p { margin: 0 0 12px; }
+    nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+    nav a, button {
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 9px 12px;
+      background: var(--panel);
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+    main { padding: 22px 0 42px; }
+    section { margin: 18px 0; padding: 22px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+    .card { padding: 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); }
+    .guide { margin-top: 12px; padding: 14px; border-left: 5px solid var(--brand); border-radius: 8px; background: #eaf8fb; }
+    .guide strong { display: block; margin-bottom: 4px; }
+    .label { display: block; margin: 10px 0 5px; font-weight: 700; color: var(--muted); }
+    input, select {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 9px 10px;
+      font: inherit;
+      background: #fff;
+      color: var(--ink);
+    }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+    .timeline { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+    .step {
+      min-height: 82px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      font-weight: 700;
+      transition: background .2s ease, border-color .2s ease, transform .2s ease;
+    }
+    .step.good { background: #eefaf4; border-color: #9ad4bc; }
+    .step.bad { background: #fff3f1; border-color: #e0aaa4; }
+    .step.warn { background: #fff8e8; border-color: #e2c27a; }
+    .result {
+      min-height: 230px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #101820;
+      color: #eef7ff;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .status { font-weight: 800; }
+    .goodText { color: var(--good); }
+    .badText { color: var(--bad); }
+    .warnText { color: var(--warn); }
+    .mono, code { font-family: Consolas, "Courier New", monospace; overflow-wrap: anywhere; word-break: break-word; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid var(--line); padding: 10px; vertical-align: top; }
+    th { background: #eef3f8; text-align: left; }
+    @media (max-width: 900px) {
+      .grid, .two, .timeline { grid-template-columns: 1fr; }
+      section { padding: 16px; }
+      nav a, button { width: 100%; text-align: center; }
+      .controls { display: grid; grid-template-columns: 1fr; }
+    }
+    @media (max-width: 420px) {
+      .wrap { width: min(100% - 20px, 1120px); }
+      header { padding-inline: 10px; }
+      section { padding: 12px; }
+      .card { padding: 12px; }
+      nav a, button { padding-inline: 8px; overflow-wrap: anywhere; }
+      table { display: block; overflow-x: auto; }
+      th, td { min-width: 120px; padding: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Week 3. 테스트넷, Gas, Nonce, Signature</h1>
+      <p>Faucet 수령 문제와 트랜잭션 실행 문제를 분리하고, 잔고, gas, nonce, pending, replacement, dropped, signature 조건으로 성공과 실패를 판별한다.</p>
+      <nav aria-label="주차 내비게이션">
+        <a href="#concept">핵심 개념</a>
+        <a href="#judge">판별 시뮬레이터</a>
+        <a href="#explorer">Explorer 필드</a>
+        <a href="#practice">오류 분류표</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="concept">
+      <h2>핵심 개념 요약</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Faucet</h3>
+          <p>테스트넷에서 gas 비용으로 쓸 테스트 ETH를 받는 준비 단계다. Faucet 실패는 아직 트랜잭션 실행 실패가 아니라, 실행 전에 필요한 잔고 확보 실패다.</p>
+        </div>
+        <div class="card">
+          <h3>Nonce</h3>
+          <p>계정별 트랜잭션 순번이다. 같은 계정의 nonce는 순서대로 처리되며, 중간 번호가 비면 뒤 번호 트랜잭션은 pending 상태로 기다린다.</p>
+        </div>
+        <div class="card">
+          <h3>Gas와 Signature</h3>
+          <p>Gas는 실행 예산이고 signature는 개인키 소유자가 요청을 승인했다는 증거다. 개인키 자체는 전송하지 않고, 서명값과 공개 정보로 보낸 사람을 검증한다.</p>
+        </div>
+      </div>
+      <div class="guide">
+        <strong>EIP-1559 초심자 보충</strong>
+        <p><code>base fee</code>는 네트워크가 요구하는 최소 기본요금이고, <code>priority fee</code>는 검증자에게 주는 팁이다. <code>max fee</code>는 사용자가 이 트랜잭션에 허용한 gas당 최대 지불 한도다. 실제 적용 단가는 보통 <code>min(max fee, base fee + priority fee)</code>로 이해하면 된다. 단, 실제 tip은 <code>max fee - base fee</code>를 넘을 수 없어 priority fee가 잘릴 수 있다.</p>
+        <p>중요한 점은 잔고 판정이다. 지갑은 보통 <code>value + gas limit * max fee</code>를 기준으로 보수적으로 잔고가 충분한지 본다. 실제 사용액은 더 적을 수 있지만, 전송 전에 최대 가능 비용을 감당할 수 있어야 한다.</p>
+      </div>
+      <div class="guide">
+        <strong>수업 중 확인 질문</strong>
+        <p>지금 문제는 Faucet 수령 전 문제인가, RPC가 거절한 문제인가, mempool에서 pending 중인 문제인가, 아니면 블록에 포함된 뒤 컨트랙트 실행이 실패한 문제인가? 이 네 가지를 먼저 나누면 대부분의 오류 메시지가 정리된다.</p>
+      </div>
+    </section>
+
+    <section id="judge">
+      <h2>시뮬레이터 1: 트랜잭션 성공/실패 판별기</h2>
+      <p><strong>수업 목표:</strong> 학생들이 <code>insufficient funds</code>, <code>nonce too low</code>, <code>replacement transaction underpriced</code>, <code>dropped/replaced</code>, <code>execution reverted</code>를 한 덩어리 오류로 외우지 않고, 실패 위치와 다음 확인 위치를 분리하게 한다.</p>
+      <div class="guide">
+        <strong>실제 체인 호출 없음</strong>
+        <p>아래 도구는 입력값만으로 판별하는 교육용 시뮬레이터다. 지갑 연결, RPC 호출, Faucet 호출, 실제 서명 요청을 수행하지 않는다.</p>
+      </div>
+      <div class="two">
+        <div class="card">
+          <label class="label" for="network">네트워크</label>
+          <select id="network">
+            <option value="sepolia">Sepolia L1</option>
+            <option value="base">Base Sepolia L2</option>
+            <option value="giwa">GIWA Sepolia L2</option>
+            <option value="wrong">다른 네트워크</option>
+          </select>
+
+          <label class="label" for="faucet">Faucet 수령 상태</label>
+          <select id="faucet">
+            <option value="done">수령 완료</option>
+            <option value="none">미수령</option>
+            <option value="waiting">요청 중</option>
+            <option value="failed">제한/실패</option>
+          </select>
+
+          <label class="label" for="balance">지갑 잔고 ETH</label>
+          <input id="balance" type="number" min="0" step="0.0001" value="0.01">
+
+          <label class="label" for="amount">전송 금액 ETH</label>
+          <input id="amount" type="number" min="0" step="0.0001" value="0.001">
+
+          <label class="label" for="gasLimit">Gas limit</label>
+          <input id="gasLimit" type="number" min="0" step="1000" value="21000">
+
+          <label class="label" for="baseFee">현재 base fee (gwei)</label>
+          <input id="baseFee" type="number" min="0" step="0.1" value="12">
+
+          <label class="label" for="priorityFee">Priority fee / tip (gwei)</label>
+          <input id="priorityFee" type="number" min="0" step="0.1" value="1.5">
+
+          <label class="label" for="maxFee">Max fee (gwei)</label>
+          <input id="maxFee" type="number" min="0" step="0.1" value="20">
+        </div>
+
+        <div class="card">
+          <label class="label" for="confirmedNonce">확정 nonce</label>
+          <input id="confirmedNonce" type="number" min="0" step="1" value="5">
+
+          <label class="label" for="pendingNonce">pending 포함 다음 nonce</label>
+          <input id="pendingNonce" type="number" min="0" step="1" value="5">
+
+          <label class="label" for="txNonce">보낼 트랜잭션 nonce</label>
+          <input id="txNonce" type="number" min="0" step="1" value="5">
+
+          <label class="label" for="sameNonceState">같은 nonce의 기존 pending</label>
+          <select id="sameNonceState">
+            <option value="none">없음</option>
+            <option value="exists">낮은 fee 기존 tx 있음</option>
+            <option value="underpriced">fee bump 부족</option>
+            <option value="replaced">더 높은 fee tx가 이미 대체</option>
+            <option value="dropped">기존 tx가 dropped 됨</option>
+          </select>
+
+          <label class="label" for="signature">서명 상태</label>
+          <select id="signature">
+            <option value="ok">정상 서명</option>
+            <option value="wrongChain">다른 chainId 서명</option>
+            <option value="none">서명 없음/사용자 거절</option>
+          </select>
+
+          <label class="label" for="contractCall">호출 종류</label>
+          <select id="contractCall">
+            <option value="transfer">단순 ETH 전송</option>
+            <option value="token">ERC-20 전송</option>
+            <option value="staking">Staking 함수 호출</option>
+            <option value="requireFail">컨트랙트 호출: require 실패</option>
+          </select>
+
+          <div class="controls">
+            <button class="primary" id="judgeBtn">판별하기</button>
+            <button id="pendingExample">pending 예시</button>
+            <button id="replaceExample">replacement 예시</button>
+            <button id="dropExample">dropped 예시</button>
+            <button id="resetAll">초기화</button>
+          </div>
+        </div>
+      </div>
+      <div class="timeline" id="timeline"></div>
+      <div class="result" id="result" aria-live="polite">초기 상태: 판별하기를 누르면 원인 분류와 다음 확인 위치가 표시된다.</div>
+      <p><strong>실습 연결:</strong> <code>scripts/01-check-balance.js</code>로 잔고와 nonce를 보고, <code>scripts/02-send-eth.js</code>로 송금한 뒤, <code>scripts/03-track-tx.js</code>와 Explorer에서 receipt, gasUsed, nonce를 확인한다.</p>
+    </section>
+
+    <section id="explorer">
+      <h2>시뮬레이터 2: Explorer에서 확인할 필드</h2>
+      <p><strong>수업 목표:</strong> tx hash를 복사하는 데서 끝내지 않고, Explorer의 각 필드가 어떤 질문에 답하는지 익힌다.</p>
+      <div class="controls">
+        <button data-field="status">Status</button>
+        <button data-field="nonce">Nonce</button>
+        <button data-field="fee">EIP-1559 Fee</button>
+        <button data-field="gas">Gas Used</button>
+        <button data-field="sig">Signature</button>
+        <button id="resetExplorer">초기화</button>
+      </div>
+      <p id="fieldExplain" class="status">Explorer 필드를 선택하세요.</p>
+      <table>
+        <thead><tr><th>필드</th><th>확인 질문</th><th>다음 확인 위치</th></tr></thead>
+        <tbody>
+          <tr><td>Status</td><td>블록에 포함된 뒤 성공했는가, <code>execution reverted</code>인가?</td><td>Receipt, revert reason, 컨트랙트 require 조건</td></tr>
+          <tr><td>Nonce</td><td>이미 처리된 순번인가, pending 때문에 막힌 순번인가?</td><td>지갑 활동 기록, 같은 계정의 pending tx 목록</td></tr>
+          <tr><td>Base / Max / Priority Fee</td><td>base fee보다 max fee가 낮거나 tip이 너무 낮아 오래 pending 되는가?</td><td>Explorer fee 탭, 지갑 speed up/cancel 화면</td></tr>
+          <tr><td>Gas Used / Gas Limit</td><td>실제 실행량이 gas limit에 닿았는가, 단순 잔고 부족과 다른가?</td><td>Receipt gasUsed, 컨트랙트 함수 종류, 시뮬레이션 결과</td></tr>
+          <tr><td>Signature</td><td>개인키가 아니라 서명값으로 보낸 사람을 검증한다는 점을 이해했는가?</td><td>chainId, from 주소, raw transaction decoder</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="practice">
+      <h2>오류 원인 빠른 분류</h2>
+      <table>
+        <thead><tr><th>메시지/상태</th><th>우선 해석</th><th>다음 확인 위치</th></tr></thead>
+        <tbody>
+          <tr><td>Faucet captcha/limit</td><td>Faucet 수령 제한</td><td>Faucet 화면 메시지, 24시간 제한, 주소 형식, 네트워크 선택</td></tr>
+          <tr><td>잔고 0</td><td>Faucet 미수령 또는 다른 네트워크</td><td>Explorer 주소 잔고, MetaMask 네트워크, Faucet tx hash</td></tr>
+          <tr><td><code>insufficient funds</code></td><td><code>value + gas limit * max fee</code>를 감당할 잔고 부족</td><td>전송 금액, max fee, gas limit, 해당 네트워크 Faucet</td></tr>
+          <tr><td><code>max fee per gas less than block base fee</code></td><td>EIP-1559 fee cap이 현재 base fee보다 낮음</td><td>Explorer base fee, 지갑 gas 설정의 max fee</td></tr>
+          <tr><td><code>nonce too low</code></td><td>이미 처리된 nonce 재사용</td><td>확정 nonce, 지갑 활동 기록, 같은 계정의 최근 tx</td></tr>
+          <tr><td>오래 pending</td><td>빈 nonce 또는 낮은 max/priority fee</td><td>pending nonce 목록, 같은 계정의 앞 nonce tx, fee bump 가능 여부</td></tr>
+          <tr><td><code>replacement transaction underpriced</code></td><td>같은 nonce로 대체하려 했지만 fee bump가 부족함</td><td>기존 pending tx fee, 새 tx max/priority fee, 지갑 speed up 기준</td></tr>
+          <tr><td>dropped/replaced</td><td>같은 nonce의 더 높은 fee tx가 기존 tx를 대체했거나 mempool에서 사라짐</td><td>Explorer dropped/replaced 표시, 지갑 활동 기록, 최종 receipt의 nonce</td></tr>
+          <tr><td>사용자 서명 거절</td><td>브로드캐스트 전 단계에서 중단</td><td>지갑 팝업, 앱 콘솔, 서명 요청 chainId</td></tr>
+          <tr><td><code>execution reverted</code></td><td>블록 포함 후 컨트랙트 조건 실패</td><td>require, 입력값, allowance, lock, 권한, revert reason</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    const steps = ['Faucet', '잔고', 'nonce', 'gas', 'signature', 'RPC', 'receipt'];
+
+    function value(id) {
+      return document.getElementById(id).value;
+    }
+
+    function num(id) {
+      return Number(value(id));
+    }
+
+    function ethFromGas(gasLimit, feeGwei) {
+      return gasLimit * feeGwei / 1_000_000_000;
+    }
+
+    function minGasForCall() {
+      const call = value('contractCall');
+      if (call === 'transfer') return 21000;
+      if (call === 'token') return 65000;
+      return 120000;
+    }
+
+    function renderTimeline(level, stopAt) {
+      const host = document.getElementById('timeline');
+      host.innerHTML = '';
+      steps.forEach((name, index) => {
+        const div = document.createElement('div');
+        let cls = 'step';
+        if (index < stopAt) cls += ' good';
+        if (index === stopAt) cls += ` ${level}`;
+        div.className = cls;
+        div.textContent = name;
+        host.appendChild(div);
+      });
+    }
+
+    function explain(title, reason, nextCheck, note) {
+      const lines = [
+        `분류: ${title}`,
+        `이유: ${reason}`,
+        `다음 확인 위치: ${nextCheck}`
+      ];
+      if (note) lines.push(`보충: ${note}`);
+      return lines.join('\n');
+    }
+
+    function nonceEvidence() {
+      return 'getTransactionCount(address, "latest")로 confirmed nonce, getTransactionCount(address, "pending")로 pending 포함 다음 nonce를 따로 본다. Explorer pending tx 목록도 함께 확인한다.';
+    }
+
+    function receiptEvidence() {
+      return '블록 포함 뒤에는 receipt의 gasUsed/effectiveGasPrice를 보고, 서명 문제는 recovered address와 chainId로 확인한다.';
+    }
+
+    function judge() {
+      const gasLimit = num('gasLimit');
+      const baseFee = num('baseFee');
+      const priorityFee = num('priorityFee');
+      const maxFee = num('maxFee');
+      const maxGasCost = ethFromGas(gasLimit, maxFee);
+      const effectiveFee = Math.min(maxFee, baseFee + priorityFee);
+      const effectiveGasCost = ethFromGas(gasLimit, effectiveFee);
+      const totalNeed = num('amount') + maxGasCost;
+      const confirmedNonce = num('confirmedNonce');
+      const pendingNonce = num('pendingNonce');
+      const txNonce = num('txNonce');
+      const sameNonceState = value('sameNonceState');
+      let message = '';
+      let level = 'good';
+      let stopAt = 6;
+
+      if (value('faucet') !== 'done' && num('balance') === 0) {
+        level = 'bad';
+        stopAt = 0;
+        message = explain(
+          'Faucet 수령 전 문제',
+          '잔고가 0이고 Faucet 수령이 끝나지 않았다.',
+          'Faucet 화면의 제한/대기 메시지, 입력 주소, 선택 네트워크, Faucet tx hash',
+          '이 단계는 아직 트랜잭션 실행 실패가 아니다.'
+        );
+      } else if (value('network') === 'wrong') {
+        level = 'bad';
+        stopAt = 0;
+        message = explain(
+          '네트워크/Explorer 불일치',
+          '지갑이 보는 네트워크와 Faucet 또는 Explorer가 보는 네트워크가 다르다.',
+          'MetaMask 네트워크, chainId, 해당 네트워크 Explorer 주소 페이지',
+          'Sepolia ETH와 L2 테스트 ETH는 서로 다른 잔고로 보인다.'
+        );
+      } else if (value('signature') === 'none') {
+        level = 'bad';
+        stopAt = 4;
+        message = explain(
+          '서명 전 중단',
+          '사용자가 지갑 서명을 거절했거나 앱이 서명 요청을 만들지 못했다.',
+          '지갑 팝업, 브라우저 콘솔, dApp의 send/sign 호출 지점',
+          'tx hash가 없다면 RPC나 Explorer 단계까지 가지 않은 것이다.'
+        );
+      } else if (value('signature') === 'wrongChain') {
+        level = 'bad';
+        stopAt = 4;
+        message = explain(
+          'signature/chainId 문제',
+          '현재 네트워크가 아닌 chainId로 서명한 raw transaction은 다른 체인에서 유효한 요청으로 해석될 수 있다.',
+          '지갑 chainId, dApp 네트워크 설정, raw transaction decoder의 recovered address/chainId',
+          'EIP-155는 chainId를 서명에 포함해 재전송 공격을 막는다.'
+        );
+      } else if (num('balance') < totalNeed) {
+        level = 'bad';
+        stopAt = 1;
+        message = explain(
+          'insufficient funds',
+          `필요 최대 잔고는 value ${num('amount')} ETH + gasLimit ${gasLimit} * maxFee ${maxFee} gwei = ${totalNeed.toFixed(8)} ETH다.`,
+          '전송 금액, gas limit, max fee, 해당 네트워크 Faucet 수령 여부',
+          `사전 잠금/잔고 검사는 gasLimit * maxFee를 기준으로 보고, 최종 과금은 대체로 gasUsed * effectiveGasPrice다. 현재 예상 effective fee는 min(maxFee ${maxFee}, baseFee ${baseFee} + priorityFee ${priorityFee}) = ${effectiveFee.toFixed(2)} gwei, gasLimit 기준 예상액은 약 ${effectiveGasCost.toFixed(8)} ETH다.`
+        );
+      } else if (sameNonceState === 'underpriced') {
+        level = 'bad';
+        stopAt = 5;
+        message = explain(
+          'replacement transaction underpriced',
+          '같은 nonce로 대체하려 했지만 새 max fee 또는 priority fee가 충분히 높지 않다.',
+          '기존 pending tx의 fee, 새 tx의 fee, 지갑 speed up 기준',
+          '클라이언트마다 기준은 다르지만 보통 기존 fee보다 의미 있게 올려야 replacement로 받아준다.'
+        );
+      } else if (sameNonceState === 'exists') {
+        level = 'warn';
+        stopAt = 5;
+        message = explain(
+          'replacement 시도 가능',
+          '같은 nonce의 기존 pending tx가 있고, 더 높은 fee로 대체할 수 있는 상황이다.',
+          '지갑 speed up/cancel, 기존 tx와 새 tx의 max fee/priority fee 비교',
+          '대체가 성공하면 기존 tx는 dropped/replaced로 보이고 새 tx만 최종 receipt를 가진다.'
+        );
+      } else if (sameNonceState === 'replaced') {
+        level = 'warn';
+        stopAt = 6;
+        message = explain(
+          'dropped/replaced',
+          '같은 nonce의 더 높은 fee tx가 이미 채굴되어 기존 tx가 대체되었다.',
+          'Explorer의 replaced 링크, 최종 receipt의 tx hash와 nonce, 지갑 활동 기록',
+          '실패한 것이 아니라 같은 nonce 경쟁에서 다른 tx가 최종본이 된 경우다.'
+        );
+      } else if (sameNonceState === 'dropped') {
+        level = 'warn';
+        stopAt = 5;
+        message = explain(
+          'dropped',
+          '기존 pending tx가 mempool에서 사라졌지만 아직 대체 tx의 receipt를 찾지 못했다.',
+          '여러 Explorer의 pending 표시, 지갑 활동 기록, 같은 nonce로 새 tx 재전송 여부',
+          'dropped는 블록 실패 receipt가 아니라 mempool 관찰 상태다.'
+        );
+      } else if (txNonce < confirmedNonce) {
+        level = 'bad';
+        stopAt = 2;
+        message = explain(
+          'nonce too low',
+          `tx nonce ${txNonce}가 이미 확정된 다음 nonce ${confirmedNonce}보다 작다.`,
+          `Explorer의 계정 tx 목록, 지갑 활동 기록, ${nonceEvidence()}`,
+          '이미 채굴된 순번은 다시 사용할 수 없다.'
+        );
+      } else if (txNonce < pendingNonce) {
+        level = 'warn';
+        stopAt = 2;
+        message = explain(
+          '같은 nonce pending',
+          `tx nonce ${txNonce}가 pending 포함 다음 nonce ${pendingNonce}보다 작아 같은 nonce의 기존 pending tx가 있을 가능성이 높다.`,
+          `지갑의 speed up/cancel 화면, 같은 계정의 pending tx, 기존 tx의 max fee와 priority fee, ${nonceEvidence()}`,
+          '같은 nonce로 더 높은 fee를 내면 replacement가 될 수 있고, fee bump가 부족하면 RPC가 거절한다.'
+        );
+      } else if (txNonce > pendingNonce) {
+        level = 'warn';
+        stopAt = 2;
+        message = explain(
+          '빈 nonce 때문에 pending',
+          `tx nonce ${txNonce}보다 앞선 nonce ${pendingNonce}가 아직 비어 있다.`,
+          `같은 계정의 앞 nonce pending tx, 지갑 nonce 설정, Explorer 계정 tx 목록, ${nonceEvidence()}`,
+          '앞 순번이 처리되기 전까지 뒤 순번은 블록에 포함될 수 없다.'
+        );
+      } else if (maxFee < baseFee) {
+        level = 'bad';
+        stopAt = 3;
+        message = explain(
+          'max fee가 base fee보다 낮음',
+          `max fee ${maxFee} gwei가 현재 base fee ${baseFee} gwei보다 낮아 블록 포함 조건을 만족하지 못한다.`,
+          'Explorer의 현재 base fee, 지갑 gas 설정의 max fee',
+          'EIP-1559에서는 max fee가 base fee를 덮지 못하면 tip을 아무리 설정해도 포함되기 어렵다.'
+        );
+      } else if (priorityFee < 0.1) {
+        level = 'warn';
+        stopAt = 5;
+        message = explain(
+          '낮은 priority fee로 인한 장기 pending',
+          `priority fee ${priorityFee} gwei가 매우 낮아 검증자가 뒤로 미룰 수 있다.`,
+          'Explorer fee 추천값, 지갑 speed up, pending tx의 effective gas price',
+          '테스트넷도 혼잡하면 낮은 tip 트랜잭션이 오래 pending 될 수 있다.'
+        );
+      } else if (gasLimit < minGasForCall()) {
+        level = 'bad';
+        stopAt = 3;
+        message = explain(
+          'intrinsic gas too low 또는 out of gas',
+          `선택한 호출에는 대략 ${minGasForCall().toLocaleString()} gas 이상이 필요한데 gas limit이 ${gasLimit.toLocaleString()}이다.`,
+          '함수 종류, 지갑의 gas limit, receipt의 gasUsed',
+          '단순 ETH 전송은 보통 21,000 gas지만 ERC-20이나 staking 함수는 더 많은 실행 예산이 필요하다.'
+        );
+      } else if (value('contractCall') === 'requireFail') {
+        level = 'bad';
+        stopAt = 6;
+        message = explain(
+          'execution reverted',
+          '트랜잭션은 블록에 포함됐지만 컨트랙트 내부 require 조건을 통과하지 못했다.',
+          `revert reason, 함수 입력값, allowance, lock 상태, 권한 조건, ${receiptEvidence()}`,
+          '이 경우 gas 가격이나 Faucet 문제가 아니라 컨트랙트 로직 문제를 먼저 본다.'
+        );
+      } else {
+        message = explain(
+          '전송 가능',
+          `잔고, nonce, gas, signature 조건을 통과했다. 예상 effective fee는 ${effectiveFee.toFixed(2)} gwei다.`,
+          `RPC 제출 후 tx hash, Explorer receipt status, nonce, ${receiptEvidence()}`,
+          '실제 실습에서는 제출 뒤 receipt가 나올 때까지 pending과 replaced 여부를 계속 확인한다.'
+        );
+      }
+
+      renderTimeline(level, stopAt);
+      document.getElementById('result').textContent = message;
+    }
+
+    function resetAll() {
+      document.getElementById('network').value = 'sepolia';
+      document.getElementById('faucet').value = 'done';
+      document.getElementById('balance').value = '0.01';
+      document.getElementById('amount').value = '0.001';
+      document.getElementById('gasLimit').value = '21000';
+      document.getElementById('baseFee').value = '12';
+      document.getElementById('priorityFee').value = '1.5';
+      document.getElementById('maxFee').value = '20';
+      document.getElementById('confirmedNonce').value = '5';
+      document.getElementById('pendingNonce').value = '5';
+      document.getElementById('txNonce').value = '5';
+      document.getElementById('sameNonceState').value = 'none';
+      document.getElementById('signature').value = 'ok';
+      document.getElementById('contractCall').value = 'transfer';
+      renderTimeline('good', 6);
+      document.getElementById('result').textContent = '초기 상태: 판별하기를 누르면 원인 분류와 다음 확인 위치가 표시된다.';
+    }
+
+    document.getElementById('judgeBtn').addEventListener('click', judge);
+    document.getElementById('pendingExample').addEventListener('click', () => {
+      document.getElementById('confirmedNonce').value = '5';
+      document.getElementById('pendingNonce').value = '6';
+      document.getElementById('txNonce').value = '7';
+      document.getElementById('sameNonceState').value = 'none';
+      judge();
+    });
+    document.getElementById('replaceExample').addEventListener('click', () => {
+      document.getElementById('confirmedNonce').value = '5';
+      document.getElementById('pendingNonce').value = '6';
+      document.getElementById('txNonce').value = '5';
+      document.getElementById('sameNonceState').value = 'underpriced';
+      document.getElementById('maxFee').value = '20';
+      document.getElementById('priorityFee').value = '1.5';
+      judge();
+    });
+    document.getElementById('dropExample').addEventListener('click', () => {
+      document.getElementById('confirmedNonce').value = '6';
+      document.getElementById('pendingNonce').value = '6';
+      document.getElementById('txNonce').value = '5';
+      document.getElementById('sameNonceState').value = 'replaced';
+      judge();
+    });
+    document.getElementById('resetAll').addEventListener('click', resetAll);
+
+    const explanations = {
+      status: 'Status는 블록에 포함된 뒤 성공했는지 실패했는지 보여준다. 실패가 execution reverted라면 Faucet이나 gas 가격보다 컨트랙트 require 조건을 먼저 본다.',
+      nonce: 'Nonce는 계정별 순번이다. 확정 nonce보다 작으면 nonce too low, pending 포함 다음 nonce보다 크면 빈 nonce 때문에 뒤 트랜잭션이 기다린다.',
+      fee: 'EIP-1559에서는 base fee, priority fee, max fee를 나눠 본다. max fee가 base fee보다 낮으면 포함될 수 없고, priority fee가 낮으면 오래 pending 될 수 있다.',
+      gas: 'Gas Used는 실제 실행량이고 gas limit은 사용자가 허용한 실행 예산이다. gasUsed가 limit에 닿아 실패했다면 out of gas 가능성을 본다.',
+      sig: 'Signature는 개인키를 보내지 않고도 보낸 사람을 검증하는 증거다. chainId가 다르면 다른 네트워크용 서명으로 취급될 수 있다.'
+    };
+
+    document.querySelectorAll('[data-field]').forEach((button) => {
+      button.addEventListener('click', () => {
+        document.getElementById('fieldExplain').className = 'status goodText';
+        document.getElementById('fieldExplain').textContent = explanations[button.dataset.field];
+      });
+    });
+
+    document.getElementById('resetExplorer').addEventListener('click', () => {
+      document.getElementById('fieldExplain').className = 'status';
+      document.getElementById('fieldExplain').textContent = 'Explorer 필드를 선택하세요.';
+    });
+
+    resetAll();
+  </script>
+</body>
+</html>

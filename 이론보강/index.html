@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>블록체인 실습 이론보강 인덱스</title>
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --panel: #ffffff;
+      --ink: #17202f;
+      --muted: #5b667a;
+      --line: #dce2ee;
+      --blue: #2563eb;
+      --green: #047857;
+      --amber: #b45309;
+      --red: #b91c1c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.65;
+    }
+    header {
+      padding: 32px 20px 20px;
+      background: #101827;
+      color: #fff;
+    }
+    .wrap { max-width: 1120px; margin: 0 auto; }
+    h1 { margin: 0 0 10px; font-size: clamp(28px, 5vw, 44px); }
+    h2 { margin: 0 0 14px; font-size: 24px; }
+    p { margin: 0 0 14px; }
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+    nav a, button {
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 14px;
+      background: var(--panel);
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    nav a { color: #fff; background: #24324a; border-color: #354761; }
+    main { padding: 24px 20px 48px; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      background: #fff;
+    }
+    .card[data-focus="hidden"] { display: none; }
+    .tag {
+      display: inline-block;
+      margin-bottom: 8px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #3730a3;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .card a {
+      color: var(--blue);
+      font-weight: 800;
+    }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .step {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #f8fafc;
+      text-align: center;
+      min-height: 70px;
+      transition: transform .2s ease, background .2s ease;
+    }
+    .step.active { background: #dbeafe; border-color: var(--blue); transform: translateY(-3px); }
+    .status {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    @media (max-width: 640px) {
+      header { padding-top: 24px; }
+      .flow { grid-template-columns: 1fr; }
+      nav a, button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>블록체인 실습 이론보강</h1>
+      <p>MD 원본을 먼저 만들고, HTML은 시뮬레이터와 시각 효과를 더한 확장판으로 사용하는 학습 묶음입니다.</p>
+      <nav aria-label="주차별 이동">
+        <a href="01_week1_blockchain_basics.html">Week1</a>
+        <a href="02_week2_wallet_transaction.html">Week2</a>
+        <a href="03_week3_testnet_gas_nonce_signature.html">Week3</a>
+        <a href="04_week4_stablecoin_networks.html">Week4</a>
+        <a href="05_week5_solidity_remix_faucet.html">Week5</a>
+        <a href="06_week6_erc20_staking_errors.html">Week6</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="panel">
+      <h2>학습 흐름 시뮬레이터</h2>
+      <p>왜 해보는가: 학생들이 각 주차를 따로 외우지 않고, 기초 장부 개념에서 staking 오류 판별까지 이어지는 흐름을 먼저 잡게 하기 위한 시뮬레이션입니다.</p>
+      <div class="controls">
+        <button type="button" onclick="playFlow()">흐름 재생</button>
+        <button type="button" onclick="resetFlow()">초기화</button>
+      </div>
+      <div class="flow" aria-live="polite">
+        <div class="step" id="flow-0">장부와 해시</div>
+        <div class="step" id="flow-1">지갑과 서명</div>
+        <div class="step" id="flow-2">가스와 nonce</div>
+        <div class="step" id="flow-3">스테이블코인 네트워크</div>
+        <div class="step" id="flow-4">컨트랙트 상태</div>
+        <div class="step" id="flow-5">권한과 보상</div>
+      </div>
+      <div class="status" id="flowStatus">초기 상태입니다. 흐름 재생을 누르면 학습 순서가 강조됩니다.</div>
+      <p>실제 실습 연결: 이 순서는 CoinGecko 과제, MetaMask 연결, Sepolia 송금, Remix 배포, ERC20 staking DApp으로 이어집니다.</p>
+    </section>
+
+    <section class="panel">
+      <h2>자료 필터</h2>
+      <p>왜 해보는가: 기존 자료를 새로 다 만들지 않고, 새로 볼 자료와 재사용할 자료를 구분해서 학습 부담을 줄이기 위한 인터랙션입니다.</p>
+      <div class="controls">
+        <button type="button" onclick="filterCards('all')">전체 보기</button>
+        <button type="button" onclick="filterCards('new')">신규 보강</button>
+        <button type="button" onclick="filterCards('reuse')">기존 자료 활용</button>
+        <button type="button" onclick="filterCards('all')">필터 초기화</button>
+      </div>
+      <div class="grid" id="cards">
+        <article class="card" data-type="new">
+          <span class="tag">신규 보강</span>
+          <h3>Week1 블록체인 기초</h3>
+          <p>블록, 해시, 위변조 탐지를 API 과제와 연결합니다.</p>
+          <a href="01_week1_blockchain_basics.html">HTML 열기</a>
+        </article>
+        <article class="card" data-type="new">
+          <span class="tag">신규 보강</span>
+          <h3>Week2 지갑과 트랜잭션</h3>
+          <p>지갑, 주소, 서명, RPC, explorer 흐름을 정리합니다.</p>
+          <a href="02_week2_wallet_transaction.html">HTML 열기</a>
+        </article>
+        <article class="card" data-type="reuse">
+          <span class="tag">기존 자료 활용</span>
+          <h3>Week3 테스트넷</h3>
+          <p>Faucet 문제와 트랜잭션 실행 문제를 분리합니다.</p>
+          <a href="03_week3_testnet_gas_nonce_signature.html">HTML 열기</a>
+        </article>
+        <article class="card" data-type="reuse">
+          <span class="tag">기존 자료 활용</span>
+          <h3>Week4 스테이블코인 네트워크</h3>
+          <p>가스 토큰과 정산 UX를 비교합니다.</p>
+          <a href="04_week4_stablecoin_networks.html">HTML 열기</a>
+        </article>
+        <article class="card" data-type="reuse">
+          <span class="tag">기존 자료 활용</span>
+          <h3>Week5 Solidity/Remix</h3>
+          <p>require/revert와 상태 변경을 체험합니다.</p>
+          <a href="05_week5_solidity_remix_faucet.html">HTML 열기</a>
+        </article>
+        <article class="card" data-type="new">
+          <span class="tag">신규 보강</span>
+          <h3>Week6 ERC20/Staking</h3>
+          <p>approve, allowance, staking 오류 원인을 판별합니다.</p>
+          <a href="06_week6_erc20_staking_errors.html">HTML 열기</a>
+        </article>
+      </div>
+      <p>실제 실습 연결: 필터의 "신규 보강"은 학생들이 설문에서 특히 부족하다고 한 개념을 우선 보완합니다.</p>
+    </section>
+  </main>
+
+  <script>
+    let timer = null;
+    function resetFlow() {
+      if (timer) clearInterval(timer);
+      timer = null;
+      document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
+      document.getElementById('flowStatus').textContent = '초기 상태입니다. 흐름 재생을 누르면 학습 순서가 강조됩니다.';
+    }
+    function playFlow() {
+      resetFlow();
+      const labels = [
+        'Week1: 데이터가 바뀌면 해시가 바뀌고 체인 연결이 흔들립니다.',
+        'Week2: 지갑은 돈통이 아니라 트랜잭션에 서명하는 도구입니다.',
+        'Week3: gas와 nonce는 트랜잭션 실행 실패 원인을 좁히는 단서입니다.',
+        'Week4: 보내는 자산, gas token, 정산 위치를 분리해 네트워크 UX를 판단합니다.',
+        'Week5: 컨트랙트 상태와 require/revert 조건을 Remix에서 확인합니다.',
+        'Week6: approve 권한, staking 보상, claim/withdraw 실패 조건을 분리합니다.'
+      ];
+      let i = 0;
+      timer = setInterval(() => {
+        document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
+        document.getElementById(`flow-${i}`).classList.add('active');
+        document.getElementById('flowStatus').textContent = labels[i];
+        i += 1;
+        if (i >= labels.length) clearInterval(timer);
+      }, 700);
+    }
+    function filterCards(type) {
+      document.querySelectorAll('.card').forEach(card => {
+        card.dataset.focus = type === 'all' || card.dataset.type === type ? 'visible' : 'hidden';
+      });
+    }
+  </script>
+</body>
+</html>

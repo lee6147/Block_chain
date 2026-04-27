@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Week 2 지갑과 트랜잭션: 서명, RPC, 블록 포함, Explorer 확인</title>
+  <style>
+    :root {
+      --ink: #18222d;
+      --muted: #607080;
+      --line: #d8dee7;
+      --panel: #ffffff;
+      --soft: #f5f7fa;
+      --brand: #2457a6;
+      --good: #13795b;
+      --bad: #b83227;
+      --warn: #9a6200;
+      --path: #e8f0ff;
+      --shadow: 0 10px 24px rgba(24, 34, 45, .08);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, "Noto Sans KR", sans-serif; line-height: 1.65; color: var(--ink); background: #eef2f6; }
+    header { padding: 32px 20px 20px; background: linear-gradient(135deg, #ffffff 0%, #eaf0ff 100%); border-bottom: 1px solid var(--line); }
+    .wrap { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
+    h1 { margin: 0 0 12px; font-size: clamp(27px, 4vw, 42px); line-height: 1.18; letter-spacing: 0; }
+    h2 { margin: 0 0 14px; font-size: 24px; }
+    h3 { margin: 0 0 10px; font-size: 19px; }
+    p { margin: 0 0 12px; }
+    nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+    nav a, button {
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 9px 12px;
+      background: var(--panel);
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+    main { padding: 22px 0 42px; }
+    section { margin: 18px 0; padding: 22px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .card { padding: 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); }
+    .guide { margin-top: 12px; padding: 14px; border-left: 5px solid var(--brand); border-radius: 8px; background: #eef4ff; }
+    .guide strong { display: block; margin-bottom: 4px; }
+    .stage-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin: 14px 0; }
+    .stage { min-height: 104px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; transition: background .2s ease, transform .2s ease, border-color .2s ease; }
+    .stage.active { background: #eaf3ff; border-color: #93bae6; transform: translateY(-4px); }
+    .stage.done { background: #edf9f4; border-color: #9ad4bc; }
+    .stage small { display: block; margin-top: 6px; color: var(--muted); line-height: 1.45; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+    button:disabled { opacity: .48; cursor: not-allowed; }
+    .label { display: block; margin: 10px 0 5px; font-weight: 700; color: var(--muted); }
+    input, select {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 9px 10px;
+      font: inherit;
+      background: #fff;
+      color: var(--ink);
+    }
+    .mono, code { font-family: Consolas, "Courier New", monospace; overflow-wrap: anywhere; word-break: break-word; }
+    .log { min-height: 130px; padding: 12px; border-radius: 8px; border: 1px solid var(--line); background: #101820; color: #e8f1ff; white-space: pre-wrap; }
+    .lane { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+    .lane div { min-height: 86px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; text-align: center; font-weight: 700; transition: transform .2s ease, background .2s ease; }
+    .lane div.hot { background: var(--path); border-color: #8fb2ee; transform: translateY(-4px); }
+    .status { font-weight: 800; }
+    .good { color: var(--good); }
+    .bad { color: var(--bad); }
+    .warn { color: var(--warn); }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid var(--line); padding: 10px; vertical-align: top; }
+    th { background: #eef3f8; text-align: left; }
+    .check-panel { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 14px 0; }
+    .next-box { padding: 13px; border: 1px solid #b7c7df; border-radius: 8px; background: #f7fbff; }
+    .next-box strong { display: block; margin-bottom: 4px; }
+    .pill { display: inline-block; margin: 3px 5px 3px 0; padding: 4px 8px; border-radius: 999px; background: #e9eef7; color: #314055; font-size: 13px; font-weight: 800; }
+    .receipt-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 12px 0; }
+    .receipt-grid div { padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+    .choice-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .choice-grid label { display: flex; align-items: flex-start; gap: 8px; }
+    .choice-grid input[type="checkbox"] { width: auto; min-height: auto; margin-top: 6px; }
+    .safe-banner { margin-top: 12px; padding: 12px; border: 1px solid #f0c36a; border-radius: 8px; background: #fff8e8; color: #5d3b00; font-weight: 700; }
+    @media (max-width: 880px) {
+      .grid, .two, .stage-grid, .lane, .check-panel, .receipt-grid, .choice-grid { grid-template-columns: 1fr; }
+      section { padding: 16px; }
+      nav a, button { width: 100%; text-align: center; }
+      .controls { display: grid; grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Week 2. 지갑과 트랜잭션: 서명, RPC, 블록 포함, Explorer 확인</h1>
+      <p>지갑은 코인을 담는 통이 아니라 개인키로 서명하는 도구다. 트랜잭션은 작성, 서명, RPC 전송, 블록 포함, explorer 확인까지 이어져야 성공 여부를 판단할 수 있다.</p>
+      <nav aria-label="주차 내비게이션">
+        <a href="#concept">핵심 개념</a>
+        <a href="#life">트랜잭션 흐름</a>
+        <a href="#roles">지갑/RPC 역할</a>
+        <a href="#diagnose">오류 분리</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="concept">
+      <h2>정석 개념 요약</h2>
+      <div class="grid">
+        <div class="card"><h3>EOA와 주소</h3><p>EOA는 개인키가 제어하는 일반 지갑 계정이고, 주소는 공개 가능한 식별자다. 주소를 알아도 자산을 움직일 수는 없다.</p></div>
+        <div class="card"><h3>개인키와 서명</h3><p>개인키는 트랜잭션에 서명하는 비밀 값이다. 네트워크에는 개인키가 아니라 트랜잭션 데이터와 서명값이 전송된다.</p></div>
+        <div class="card"><h3>RPC와 Explorer</h3><p>RPC는 노드에 요청을 보내는 창구이고, Explorer는 블록체인에 기록된 거래 해시, 블록 번호, 상태, gas를 확인하는 조회 도구다.</p></div>
+      </div>
+      <div class="guide">
+        <strong>개념 보강: 비유 → 정석 정의 → 확인 질문</strong>
+        <p>지갑은 돈통이 아니라 도장 보관함, RPC는 접수 창구, Explorer는 공개 조회 화면이다. 확인 질문은 "지갑이 만든 서명과 RPC가 전달한 요청, Explorer가 보여주는 receipt는 각각 어느 단계인가?"이다.</p>
+      </div>
+      <table>
+        <thead><tr><th>구분</th><th>맡는 일</th><th>절대 섞으면 안 되는 지점</th></tr></thead>
+        <tbody>
+          <tr><td>Provider</td><td>체인 상태를 읽거나 RPC 요청을 보낼 연결 객체</td><td>Provider만 있다고 사용자의 자산을 움직일 수는 없다.</td></tr>
+          <tr><td>Signer / Wallet</td><td>개인키 또는 지갑 승인으로 트랜잭션에 서명하는 권한</td><td>Signer는 권한이다. 주소 조회용 Provider와 같은 말이 아니다.</td></tr>
+          <tr><td>RPC</td><td>서명된 트랜잭션을 노드에 접수하거나 블록/잔액을 조회하는 통신 창구</td><td>RPC는 지갑이 아니며 개인키를 보관하지 않는다.</td></tr>
+          <tr><td>Receipt</td><td>블록 포함 뒤 실행 결과, status, gasUsed, blockNumber를 담은 기록</td><td>tx hash가 생긴 것과 receipt status가 성공인 것은 다르다.</td></tr>
+        </tbody>
+      </table>
+      <div class="safe-banner">이 페이지의 모든 해시, 블록 번호, receipt는 수업용 가짜 값이다. 실제 MetaMask, RPC, 체인 호출을 실행하지 않는다.</div>
+    </section>
+
+    <section id="life">
+      <h2>시뮬레이터 1: 트랜잭션 라이프사이클</h2>
+      <p><strong>왜 해보는가:</strong> 해시가 생겼다는 사실만으로 성공을 단정하면 안 된다. 서명된 요청이 RPC를 지나 멤풀에 들어가고, 블록에 포함된 뒤 receipt status까지 확인해야 한다.</p>
+      <div class="guide"><strong>예측 → 실행 → 상태 변화 → 해석</strong><p>버튼을 누르기 전 다음 단계가 무엇인지 먼저 말한다. 이 시뮬레이터는 앞 단계가 없으면 뒤 단계가 막히도록 되어 있다. 실행 후 stage 카드와 로그가 바뀌면, 그 상태가 "작성", "서명", "제출", "포함", "receipt 확인" 중 어디인지 해석한다.</p></div>
+      <div class="check-panel" aria-live="polite">
+        <div class="next-box">
+          <strong>현재 전제조건</strong>
+          <p id="preReq">아직 작성된 트랜잭션이 없다. 받는 주소, 금액, chainId를 먼저 정한다.</p>
+        </div>
+        <div class="next-box">
+          <strong>다음 확인 위치</strong>
+          <p id="nextCheck">입력값과 네트워크(chainId)가 맞는지 확인한 뒤 트랜잭션을 작성한다.</p>
+        </div>
+      </div>
+      <div class="two">
+        <div class="card">
+          <label class="label" for="toAddress">받는 주소 예시</label>
+          <input id="toAddress" value="0xB0B0000000000000000000000000000000000002">
+          <label class="label" for="amount">전송 금액 예시</label>
+          <input id="amount" value="0.001 ETH">
+          <div class="controls">
+            <button id="makeTx">트랜잭션 작성</button>
+            <button id="signTx">서명</button>
+            <button id="sendRpc">RPC 전송</button>
+            <button id="mempoolTx">멤풀 대기 확인</button>
+            <button id="mineTx">블록 포함</button>
+            <button id="exploreTx">Receipt / Explorer 확인</button>
+            <button class="primary" id="resetLife">초기화</button>
+          </div>
+        </div>
+        <div>
+          <div class="log" id="txLog" aria-live="polite">대기 중: 트랜잭션을 작성해 보세요.</div>
+        </div>
+      </div>
+      <div class="stage-grid" id="stages"></div>
+      <div class="receipt-grid" aria-label="트랜잭션 확인 요약">
+        <div><strong>tx hash</strong><p class="mono" id="receiptHash">-</p></div>
+        <div><strong>blockNumber</strong><p class="mono" id="receiptBlock">-</p></div>
+        <div><strong>receipt status</strong><p id="receiptStatus">대기</p></div>
+        <div><strong>성공 판정</strong><p id="receiptVerdict">아직 판정하지 않는다.</p></div>
+      </div>
+      <p><strong>실제 실습 연결:</strong> Week2 앱의 지갑 연결 버튼, Sepolia 전환, `/api/send-eth`, `/api/tx`, Etherscan 링크가 이 단계들에 해당한다. MetaMask 활동 탭만 보지 말고 Explorer receipt까지 확인한다.</p>
+    </section>
+
+    <section id="roles">
+      <h2>시뮬레이터 2: 지갑, Provider, RPC 역할 구분</h2>
+      <p><strong>왜 해보는가:</strong> 읽기 연결과 서명 권한을 섞으면 개인키를 잘못 다루거나 RPC를 지갑으로 오해하게 된다. 각 버튼은 같은 앱 안에서도 전혀 다른 경로를 강조한다.</p>
+      <div class="guide"><strong>예측 → 실행 → 상태 변화 → 해석</strong><p>잔액 조회는 서명이 필요 없고, MetaMask 연결은 사용자 승인과 Signer가 필요하다고 예측한다. 강조된 경로가 예상과 다르면 Provider와 Signer 역할을 다시 분리한다.</p></div>
+      <div class="lane" id="roleLane">
+        <div data-role="browser">브라우저 UI<br><span class="mono">index.html</span></div>
+        <div data-role="wallet">Signer / Wallet<br>MetaMask 또는 서버</div>
+        <div data-role="provider">Provider<br><span class="mono">Browser/JsonRpc</span></div>
+        <div data-role="rpc">RPC 노드<br><span class="mono">eth_*</span></div>
+        <div data-role="network">Sepolia<br>체인 상태</div>
+        <div data-role="explorer">Explorer<br>Receipt</div>
+      </div>
+      <div class="controls">
+        <button id="balancePath">잔액 조회 경로</button>
+        <button id="metamaskPath">MetaMask 연결 경로</button>
+        <button id="serverPath">서버 Wallet 전송 경로</button>
+        <button id="receiptPath">Receipt 조회 경로</button>
+        <button id="keyRisk">개인키 노출 경고</button>
+        <button class="primary" id="resetRoles">초기화</button>
+      </div>
+      <p id="roleExplain" class="status">경로를 선택하면 Provider, Signer, RPC의 역할이 강조된다.</p>
+      <table>
+        <thead><tr><th>학생이 자주 하는 말</th><th>교정 문장</th><th>다음 확인 위치</th></tr></thead>
+        <tbody>
+          <tr><td>"RPC에 지갑을 연결했다"</td><td>RPC는 노드 통신 창구이고, 지갑 연결은 Signer 권한 요청이다.</td><td>코드에서 `Provider`와 `Signer` 변수가 분리되어 있는지 본다.</td></tr>
+          <tr><td>"Provider가 있으니 송금된다"</td><td>Provider는 읽기/전송 통로이고, 송금 승인에는 Signer 서명이 필요하다.</td><td>MetaMask 승인 팝업 또는 서버 Wallet 서명 위치를 본다.</td></tr>
+          <tr><td>"해시가 나왔으니 성공했다"</td><td>해시는 식별자다. 성공은 receipt의 `status: 1`과 blockNumber까지 본다.</td><td>Explorer의 Status, Block, Gas Used 영역을 본다.</td></tr>
+        </tbody>
+      </table>
+      <p><strong>실제 실습 연결:</strong> `BrowserProvider`는 브라우저의 MetaMask 연결을 감싸고, `JsonRpcProvider`는 서버가 Infura 같은 RPC로 읽는 통로다. `Wallet` 또는 `Signer`는 서명 권한이 있는 객체다.</p>
+    </section>
+
+    <section id="diagnose">
+      <h2>Faucet 문제와 트랜잭션 문제 분리</h2>
+      <p><strong>왜 해보는가:</strong> 오류를 “도구 고장”으로 묶지 않고 지갑, 잔고, 네트워크, RPC, 블록 포함, explorer 중 어느 단계 문제인지 좁히기 위해서다.</p>
+      <div class="guide"><strong>예측 → 실행 → 상태 변화 → 해석</strong><p>체크박스를 바꾸기 전 "다음에 볼 화면"을 예측한다. 결과 문장은 Faucet 준비 문제, 네트워크 문제, 제출 전 실패, receipt 확인 중 하나로 원인을 좁히는 해석 문장이다.</p></div>
+      <div class="choice-grid">
+        <label class="card"><input type="checkbox" id="hasEth" checked> 테스트 ETH 있음</label>
+        <label class="card"><input type="checkbox" id="rightNet" checked> MetaMask Sepolia 선택</label>
+        <label class="card"><input type="checkbox" id="addressOk" checked> 주소 형식 정상</label>
+        <label class="card"><input type="checkbox" id="pendingClear" checked> 같은 지갑의 pending 없음</label>
+        <label class="card"><input type="checkbox" id="rpcOk" checked> RPC 응답 정상</label>
+        <label class="card"><input type="checkbox" id="hasHash" checked> tx hash 있음</label>
+        <label class="card"><input type="checkbox" id="explorerNet" checked> Explorer도 Sepolia 선택</label>
+      </div>
+      <div class="controls">
+        <button id="diagnoseBtn">다음 확인 위치 판단</button>
+        <button id="resetDiag">초기화</button>
+      </div>
+      <p id="diagResult" class="status good">초기 상태: Explorer receipt status를 확인하면 된다.</p>
+      <table>
+        <thead><tr><th>증상</th><th>먼저 볼 곳</th><th>receipt까지 이어지는 판단</th></tr></thead>
+        <tbody>
+          <tr><td>Faucet에서 ETH가 안 옴</td><td>Faucet 페이지 메시지, 주소, 네트워크, rate limit</td><td>아직 트랜잭션 문제가 아니다. 잔액 준비 단계다.</td></tr>
+          <tr><td>서명 전에 막힘</td><td>MetaMask 네트워크, 주소 형식, 사용자 승인 여부</td><td>receipt가 생기기 전이므로 Explorer가 아니라 지갑 화면을 본다.</td></tr>
+          <tr><td>RPC 제출 후 pending</td><td>nonce, 같은 지갑의 pending, RPC 응답, gas 설정</td><td>tx hash는 있을 수 있지만 아직 blockNumber가 없을 수 있다.</td></tr>
+          <tr><td>Explorer에 없음</td><td>tx hash 생성 여부와 Mainnet/Sepolia explorer 선택</td><td>네트워크가 맞아야 receipt 조회가 가능하다.</td></tr>
+          <tr><td>블록 포함 후 실패</td><td>receipt status, gasUsed, revert 또는 잔액/nonce 원인</td><td>블록 포함은 성공했지만 실행 결과는 실패일 수 있다.</td></tr>
+        </tbody>
+      </table>
+      <p><strong>실제 실습 연결:</strong> Faucet 실패는 테스트 자금 준비 문제이고, 전송 실패는 서명된 요청의 검증/실행 문제다. 둘을 분리하면 Week3의 gas, nonce, pending 진단으로 자연스럽게 넘어간다.</p>
+    </section>
+  </main>
+
+  <script>
+    const stageNames = ['작성', '서명', 'RPC 접수', '멤풀 대기', '블록 포함', 'Receipt/Explorer'];
+    const stageInfo = [
+      {
+        pre: '받는 주소, 금액, chainId를 정해야 서명할 트랜잭션 객체가 생긴다.',
+        next: '입력값, chainId 11155111, from/to 주소를 확인한다.',
+        note: '아직 네트워크 제출 전'
+      },
+      {
+        pre: '작성된 트랜잭션 객체가 있어야 지갑 또는 Wallet이 서명할 수 있다.',
+        next: '서명 요청의 to, value, network가 예상과 같은지 본다.',
+        note: '개인키는 공개하지 않음'
+      },
+      {
+        pre: '서명값이 있어야 RPC 노드가 유효한 요청으로 접수할 수 있다.',
+        next: 'RPC 응답에서 tx hash가 생겼는지 확인한다.',
+        note: 'RPC는 지갑이 아님'
+      },
+      {
+        pre: 'RPC가 접수한 뒤에야 멤풀 pending 상태를 생각할 수 있다.',
+        next: 'pending이면 nonce, 잔액, gas, 같은 지갑의 이전 pending을 본다.',
+        note: '해시는 성공 판정이 아님'
+      },
+      {
+        pre: '멤풀에 들어간 트랜잭션만 검증자가 블록에 포함할 수 있다.',
+        next: 'blockNumber가 생겼는지, 아직 pending인지 구분한다.',
+        note: '블록 포함 뒤 receipt 생성'
+      },
+      {
+        pre: '블록에 포함된 뒤 receipt status와 gasUsed를 확인한다.',
+        next: 'Explorer에서 Status, Block, Gas Used, From/To를 확인한다.',
+        note: '성공은 receipt까지 확인'
+      }
+    ];
+    const lifeButtons = [
+      ['signTx', 0],
+      ['sendRpc', 1],
+      ['mempoolTx', 2],
+      ['mineTx', 3],
+      ['exploreTx', 4]
+    ];
+    let stage = -1;
+    const tx = { hash: '', block: '', status: '대기', verdict: '아직 판정하지 않는다.' };
+
+    function currentInfo() {
+      return stage >= 0 ? stageInfo[stage] : {
+        pre: '아직 작성된 트랜잭션이 없다. 받는 주소, 금액, chainId를 먼저 정한다.',
+        next: '입력값과 네트워크(chainId)가 맞는지 확인한 뒤 트랜잭션을 작성한다.',
+        note: '대기'
+      };
+    }
+
+    function updateLifeButtons() {
+      lifeButtons.forEach(([id, requiredStage]) => {
+        document.getElementById(id).disabled = stage < requiredStage;
+      });
+    }
+
+    function renderStages() {
+      const host = document.getElementById('stages');
+      host.innerHTML = '';
+      stageNames.forEach((name, index) => {
+        const div = document.createElement('div');
+        div.className = `stage ${index < stage ? 'done' : index === stage ? 'active' : ''}`;
+
+        const title = document.createElement('h3');
+        title.textContent = name;
+        const state = document.createElement('p');
+        state.textContent = index < stage ? '완료' : index === stage ? '현재 단계' : '대기';
+        const note = document.createElement('small');
+        note.textContent = stageInfo[index].note;
+
+        div.append(title, state, note);
+        host.appendChild(div);
+      });
+      updateLifeButtons();
+    }
+
+    function updateReceiptPanel() {
+      document.getElementById('receiptHash').textContent = tx.hash || '-';
+      document.getElementById('receiptBlock').textContent = tx.block || '-';
+      document.getElementById('receiptStatus').textContent = tx.status;
+      document.getElementById('receiptVerdict').textContent = tx.verdict;
+    }
+
+    function setLog(message) {
+      const info = currentInfo();
+      document.getElementById('preReq').textContent = info.pre;
+      document.getElementById('nextCheck').textContent = info.next;
+      document.getElementById('txLog').textContent = `${message}\n\nhash: ${tx.hash || '-'}\nblockNumber: ${tx.block || '-'}\nstatus: ${tx.status}\nverdict: ${tx.verdict}`;
+      updateReceiptPanel();
+      renderStages();
+    }
+
+    function go(next, message) {
+      stage = Math.max(stage, next);
+      setLog(message);
+    }
+
+    function requireStage(minStage, actionName) {
+      if (stage < minStage) {
+        tx.status = '전제조건 부족';
+        tx.verdict = '순서 오류다. 뒤 단계의 화면을 보지 말고 바로 앞 전제조건부터 확인한다.';
+        setLog(`${actionName} 단계로 갈 수 없습니다. 먼저 "${stageNames[minStage]}" 단계를 완료해야 합니다.`);
+        return false;
+      }
+      return true;
+    }
+
+    document.getElementById('makeTx').addEventListener('click', () => {
+      tx.hash = '';
+      tx.block = '';
+      tx.status = '작성됨';
+      tx.verdict = '아직 성공/실패 판정 전이다. 다음은 서명 요청 확인이다.';
+      go(0, `to=${document.getElementById('toAddress').value}\nvalue=${document.getElementById('amount').value}\nchainId=11155111\n\n트랜잭션 초안만 만든 상태다.`);
+    });
+    document.getElementById('signTx').addEventListener('click', () => {
+      if (!requireStage(0, '서명')) return;
+      tx.status = '서명됨';
+      tx.verdict = '서명은 승인 증거지만 아직 네트워크에 접수되지 않았다.';
+      go(1, '개인키를 공개하지 않고 서명값만 생성했다. MetaMask 확인 창에서 보는 값과 같은 성격이다.');
+    });
+    document.getElementById('sendRpc').addEventListener('click', () => {
+      if (!requireStage(1, 'RPC 전송')) return;
+      tx.hash = '0xsimulated7f3a9c21b4e8';
+      tx.status = 'RPC accepted';
+      tx.verdict = 'tx hash는 식별자다. 아직 receipt success가 아니다.';
+      go(2, '서명된 트랜잭션을 RPC 창구에 제출했다. 이 페이지는 실제 네트워크 호출을 하지 않는다.');
+    });
+    document.getElementById('mempoolTx').addEventListener('click', () => {
+      if (!requireStage(2, '멤풀 대기')) return;
+      tx.status = 'mempool pending';
+      tx.verdict = 'pending이면 Explorer에서 blockNumber가 비어 있을 수 있다. nonce, gas, 잔액을 다음에 본다.';
+      go(3, 'RPC가 전파했다고 가정한다. 검증자가 아직 블록에 넣지 않은 대기 상태다.');
+    });
+    document.getElementById('mineTx').addEventListener('click', () => {
+      if (!requireStage(3, '블록 포함')) return;
+      tx.block = '5829104';
+      tx.status = 'included';
+      tx.verdict = '블록에 포함됐지만 실행 성공 여부는 receipt status를 봐야 한다.';
+      go(4, '검증자가 블록에 포함했다고 가정한다. 이제 receipt status를 확인한다.');
+    });
+    document.getElementById('exploreTx').addEventListener('click', () => {
+      if (!requireStage(4, 'Receipt / Explorer 확인')) return;
+      tx.status = 'receipt status: 1 success';
+      tx.verdict = '성공 판정 가능: tx hash, blockNumber, receipt status를 모두 확인했다.';
+      go(5, 'Sepolia Explorer에서 tx hash, block, status, gas used를 확인하는 단계다.');
+    });
+    document.getElementById('resetLife').addEventListener('click', () => {
+      stage = -1;
+      tx.hash = '';
+      tx.block = '';
+      tx.status = '대기';
+      tx.verdict = '아직 판정하지 않는다.';
+      setLog('대기 중: 트랜잭션을 작성해 보세요.');
+    });
+
+    function highlightRoles(keys, text, type = '') {
+      document.querySelectorAll('#roleLane div').forEach((el) => {
+        el.classList.toggle('hot', keys.includes(el.dataset.role));
+      });
+      const explain = document.getElementById('roleExplain');
+      explain.className = `status ${type}`;
+      explain.textContent = text;
+    }
+    document.getElementById('balancePath').addEventListener('click', () => highlightRoles(['browser', 'provider', 'rpc', 'network'], '잔액 조회는 읽기 경로다. Provider가 RPC로 상태를 읽으며 Signer 서명은 필요하지 않다.', 'good'));
+    document.getElementById('metamaskPath').addEventListener('click', () => highlightRoles(['browser', 'wallet', 'provider'], 'MetaMask 연결은 계정 접근 권한 요청이다. BrowserProvider는 연결 통로이고 Signer는 사용자 승인 뒤에 얻는다.', 'warn'));
+    document.getElementById('serverPath').addEventListener('click', () => highlightRoles(['wallet', 'provider', 'rpc', 'network'], '서버 Wallet 전송은 서버 쪽 Signer가 서명한 뒤 JsonRpcProvider/RPC로 제출하는 경로다. 이 페이지에서는 실제 제출하지 않는다.', 'warn'));
+    document.getElementById('receiptPath').addEventListener('click', () => highlightRoles(['provider', 'rpc', 'network', 'explorer'], 'Receipt 조회는 서명이 아니라 조회다. tx hash로 RPC 또는 Explorer에서 status, blockNumber, gasUsed를 읽는다.', 'good'));
+    document.getElementById('keyRisk').addEventListener('click', () => highlightRoles(['wallet'], '개인키와 시드 구문은 공개 데이터가 아니다. Provider나 RPC 설정값과 같은 취급을 하면 안 된다.', 'bad'));
+    document.getElementById('resetRoles').addEventListener('click', () => highlightRoles([], '경로를 선택하면 Provider, Signer, RPC의 역할이 강조된다.', ''));
+
+    function setDiag(text, type) {
+      const result = document.getElementById('diagResult');
+      result.className = `status ${type}`;
+      result.textContent = text;
+    }
+
+    function diagnose() {
+      const hasEth = document.getElementById('hasEth').checked;
+      const rightNet = document.getElementById('rightNet').checked;
+      const addressOk = document.getElementById('addressOk').checked;
+      const pendingClear = document.getElementById('pendingClear').checked;
+      const rpcOk = document.getElementById('rpcOk').checked;
+      const hasHash = document.getElementById('hasHash').checked;
+      const explorerNet = document.getElementById('explorerNet').checked;
+
+      if (!hasEth) {
+        setDiag('다음 확인 위치: Faucet/잔액. 테스트 ETH 준비 문제이므로 트랜잭션 receipt를 찾기 전 단계다.', 'bad');
+      } else if (!rightNet) {
+        setDiag('다음 확인 위치: MetaMask 네트워크. Sepolia가 아니면 서명 요청과 Explorer 조회가 엇갈린다.', 'bad');
+      } else if (!addressOk) {
+        setDiag('다음 확인 위치: 받는 주소 입력칸. 주소 형식이 틀리면 서명 또는 제출 전에 막힌다.', 'bad');
+      } else if (!rpcOk) {
+        setDiag('다음 확인 위치: RPC/API 응답. 서명은 됐어도 RPC 접수가 실패하면 tx hash가 없을 수 있다.', 'warn');
+      } else if (!pendingClear) {
+        setDiag('다음 확인 위치: pending/nonce. 이전 pending 때문에 새 트랜잭션이 오래 대기할 수 있다.', 'warn');
+      } else if (!hasHash) {
+        setDiag('다음 확인 위치: 서명 거절, 서버 응답, RPC 제출 결과. tx hash가 없으면 Explorer receipt 단계가 아니다.', 'warn');
+      } else if (!explorerNet) {
+        setDiag('다음 확인 위치: Explorer 네트워크 선택. Mainnet이 아니라 Sepolia Explorer에서 같은 tx hash를 조회한다.', 'warn');
+      } else {
+        setDiag('다음 확인 위치: Explorer receipt. status, blockNumber, gasUsed를 읽고 성공/실패를 판정한다.', 'good');
+      }
+    }
+    document.getElementById('diagnoseBtn').addEventListener('click', diagnose);
+    document.getElementById('resetDiag').addEventListener('click', () => {
+      ['hasEth', 'rightNet', 'addressOk', 'pendingClear', 'rpcOk', 'hasHash', 'explorerNet'].forEach((id) => {
+        document.getElementById(id).checked = true;
+      });
+      diagnose();
+    });
+
+    setLog('대기 중: 트랜잭션을 작성해 보세요.');
+    diagnose();
+  </script>
+</body>
+</html>

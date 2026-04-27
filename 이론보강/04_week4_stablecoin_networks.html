@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Week4 스테이블코인 전용 네트워크</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --ink: #17212b;
+      --muted: #5b6674;
+      --line: #d9e1ea;
+      --panel: #ffffff;
+      --blue: #2563eb;
+      --green: #0f9f6e;
+      --amber: #b7791f;
+      --red: #c2410c;
+      --violet: #6d28d9;
+      --shadow: 0 14px 32px rgba(20, 31, 45, 0.10);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(135deg, rgba(37, 99, 235, 0.08), transparent 38%),
+        linear-gradient(315deg, rgba(15, 159, 110, 0.09), transparent 32%),
+        var(--bg);
+      font-family: "Segoe UI", "Malgun Gothic", system-ui, sans-serif;
+      line-height: 1.65;
+    }
+
+    header {
+      padding: 34px min(6vw, 72px) 22px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2rem, 5vw, 4rem);
+      letter-spacing: 0;
+      line-height: 1.05;
+    }
+
+    h2 { margin: 0 0 14px; font-size: clamp(1.45rem, 3vw, 2rem); line-height: 1.2; }
+    h3 { margin: 0 0 10px; font-size: 1.1rem; line-height: 1.3; }
+    p { margin: 0 0 12px; }
+    ul, ol { padding-left: 1.2rem; }
+    code { font-family: Consolas, "Cascadia Code", monospace; }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    nav a, .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 36px;
+      padding: 7px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #1f3b59;
+      background: #f8fafc;
+      text-decoration: none;
+      font-size: 0.92rem;
+      white-space: normal;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 28px));
+      margin: 24px auto 54px;
+      display: grid;
+      gap: 22px;
+    }
+
+    section {
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: clamp(18px, 3vw, 28px);
+      box-shadow: var(--shadow);
+    }
+
+    .lead {
+      max-width: 920px;
+      color: var(--muted);
+      font-size: 1.06rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: minmax(260px, 0.9fr) minmax(280px, 1.1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .concept, .scenario, .result, .callout {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 16px;
+    }
+
+    .guide {
+      margin-top: 12px;
+      padding: 14px;
+      border-left: 5px solid var(--blue);
+      border-radius: 8px;
+      background: #eef6ff;
+    }
+
+    .guide strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #0f3765;
+    }
+
+    .concept strong, .result strong { color: #0f3765; }
+    .muted { color: var(--muted); }
+    .small { font-size: 0.92rem; }
+
+    .simulator {
+      display: grid;
+      gap: 16px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-weight: 700;
+      font-size: 0.94rem;
+    }
+
+    select, input[type="range"], input[type="number"] {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid #bac6d4;
+      border-radius: 8px;
+      padding: 7px 10px;
+      color: var(--ink);
+      background: #ffffff;
+      font: inherit;
+    }
+
+    .checks {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .checks label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 9px 10px;
+      background: #f8fafc;
+      font-weight: 600;
+    }
+
+    button {
+      min-height: 42px;
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #ffffff;
+      background: #1f6feb;
+      font-weight: 800;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    button.secondary { background: #334155; }
+    button.ghost {
+      color: #1f3b59;
+      background: #e8eef6;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .network-stage {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      min-height: 190px;
+    }
+
+    .lane {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
+      padding: 12px;
+      min-height: 190px;
+    }
+
+    .lane.active {
+      border-color: var(--blue);
+      box-shadow: inset 0 0 0 2px rgba(37, 99, 235, 0.18);
+    }
+
+    .road {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 18px;
+      height: 46px;
+      border-radius: 8px;
+      background: repeating-linear-gradient(90deg, #d5dde8 0 18px, #eef2f7 18px 32px);
+    }
+
+    .coin {
+      position: absolute;
+      bottom: 27px;
+      left: 20px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #ffffff;
+      background: var(--green);
+      font-weight: 900;
+      animation: drive 2.8s linear infinite;
+    }
+
+    .lane:nth-child(2) .coin { animation-duration: 2s; background: var(--violet); }
+    .lane:nth-child(3) .coin { animation-duration: 1.55s; background: var(--amber); }
+
+    @keyframes drive {
+      0% { transform: translateX(0); opacity: 0.35; }
+      18% { opacity: 1; }
+      100% { transform: translateX(calc(100vw / 4)); opacity: 0.8; }
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #ffffff;
+      min-height: 92px;
+    }
+
+    .metric b {
+      display: block;
+      margin-bottom: 5px;
+      color: #0f3765;
+    }
+
+    .status {
+      border-left: 5px solid var(--blue);
+      background: #eff6ff;
+    }
+
+    .status.warn { border-left-color: var(--amber); background: #fffbeb; }
+    .status.fail { border-left-color: var(--red); background: #fff7ed; }
+    .status.good { border-left-color: var(--green); background: #ecfdf5; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow-wrap: anywhere;
+      font-size: 0.94rem;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th { background: #eef4fb; }
+
+    footer {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto 36px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 860px) {
+      .grid, .two, .controls, .network-stage, .metric-grid, .checks {
+        grid-template-columns: 1fr;
+      }
+      header { padding-top: 24px; }
+      section { padding: 18px; }
+      .coin { animation-name: driveMobile; }
+      @keyframes driveMobile {
+        0% { transform: translateX(0); opacity: 0.35; }
+        100% { transform: translateX(72vw); opacity: 0.8; }
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="pill">Week4 이론 보강</span>
+    <h1>스테이블코인 전용 네트워크</h1>
+    <p class="lead">스테이블코인은 가격 안정 자산이고, 스테이블코인 전용 네트워크는 그 자산을 더 쉽게 보내기 위한 비용, 속도, 정산, UX 인프라다. 페깅은 설계 목표이지 절대 보장이 아니며, 이 페이지는 기존 수업 자료 기준의 개념 학습용 정적 시뮬레이터라 실제 네트워크나 RPC를 호출하지 않는다.</p>
+    <nav aria-label="주차 내비게이션">
+      <a href="#goals">학습 목표</a>
+      <a href="#concept">정석 개념</a>
+      <a href="#simulator">네트워크 비교 시뮬레이터</a>
+      <a href="#layers">L1/L2/정산</a>
+      <a href="#practice">실습 연결</a>
+      <a href="#checklist">체크리스트</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="goals">
+      <h2>학습 목표</h2>
+      <div class="grid">
+        <div class="concept"><strong>자산과 인프라 분리</strong><br>USDC, USDT, BaseCoin, OKRW 같은 가격 안정 자산과 네트워크 실행 환경을 구분한다.</div>
+        <div class="concept"><strong>Gas UX 이해</strong><br>보내는 토큰과 수수료 토큰이 다르면 초심자에게 어떤 문제가 생기는지 설명한다.</div>
+        <div class="concept"><strong>L1/L2 판단</strong><br>수수료, 최종성, 보안 의존성, 브릿지 리스크를 결제 서비스 관점으로 연결한다.</div>
+      </div>
+    </section>
+
+    <section id="concept">
+      <h2>정석 개념 설명</h2>
+      <p>스테이블코인(stablecoin)은 달러, 원화, 유로 같은 기준 자산에 가치가 연동되도록 설계된 암호화폐다. 정의의 중심은 가격 안정성이다. 다만 페깅은 목표 구조이며 담보, 상환, 발행자, 시장 상황에 따라 리스크가 남는다.</p>
+      <p>스테이블코인 전용 네트워크는 가격 안정 자산을 더 잘 전송하기 위한 블록체인 인프라다. 핵심은 네트워크 수수료, 최종성, 결제 흐름, 기업 요구, 브릿지 구조가 스테이블코인 사용에 맞춰져 있다는 점이다.</p>
+      <div class="callout">
+        <strong>비유로 먼저 이해하기</strong>
+        <p>일반 네트워크에서 스테이블코인을 보내는 것은 달러 상품권을 보내는데 배송비는 가격이 매일 바뀌는 기름으로 내는 상황과 비슷하다. 전용 네트워크는 상품권 결제 전용 고속도로처럼 통행료 단위와 결제 흐름을 단순하게 만든다.</p>
+      </div>
+      <table>
+        <thead><tr><th>구분</th><th>일반 네트워크</th><th>스테이블코인 전용 네트워크</th></tr></thead>
+        <tbody>
+          <tr><td>보내는 자산</td><td>USDC, USDT 같은 스테이블코인</td><td>스테이블코인</td></tr>
+          <tr><td>수수료 자산</td><td>ETH 같은 별도 변동성 gas token일 수 있음</td><td>USDC, USDT, BaseCoin, OKRW 또는 후원 수수료 모델일 수 있음</td></tr>
+          <tr><td>사용자 느낌</td><td>돈은 달러인데 수수료용 ETH도 준비해야 함</td><td>보내는 돈과 수수료 단위가 가까워 예측이 쉬움</td></tr>
+          <tr><td>주의점</td><td>혼잡, gas 가격, native token 잔액</td><td>생태계, 보안, 규제, 운영 리스크</td></tr>
+        </tbody>
+      </table>
+      <div class="guide">
+        <strong>개념 보강: 비유 → 정석 정의 → 확인 질문</strong>
+        <p>스테이블코인은 가격 안정 자산이고, 전용 네트워크는 결제 차량 전용 도로 같은 실행 인프라다. 네트워크 이름을 외우기 전에 1) 보내는 자산, 2) gas token, 3) 최종 정산 위치를 확인한다. 확인 질문은 "보내는 자산과 gas token이 같은가, 최종 정산은 어디에서 확정되는가?"이다.</p>
+      </div>
+      <div class="callout">
+        <strong>리스크 안전난간</strong>
+        <p>스테이블 gas token은 비용 단위를 이해하기 쉽게 만들 수 있지만 무료나 무위험을 뜻하지 않는다. depeg, 발행자 신뢰, 동결/검열, 브릿지 보안, L2 정산 지연은 별도 질문으로 남는다.</p>
+      </div>
+    </section>
+
+    <section id="simulator">
+      <h2>네트워크 비교 시뮬레이터</h2>
+      <p><strong>왜 해보는가:</strong> 같은 10달러 또는 10,000원 송금이라도 gas token, 네트워크 혼잡도, 보유 잔고에 따라 성공/실패와 UX가 달라진다. 먼저 송금 자산, gas token, 네트워크 종류를 하나씩 바꿔 보며 어떤 준비물이 바뀌는지 확인한다.</p>
+      <div class="guide"><strong>예측 → 실행 → 상태 변화 → 해석</strong><p>실행 전에는 "송금 자산", "gas token", "혼잡도" 중 무엇이 실패 원인이 될지 예측한다. 실행 후 판정 카드와 수수료 지표를 보고, 전용 네트워크의 장점과 남는 리스크를 함께 해석한다.</p></div>
+      <div class="two simulator">
+        <div class="scenario">
+          <h3>송금 조건 입력</h3>
+          <div class="controls">
+            <label>송금 자산
+              <select id="asset">
+                <option>USDC</option>
+                <option>USDT</option>
+                <option>BaseCoin</option>
+                <option>OKRW</option>
+              </select>
+            </label>
+            <label>기준 통화
+              <select id="currency">
+                <option value="USD">USD 10</option>
+                <option value="KRW">KRW 10,000</option>
+              </select>
+            </label>
+            <label>네트워크 유형
+              <select id="network">
+                <option value="general">일반 이더리움형</option>
+                <option value="rollup">L2 rollup형</option>
+                <option value="dedicated">스테이블코인 전용 L1형</option>
+              </select>
+            </label>
+            <label>Gas token
+              <select id="gasToken">
+                <option>ETH</option>
+                <option>USDC</option>
+                <option>USDT</option>
+                <option>BaseCoin</option>
+                <option>OKRW</option>
+                <option>후원 수수료</option>
+              </select>
+            </label>
+            <label>ETH 가격 변동성: <span id="volText">보통</span>
+              <input id="volatility" type="range" min="0" max="2" value="1">
+            </label>
+            <label>네트워크 혼잡도: <span id="trafficText">보통</span>
+              <input id="traffic" type="range" min="0" max="2" value="1">
+            </label>
+            <label>구조 리스크
+              <select id="structuralRisk">
+                <option value="normal">보통: 기본 리스크만 확인</option>
+                <option value="issuer">발행자/상환 신뢰 낮음</option>
+                <option value="freeze">동결/검열 가능성 높음</option>
+                <option value="bridge">브릿지/래핑 자산 사용</option>
+                <option value="settlement">L2 출금/정산 지연</option>
+              </select>
+            </label>
+          </div>
+          <div class="checks" aria-label="보유 상태">
+            <label><input id="hasAsset" type="checkbox" checked> 송금 자산 있음</label>
+            <label><input id="hasGas" type="checkbox" checked> gas token 있음</label>
+            <label><input id="hasFaucet" type="checkbox" checked> Faucet 수령 완료</label>
+          </div>
+          <div class="button-row">
+            <button id="runSim">시뮬레이션 실행</button>
+            <button id="resetSim" class="secondary">초기화</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="network-stage" aria-label="네트워크 이동 애니메이션">
+            <div class="lane" data-lane="general">
+              <h3>일반 네트워크</h3>
+              <p class="small muted">범용 dApp과 결제가 같은 도로를 쓴다.</p>
+              <div class="road"></div><div class="coin">$</div>
+            </div>
+            <div class="lane" data-lane="rollup">
+              <h3>L2 Rollup</h3>
+              <p class="small muted">싸고 빠를 수 있지만 L1 정산과 브릿지를 봐야 한다.</p>
+              <div class="road"></div><div class="coin">L2</div>
+            </div>
+            <div class="lane" data-lane="dedicated">
+              <h3>전용 네트워크</h3>
+              <p class="small muted">결제와 송금 UX를 우선 설계한다.</p>
+              <div class="road"></div><div class="coin">₩</div>
+            </div>
+          </div>
+          <div id="result" class="result status">
+            <h3>판정 대기</h3>
+            <p>조건을 조정한 뒤 실행하면 준비물, 예상 수수료, 실패 가능 원인을 보여준다.</p>
+          </div>
+        </div>
+      </div>
+      <div class="metric-grid" id="metrics" aria-live="polite">
+        <div class="metric"><b>보낼 금액</b><span id="amountOut">USD 10</span></div>
+        <div class="metric"><b>필요 gas token</b><span id="gasOut">ETH</span></div>
+        <div class="metric"><b>예상 수수료</b><span id="feeOut">보통, 변동 가능</span></div>
+        <div class="metric"><b>주의점</b><span id="riskOut">조건을 실행해 보세요</span></div>
+        <div class="metric"><b>CTO 판단 순서</b><span id="decisionOut">자산, gas token, 정산 위치를 순서대로 확인</span></div>
+      </div>
+      <div class="callout">
+        <strong>리스크 안전난간</strong>
+        <p>스테이블코인의 페깅은 보장이 아니라 목표다. 전송 판단은 항상 1) 보내는 자산, 2) gas token, 3) 최종 settlement 위치, 4) depeg/발행자/동결/검열/브릿지 리스크 순서로 확인한다. L2는 화면상 빠른 성공과 L1 최종 정산이 다를 수 있으므로 finality를 한 단어로 뭉개지 않는다.</p>
+      </div>
+      <p><strong>실제 실습에서 어디에 해당하는가:</strong> Week3에서 테스트넷 ETH가 없으면 트랜잭션이 막혔던 경험, Week4의 `stablecoin_networks.html` 비교 화면, `stablenet_explorer.html`에서 gas token과 tx fee를 확인하는 흐름에 해당한다.</p>
+    </section>
+
+    <section id="layers">
+      <h2>L1, L2, Rollup, Settlement 비교</h2>
+      <p><strong>왜 해보는가:</strong> 수수료가 싸다는 말만으로 네트워크를 판단하면 최종 정산 위치, 보안 의존성, 출금 시간 같은 결제 서비스의 핵심 리스크를 놓친다.</p>
+      <div class="guide"><strong>예측 → 실행 → 상태 변화 → 해석</strong><p>비교 기준을 고르기 전 "수수료", "최종성", "보안 의존성" 중 무엇이 강조될지 예측한다. 결과 문장은 네트워크 이름 암기가 아니라 결제 서비스 판단 기준으로 해석한다.</p></div>
+      <div class="two">
+        <div class="scenario">
+          <h3>관점 선택</h3>
+          <div class="controls">
+            <label>비교 기준
+              <select id="lens">
+                <option value="fee">수수료 예측성</option>
+                <option value="finality">최종성</option>
+                <option value="security">보안 의존성</option>
+                <option value="business">기업 결제 도입</option>
+              </select>
+            </label>
+            <label>운영 목적
+              <select id="purpose">
+                <option value="payment">소액 결제</option>
+                <option value="remittance">송금</option>
+                <option value="defi">범용 dApp</option>
+              </select>
+            </label>
+          </div>
+          <div class="button-row">
+            <button id="compareLayers" class="ghost">관점 비교</button>
+            <button id="resetLayers" class="secondary">초기 상태</button>
+          </div>
+        </div>
+        <div id="layerResult" class="result status">
+          <h3>비교 결과</h3>
+          <p>L1은 자체 합의와 보안을 가진 기본 체인이고, L2는 L1 위에서 실행을 확장한다. Rollup은 여러 거래를 묶어 L1에 결과를 기록하며, settlement는 최종 정산 위치를 뜻한다.</p>
+        </div>
+      </div>
+      <p><strong>실제 실습에서 어디에 해당하는가:</strong> Explorer에서 block time, status, tx fee, from/to/value를 보는 이유가 여기에 있다. 네트워크 이름을 외우는 것보다 어느 층에서 비용과 확정성이 결정되는지 보는 훈련이다.</p>
+    </section>
+
+    <section id="practice">
+      <h2>수업 실습과 연결</h2>
+      <ol>
+        <li>Week3의 Faucet, gas, Explorer, tx hash 경험을 떠올린다.</li>
+        <li>USDC를 갖고 있어도 ETH gas가 없으면 전송이 막힐 수 있다는 점을 확인한다.</li>
+        <li>StableNet, Plasma, Stable, Arc, Tempo, Maroo 사례는 기존 수업 자료 기준으로 이해하고 최신 운영 상태로 단정하지 않는다.</li>
+        <li>전용 네트워크의 장점과 함께 생태계, 보안, 규제, 운영 리스크를 질문한다.</li>
+      </ol>
+    </section>
+
+    <section id="checklist">
+      <h2>체크리스트</h2>
+      <ul>
+        <li>스테이블코인을 가격 안정 자산으로 정의할 수 있다.</li>
+        <li>스테이블코인 전용 네트워크를 결제/송금 UX 최적화 인프라로 설명할 수 있다.</li>
+        <li>보내는 토큰과 gas token이 다를 수 있음을 설명할 수 있다.</li>
+        <li>L1과 L2를 보안 의존성, 정산, 수수료 관점에서 비교할 수 있다.</li>
+        <li>Faucet 토큰과 실제 가치가 있는 메인넷 토큰을 혼동하지 않는다.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>오프라인 정적 학습 페이지. 실제 지갑, RPC, chain 상태 조회 없음.</footer>
+
+  <script>
+    const labels = ['낮음', '보통', '높음'];
+    const stableGas = new Set(['USDC', 'USDT', 'BaseCoin', 'OKRW', '후원 수수료']);
+
+    const $ = (id) => document.getElementById(id);
+
+    function updateSliderText() {
+      $('volText').textContent = labels[Number($('volatility').value)];
+      $('trafficText').textContent = labels[Number($('traffic').value)];
+    }
+
+    function setLane(network) {
+      document.querySelectorAll('.lane').forEach((lane) => {
+        lane.classList.toggle('active', lane.dataset.lane === network);
+      });
+    }
+
+    function runSimulation() {
+      updateSliderText();
+      const asset = $('asset').value;
+      const currency = $('currency').value;
+      const network = $('network').value;
+      const gas = $('gasToken').value;
+      const volatility = Number($('volatility').value);
+      const traffic = Number($('traffic').value);
+      const structuralRisk = $('structuralRisk').value;
+      const hasAsset = $('hasAsset').checked;
+      const hasGas = $('hasGas').checked;
+      const hasFaucet = $('hasFaucet').checked;
+      const result = $('result');
+      const amountText = currency === 'USD' ? 'USD 10 상당' : 'KRW 10,000 상당';
+      const assetMatchesGas = asset === gas || gas === '후원 수수료';
+      const settlement = network === 'rollup'
+        ? 'L2 실행 성공과 L1 settlement를 분리 확인'
+        : network === 'dedicated'
+          ? '전용 L1의 자체 finality와 검증자/운영 구조 확인'
+          : 'L1 finality와 native gas 잔액 확인';
+      const gasStructure = assetMatchesGas ? '송금 자산과 gas token 일치 또는 후원 수수료' : `송금 자산 ${asset}와 gas token ${gas} 분리`;
+      const riskLabels = {
+        normal: '기본 리스크 점검',
+        issuer: '발행자/상환 리스크',
+        freeze: '동결/검열 리스크',
+        bridge: '브릿지/래핑 자산 리스크',
+        settlement: 'L2 출금/정산 지연 리스크'
+      };
+      let title = '실행 가능';
+      let css = 'result status good';
+      let risk = '준비물이 갖춰졌습니다.';
+      let fee = stableGas.has(gas) ? '단위 이해 쉬움' : '변동 가능';
+      let decision = `1) 자산 ${asset} 2) gas ${gas} 3) 정산 ${settlement} 4) 구조 ${gasStructure} / ${riskLabels[structuralRisk]}`;
+      const notes = [];
+
+      if (!hasAsset) {
+        title = '실패: 보낼 자산 부족';
+        css = 'result status fail';
+        risk = `${asset} 잔액이 없어 송금할 수 없습니다.`;
+      } else if (!hasFaucet) {
+        title = '실패: 실습용 Faucet 미수령';
+        css = 'result status fail';
+        risk = '테스트 실습에서는 Faucet 수령 상태를 먼저 확인해야 합니다.';
+      } else if (!hasGas && !assetMatchesGas) {
+        title = '실패: 수수료 토큰 부족';
+        css = 'result status fail';
+        risk = `${asset}는 있지만 gas token ${gas}가 없어 트랜잭션을 보낼 수 없습니다.`;
+      } else {
+        if (gas === 'ETH' && (volatility === 2 || traffic === 2)) {
+          title = '주의: 수수료 예측 어려움';
+          css = 'result status warn';
+          risk = 'ETH 가격 변동 또는 혼잡 때문에 사용자가 비용을 예측하기 어렵습니다.';
+          fee = traffic === 2 ? '높고 변동 가능' : '변동 가능';
+        }
+        if (network === 'dedicated') notes.push('전용 네트워크는 결제 UX를 단순화하지만 생태계, 보안, 규제, 운영 리스크를 함께 봐야 합니다.');
+        if (network === 'rollup') notes.push('L2는 저렴하고 빠를 수 있지만 L1 정산과 브릿지 의존성이 남습니다.');
+        if (stableGas.has(gas)) notes.push('스테이블 gas token은 수수료 단위를 이해하기 쉽게 만들지만 발행자, depeg, 동결, 브릿지, 정산 리스크는 별도로 봅니다.');
+        if (structuralRisk === 'issuer') notes.push('발행자와 상환 구조가 약하면 페깅 유지와 환매 가능성을 먼저 확인합니다.');
+        if (structuralRisk === 'freeze') notes.push('규제 준수형 토큰은 주소 동결이나 전송 제한 가능성을 UX와 별도로 봅니다.');
+        if (structuralRisk === 'bridge') notes.push('브릿지/래핑 자산은 원자산과 다른 보안 경계를 가지므로 브릿지 컨트랙트와 출금 경로를 확인합니다.');
+        if (structuralRisk === 'settlement') notes.push('L2 화면에서 성공해도 L1 settlement와 출금 완료까지 시간이 다를 수 있습니다.');
+      }
+
+      setLane(network);
+      $('amountOut').textContent = `${amountText} / 송금 자산 ${asset}`;
+      $('gasOut').textContent = gas;
+      $('feeOut').textContent = fee;
+      $('riskOut').textContent = risk;
+      $('decisionOut').textContent = decision;
+      result.className = css;
+      result.innerHTML = `<h3>${title}</h3><p>${risk}</p><p class="small muted">${notes.join(' ') || 'Explorer에서는 tx fee, status, from/to/value를 함께 확인하세요.'}</p>`;
+    }
+
+    function resetSimulation() {
+      $('asset').value = 'USDC';
+      $('currency').value = 'USD';
+      $('network').value = 'general';
+      $('gasToken').value = 'ETH';
+      $('structuralRisk').value = 'normal';
+      $('volatility').value = '1';
+      $('traffic').value = '1';
+      $('hasAsset').checked = true;
+      $('hasGas').checked = true;
+      $('hasFaucet').checked = true;
+      updateSliderText();
+      setLane('general');
+      $('amountOut').textContent = 'USD 10';
+      $('gasOut').textContent = 'ETH';
+      $('feeOut').textContent = '보통, 변동 가능';
+      $('riskOut').textContent = '조건을 실행해 보세요';
+      $('decisionOut').textContent = '자산, gas token, 정산 위치를 순서대로 확인';
+      $('result').className = 'result status';
+      $('result').innerHTML = '<h3>판정 대기</h3><p>조건을 조정한 뒤 실행하면 준비물, 예상 수수료, 실패 가능 원인을 보여준다.</p>';
+    }
+
+    function compareLayers() {
+      const lens = $('lens').value;
+      const purpose = $('purpose').value;
+      const messages = {
+        fee: '수수료 예측성은 gas token 단위와 혼잡도에 크게 좌우됩니다. 안정 자산 gas는 비용 설명을 쉽게 만들지만 무료를 뜻하지는 않습니다.',
+        finality: '최종성은 결제가 언제 되돌리기 어려운 상태가 되는지의 문제입니다. 기업 결제에서는 빠른 표시와 최종 정산 위치를 나눠 봐야 합니다.',
+        security: 'L2와 rollup은 L1 보안을 활용할 수 있지만 브릿지와 운영자 구조가 별도 리스크가 됩니다. 독립 L1은 자체 보안과 검증자 구조를 봐야 합니다.',
+        business: '기업 도입에서는 비용 예측, 회계 단위, 규제 대응, 운영 안정성이 중요합니다. 범용 dApp 생태계 규모와는 다른 질문입니다.'
+      };
+      const purposes = {
+        payment: '소액 결제에서는 수수료 단위와 실패율이 UX를 좌우합니다.',
+        remittance: '송금에서는 최종성, 출금 시간, 수령자 이해도가 중요합니다.',
+        defi: '범용 dApp 목적이면 전용 결제 UX보다 composability와 생태계가 더 중요할 수 있습니다.'
+      };
+      $('layerResult').className = 'result status good';
+      $('layerResult').innerHTML = `<h3>비교 결과</h3><p>${messages[lens]}</p><p>${purposes[purpose]}</p>`;
+    }
+
+    function resetLayers() {
+      $('lens').value = 'fee';
+      $('purpose').value = 'payment';
+      $('layerResult').className = 'result status';
+      $('layerResult').innerHTML = '<h3>비교 결과</h3><p>L1은 자체 합의와 보안을 가진 기본 체인이고, L2는 L1 위에서 실행을 확장한다. Rollup은 여러 거래를 묶어 L1에 결과를 기록하며, settlement는 최종 정산 위치를 뜻한다.</p>';
+    }
+
+    $('volatility').addEventListener('input', updateSliderText);
+    $('traffic').addEventListener('input', updateSliderText);
+    $('runSim').addEventListener('click', runSimulation);
+    $('resetSim').addEventListener('click', resetSimulation);
+    $('compareLayers').addEventListener('click', compareLayers);
+    $('resetLayers').addEventListener('click', resetLayers);
+    resetSimulation();
+  </script>
+</body>
+</html>

@@ -1,0 +1,859 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Week6 ERC20 Staking Error Diagnosis</title>
+  <style>
+    :root {
+      --bg: #f7f9fc;
+      --ink: #182332;
+      --muted: #5c6877;
+      --line: #d8e0ea;
+      --panel: #ffffff;
+      --blue: #1d4ed8;
+      --green: #10815f;
+      --amber: #a16207;
+      --red: #b83218;
+      --purple: #6d28d9;
+      --shadow: 0 14px 30px rgba(28, 39, 52, 0.10);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Malgun Gothic", system-ui, sans-serif;
+      line-height: 1.65;
+      color: var(--ink);
+      background:
+        linear-gradient(135deg, rgba(29, 78, 216, 0.08), transparent 36%),
+        linear-gradient(315deg, rgba(109, 40, 217, 0.08), transparent 34%),
+        var(--bg);
+    }
+
+    header {
+      padding: 34px min(6vw, 72px) 22px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2rem, 5vw, 4rem);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    h2 { margin: 0 0 14px; font-size: clamp(1.45rem, 3vw, 2rem); line-height: 1.2; }
+    h3 { margin: 0 0 10px; font-size: 1.1rem; line-height: 1.3; }
+    p { margin: 0 0 12px; }
+    ul, ol { padding-left: 1.2rem; }
+    code, pre { font-family: Consolas, "Cascadia Code", monospace; }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    nav a, .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 36px;
+      padding: 7px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #1f3b59;
+      background: #f8fafc;
+      text-decoration: none;
+      font-size: 0.92rem;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 28px));
+      margin: 24px auto 54px;
+      display: grid;
+      gap: 22px;
+    }
+
+    section {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: clamp(18px, 3vw, 28px);
+      box-shadow: var(--shadow);
+    }
+
+    .lead { max-width: 920px; color: var(--muted); font-size: 1.06rem; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .two { display: grid; grid-template-columns: minmax(280px, 0.92fr) minmax(300px, 1.08fr); gap: 16px; align-items: start; }
+    .concept, .scenario, .result, .callout, .ledger, .classifier-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 16px;
+    }
+
+    .guide {
+      margin-top: 12px;
+      padding: 14px;
+      border-left: 5px solid var(--blue);
+      border-radius: 8px;
+      background: #eef6ff;
+    }
+
+    .guide strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #0f3765;
+    }
+
+    .muted { color: var(--muted); }
+    .small { font-size: 0.92rem; }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-weight: 700;
+      font-size: 0.94rem;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    select, input[type="number"], input[type="range"] {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid #bac6d4;
+      border-radius: 8px;
+      padding: 7px 10px;
+      color: var(--ink);
+      background: #ffffff;
+      font: inherit;
+    }
+
+    button {
+      min-height: 42px;
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #ffffff;
+      background: var(--blue);
+      font-weight: 800;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    button.secondary { background: #334155; }
+    button.ghost { color: #1f3b59; background: #e8eef6; }
+    .button-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+
+    .status { border-left: 5px solid var(--blue); background: #eff6ff; }
+    .status.good { border-left-color: var(--green); background: #ecfdf5; }
+    .status.warn { border-left-color: var(--amber); background: #fffbeb; }
+    .status.fail { border-left-color: var(--red); background: #fff7ed; }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .node {
+      position: relative;
+      min-height: 126px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
+      padding: 12px;
+      overflow: hidden;
+    }
+
+    .node::after {
+      content: "";
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      height: 7px;
+      border-radius: 999px;
+      background: #d8e0ea;
+    }
+
+    .node.active { border-color: var(--blue); background: #eff6ff; }
+    .node.active::after { background: linear-gradient(90deg, var(--blue), var(--purple)); animation: flowPulse 1.5s ease-in-out infinite; }
+    .node.ok { border-color: var(--green); background: #ecfdf5; }
+    .node.fail { border-color: var(--red); background: #fff7ed; }
+
+    @keyframes flowPulse {
+      0%, 100% { transform: scaleX(0.45); transform-origin: left; }
+      50% { transform: scaleX(1); transform-origin: left; }
+    }
+
+    .balance-board {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .balance {
+      min-height: 96px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 12px;
+    }
+
+    .balance b {
+      display: block;
+      color: #0f3765;
+      margin-bottom: 5px;
+    }
+
+    .vault {
+      position: relative;
+      min-height: 220px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: linear-gradient(180deg, #f8fafc, #eef4fb);
+      overflow: hidden;
+      padding: 14px;
+    }
+
+    .token {
+      position: absolute;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #ffffff;
+      font-weight: 900;
+      background: var(--purple);
+      box-shadow: 0 8px 18px rgba(109, 40, 217, 0.28);
+    }
+
+    .token.t1 { left: 26px; bottom: 30px; }
+    .token.t2 { left: 70px; bottom: 30px; background: var(--blue); }
+    .token.t3 { right: 70px; bottom: 30px; background: var(--green); }
+    .token.t4 { right: 26px; bottom: 30px; background: var(--amber); }
+    .vault.run .t1, .vault.run .t2 { animation: moveStake 0.9s ease-in-out; }
+    .vault.reward .t3, .vault.reward .t4 { animation: glowReward 1.2s ease-in-out infinite; }
+
+    @keyframes moveStake {
+      0% { transform: translateX(0); }
+      50% { transform: translateX(160px) translateY(-30px); }
+      100% { transform: translateX(0); }
+    }
+
+    @keyframes glowReward {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.18); }
+    }
+
+    .classifier-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.94rem;
+      overflow-wrap: anywhere;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th { background: #eef4fb; }
+
+    footer {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto 36px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 900px) {
+      .grid, .two, .controls, .flow, .balance-board, .classifier-grid { grid-template-columns: 1fr; }
+      .button-row button { flex: 1 1 100%; }
+      section { padding: 18px; }
+      .vault { min-height: 280px; }
+      .token.t1 { left: 22px; bottom: 30px; }
+      .token.t2 { left: 62px; bottom: 30px; }
+      .token.t3 { right: 62px; bottom: 30px; }
+      .token.t4 { right: 22px; bottom: 30px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="pill">Week6 이론 보강</span>
+    <h1>ERC20, Staking, Error Diagnosis</h1>
+    <p class="lead">ERC20 staking은 `approve -> stake -> reward 증가 -> claim/withdraw` 순서로 진행된다. 이 페이지는 권한, 잔액, 보상 금고, lock/time, gas, nonce, require 조건을 분리해 보는 오프라인 정적 시뮬레이터이며 실제 지갑이나 RPC를 호출하지 않는다.</p>
+    <nav aria-label="주차 내비게이션">
+      <a href="#goals">학습 목표</a>
+      <a href="#concept">정석 개념</a>
+      <a href="#approval">Approve/Stake 시뮬레이터</a>
+      <a href="#reward">Reward 시뮬레이터</a>
+      <a href="#classifier">오류 원인 판별기</a>
+      <a href="#practice">실습 연결</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="goals">
+      <h2>학습 목표</h2>
+      <div class="grid">
+        <div class="concept"><strong>ERC20 권한 모델</strong><br>`balanceOf`, `approve`, `allowance`, `transferFrom` 관계를 설명한다.</div>
+        <div class="concept"><strong>Staking 흐름</strong><br>approve는 허가, stake는 실제 이동, claim/withdraw는 보상과 원금 회수임을 구분한다.</div>
+        <div class="concept"><strong>오류 진단</strong><br>approve, stake, reward, claim, withdraw 실패를 balance, allowance, reward pool, lock, gas, nonce, require로 좁힌다.</div>
+      </div>
+    </section>
+
+    <section id="concept">
+      <h2>정석 개념 설명</h2>
+      <p>ERC20은 이더리움 계열에서 fungible token을 다루기 위한 표준 인터페이스다. `approve(spender, amount)`는 송금이 아니라 `spender`가 내 토큰을 사용할 수 있는 한도를 storage에 기록하는 함수다. 실전에서는 spender 주소와 승인 수량을 확인하고, 무제한 승인과 오래 남은 승인은 revoke/approve(0)로 줄일 수 있어야 한다.</p>
+      <p>Staking 컨트랙트가 사용자의 토큰을 가져가려면 사용자가 먼저 `token.approve(stakingAddress, amount)`를 호출해야 한다. 실제 이동은 `stake(amount)` 내부에서 `token.transferFrom(msg.sender, address(this), amount)`가 실행될 때 일어난다.</p>
+      <div class="callout">
+        <strong>비유로 먼저 이해하기</strong>
+        <p>`approve`는 자동이체 한도 등록이고, `stake`는 등록된 한도 안에서 실제로 돈을 옮기는 단계다. 보상은 사물함에 토큰을 맡긴 시간에 따라 쌓이는 포인트처럼 이해할 수 있다.</p>
+      </div>
+      <div class="guide">
+        <strong>개념 보강: 비유 → 정석 정의 → 확인 질문</strong>
+        <p>approve는 허가, allowance는 남은 한도, transferFrom은 실제 이동, reward는 호출 시점에 계산되는 보상이다. 확인 질문은 "지금 실패가 토큰 balance, allowance, spender 주소, reward pool, lock, gas, nonce 중 어느 문에서 막혔는가?"이다.</p>
+      </div>
+    </section>
+
+    <section id="approval">
+      <h2>Approve/Stake 시뮬레이터</h2>
+      <p><strong>왜 해보는가:</strong> Week6에서 가장 많이 헷갈리는 지점은 approve를 송금으로 착각하는 것이다. 이 시뮬레이터는 approve 후에도 사용자 balance가 줄지 않고 allowance만 증가하며, stake 후에야 balance와 allowance가 줄어드는 것을 보여준다.</p>
+      <div class="guide"><strong>예측 → 실행 → 상태 변화 → 해석</strong><p>approve 전에는 balance가 줄지 않고 allowance만 늘 것이라고 예측한다. stake 후에는 balance와 allowance가 줄고 staked amount가 늘어야 하며, 이것이 transferFrom의 실제 이동이다.</p></div>
+      <div class="guide"><strong>보안 안전난간</strong><p>approve는 테스트넷에서도 "누구에게 얼마까지 허용했는가"를 보는 훈련이다. 메인넷에서는 spender 주소 확인, 무제한 승인 회피, revoke/approve(0) 습관이 중요하다.</p></div>
+      <div class="two">
+        <div class="scenario">
+          <h3>ERC20 상태</h3>
+          <div class="controls">
+            <label>초기 사용자 토큰 balance
+              <input id="userBalanceInput" type="number" min="0" step="1" value="120">
+            </label>
+            <label>approve 수량
+              <input id="approveAmount" type="number" min="0" step="1" value="80">
+            </label>
+            <label>stake 수량
+              <input id="stakeAmount" type="number" min="0" step="1" value="50">
+            </label>
+            <label>spender 주소
+              <select id="spenderSelect">
+                <option value="staking">Staking 컨트랙트 주소</option>
+                <option value="token">Token 컨트랙트 주소</option>
+                <option value="other">모르는 외부 주소</option>
+              </select>
+            </label>
+            <label>token decimals
+              <input id="tokenDecimals" type="number" min="0" max="18" step="1" value="18">
+            </label>
+            <label>gas용 Sepolia ETH
+              <input id="nativeGas" type="number" min="0" step="0.01" value="0.05">
+            </label>
+          </div>
+          <div class="button-row">
+            <button id="approveBtn">approve()</button>
+            <button id="revokeBtn" class="ghost">approve(0) revoke</button>
+            <button id="allowanceBtn" class="ghost">allowance 조회</button>
+            <button id="stakeBtn">stake()</button>
+            <button id="resetApproval" class="secondary">초기화</button>
+          </div>
+        </div>
+        <div>
+          <div id="vault" class="vault" aria-label="ERC20 이동 애니메이션">
+            <h3>사용자 지갑 → Staking 컨트랙트</h3>
+            <p class="small muted">approve는 길을 열고, stake가 실제로 토큰을 이동시킵니다.</p>
+            <div class="token t1">U</div><div class="token t2">U</div><div class="token t3">S</div><div class="token t4">R</div>
+          </div>
+          <div id="approvalResult" class="result status">
+            <h3>상태 대기</h3>
+            <p>approve, allowance 조회, stake 버튼을 순서대로 눌러 보세요.</p>
+          </div>
+        </div>
+      </div>
+      <div class="balance-board" aria-live="polite">
+        <div class="balance"><b>사용자 balance</b><span id="userBalance">120</span> HNL</div>
+        <div class="balance"><b>allowance</b><span id="allowance">0</span> HNL</div>
+        <div class="balance"><b>staked amount</b><span id="stakedAmount">0</span> HNL</div>
+        <div class="balance"><b>raw unit evidence</b><span id="rawUnitNote">0 * 10^18 = 0</span></div>
+      </div>
+      <div class="guide"><strong>approve 보안 체크</strong><p><span id="approvalEvidence">spender=Staking 컨트랙트 주소, allowance=0 HNL, decimals=18</span></p></div>
+      <p><strong>실제 실습에서 어디에 해당하는가:</strong> `04_Remix_VM_테스트.md`의 Step 5 approve, Step 6 stake, `ApproveForm.tsx`, `AllowanceChecker.tsx`, Week6 DApp의 approve/stake 버튼에 해당한다.</p>
+    </section>
+
+    <section id="reward">
+      <h2>Reward 증가 시뮬레이터</h2>
+      <p><strong>왜 해보는가:</strong> 보상은 매초 모든 사용자에게 실제로 쓰는 것이 아니라, `stake`, `claimReward`, `unstake` 같은 상태 변경 함수가 호출될 때 lazy update로 계산된다. reward pool이 비어 있으면 claim도 실패할 수 있다.</p>
+      <p><strong>단위 안전난간:</strong> 이 계산기는 화면 표시 단위(HNL)로 움직이는 교육용 모델이다. 실제 컨트랙트는 `uint256` raw unit을 쓰므로 50 HNL은 decimals=18 기준 `50 * 10^18`로 변환한 뒤 계산하고, 화면에는 다시 formatUnits로 보여준다.</p>
+      <div class="guide"><strong>예측 → 실행 → 상태 변화 → 해석</strong><p>pendingReward 실행 전에는 보상이 경과 시간과 staked amount에 비례할지 예측한다. claim/withdraw 결과는 lazy update, reward pool, lock 조건 중 어디에 걸렸는지로 해석한다.</p></div>
+      <div class="two">
+        <div class="scenario">
+          <h3>보상 조건</h3>
+          <div class="controls">
+            <label>rewardRatePerSecond
+              <input id="rewardRate" type="number" min="0" step="0.01" value="0.05">
+            </label>
+            <label>경과 시간: <span id="timeText">0초</span>
+              <input id="elapsedSeconds" type="range" min="0" max="120" value="0">
+            </label>
+            <label>reward pool 잔액
+              <input id="rewardPool" type="number" min="0" step="1" value="200">
+            </label>
+            <label>withdraw lock
+              <select id="lockState">
+                <option value="open">해제됨</option>
+                <option value="locked">잠김</option>
+              </select>
+            </label>
+          </div>
+          <div class="button-row">
+            <button id="pendingBtn" class="ghost">pendingReward()</button>
+            <button id="claimBtn">claimReward()</button>
+            <button id="withdrawBtn">withdraw()</button>
+            <button id="resetReward" class="secondary">초기화</button>
+          </div>
+        </div>
+        <div id="rewardResult" class="result status">
+          <h3>보상 대기</h3>
+          <p>먼저 staking을 실행하거나 staked amount를 만든 뒤 reward를 계산하세요.</p>
+        </div>
+      </div>
+      <div class="flow" aria-label="staking 흐름">
+        <div id="flowApprove" class="node active"><h3>approve</h3><p class="small">권한 설정</p></div>
+        <div id="flowStake" class="node"><h3>stake</h3><p class="small">transferFrom 실제 이동</p></div>
+        <div id="flowReward" class="node"><h3>reward</h3><p class="small">lazy update로 계산</p></div>
+        <div id="flowClaim" class="node"><h3>claim</h3><p class="small">보상만 수령</p></div>
+        <div id="flowWithdraw" class="node"><h3>withdraw</h3><p class="small">원금 회수</p></div>
+      </div>
+      <div class="balance-board" aria-live="polite">
+        <div class="balance"><b>pending reward</b><span id="pendingRewardValue">0.0000</span> HNL</div>
+        <div class="balance"><b>stored reward</b><span id="accruedRewardValue">0.0000</span> HNL</div>
+        <div class="balance"><b>lastUpdate</b><span id="lastUpdateValue">0</span>초</div>
+        <div class="balance"><b>reward delta</b><span id="rewardDeltaValue">0초</span></div>
+      </div>
+      <div class="guide"><strong>claim vs withdraw</strong><p><span id="rewardEvidence">claimReward는 보상만 이동시키고 staked amount를 유지한다. withdraw는 원금을 돌려주며 보상 처리는 컨트랙트 구현에 따라 별도 claim 또는 내부 정산이 필요하다.</span></p></div>
+      <p><strong>실제 실습에서 어디에 해당하는가:</strong> `03_Staking_컨트랙트_작성.md`의 `_updateReward`, `pendingReward`, `claimReward`, `unstake`와 `05_Sepolia_배포_검증.md`의 이벤트/tx hash 확인에 해당한다.</p>
+    </section>
+
+    <section id="classifier">
+      <h2>오류 원인 판별기</h2>
+      <p><strong>왜 해보는가:</strong> Week6 오류는 approve, stake, reward, claim, withdraw 중 어느 단계에서 났는지 먼저 나눠야 한다. 그다음 balance, allowance, reward pool, lock, gas, nonce, require 조건으로 좁힌다.</p>
+      <div class="guide"><strong>예측 → 실행 → 상태 변화 → 해석</strong><p>메시지를 고르기 전 원인을 먼저 추정한다. 판별 결과는 DApp이 고장났다는 결론이 아니라, MetaMask, Etherscan, Remix console, balanceOf, allowance, pendingReward 중 다음 확인 화면을 정하는 힌트다.</p></div>
+      <div class="classifier-grid">
+        <div class="classifier-card">
+          <h3>증상과 단계 선택</h3>
+          <div class="controls">
+            <label>실패 단계
+              <select id="failureStep">
+                <option value="approve">approve</option>
+                <option value="stake">stake</option>
+                <option value="reward">reward</option>
+                <option value="claim">claim</option>
+                <option value="withdraw">withdraw</option>
+              </select>
+            </label>
+            <label>대표 메시지
+              <select id="failureMessage">
+                <option value="insufficient">insufficient funds</option>
+                <option value="nonce">nonce too low</option>
+                <option value="spenderMismatch">allowance is 0 for staking</option>
+                <option value="approvalRace">ERC20 approve race risk</option>
+                <option value="rawUnits">wrong amount decimals</option>
+                <option value="transferFrom">transferFrom failed</option>
+                <option value="nothing">nothing to claim</option>
+                <option value="rewardTransfer">reward transfer failed</option>
+                <option value="locked">withdraw locked</option>
+                <option value="reverted">execution reverted</option>
+              </select>
+            </label>
+            <label>내 추정 원인
+              <select id="causeGuess">
+                <option value="gas">gas용 native ETH</option>
+                <option value="nonce">nonce/pending tx</option>
+                <option value="balance">ERC20 balance</option>
+                <option value="spender">spender 주소</option>
+                <option value="decimals">decimals/raw units</option>
+                <option value="allowance">allowance/approve</option>
+                <option value="rewardPool">reward pool</option>
+                <option value="lock">lock/time</option>
+                <option value="require">require 조건</option>
+              </select>
+            </label>
+            <label>실습 환경
+              <select id="mode">
+                <option value="vm">Remix VM</option>
+                <option value="sepolia">Sepolia</option>
+              </select>
+            </label>
+          </div>
+          <div class="button-row">
+            <button id="classifyBtn">원인 판별</button>
+            <button id="resetClassifier" class="secondary">초기 상태</button>
+          </div>
+        </div>
+        <div id="classifierResult" class="result status">
+          <h3>판별 대기</h3>
+          <p>approve/stake/reward/claim/withdraw 중 실패한 단계와 메시지를 고르면 확인 순서를 제안한다.</p>
+        </div>
+      </div>
+      <p><strong>실제 실습에서 어디에 해당하는가:</strong> Week6 DApp에서 버튼을 누른 뒤 MetaMask, Remix console, Etherscan, `balanceOf`, `allowance`, `pendingReward`를 어떤 순서로 볼지 정하는 훈련이다.</p>
+    </section>
+
+    <section id="practice">
+      <h2>수업 실습과 연결</h2>
+      <table>
+        <thead><tr><th>화면/함수</th><th>확인하는 온체인 상태</th><th>주요 오류</th></tr></thead>
+        <tbody>
+          <tr><td>Faucet</td><td>사용자 ERC20 balance 또는 gas용 Sepolia ETH</td><td>Faucet 제한, 잔량, 네트워크</td></tr>
+          <tr><td>approve</td><td>`allowance(user, stakingAddress)`</td><td>gas 부족, 잘못된 spender, nonce</td></tr>
+          <tr><td>approve(0)</td><td>`allowance(user, spender)`가 0으로 줄었는지</td><td>남은 승인 방치, spender 착오, approve race risk</td></tr>
+          <tr><td>stake</td><td>`balanceOf(user)`, allowance, staking amount, raw amount</td><td>`transferFrom failed`, amount=0, decimals 착오</td></tr>
+          <tr><td>pendingReward</td><td>staked amount, reward rate, last update time, delta</td><td>시간 부족, staking 수량 0, lastUpdate 오해</td></tr>
+          <tr><td>claim/withdraw</td><td>reward pool, lock/time, accrued reward, staked amount</td><td>`nothing to claim`, `reward transfer failed`, withdraw lock, claim과 withdraw 혼동</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>오프라인 정적 학습 페이지. 실제 wallet, RPC, chain, explorer 호출 없음.</footer>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const state = {
+      userBalance: 120,
+      allowance: 0,
+      otherAllowance: 0,
+      staked: 0,
+      accrued: 0,
+      lastUpdate: 0
+    };
+
+    function setResult(id, kind, title, body) {
+      $(id).className = `result status ${kind}`;
+      $(id).innerHTML = `<h3>${title}</h3><p>${body}</p>`;
+    }
+
+    function getDecimals() {
+      return Math.min(18, Math.max(0, Math.trunc(Number($('tokenDecimals').value) || 0)));
+    }
+
+    function rawUnits(amount) {
+      const scaled = BigInt(Math.round(Math.max(0, Number(amount) || 0) * 10000));
+      return ((scaled * (10n ** BigInt(getDecimals()))) / 10000n).toString();
+    }
+
+    function spenderLabel(value = $('spenderSelect').value) {
+      return {
+        staking: 'Staking 컨트랙트 주소',
+        token: 'Token 컨트랙트 주소',
+        other: '모르는 외부 주소'
+      }[value];
+    }
+
+    function updateApprovalEvidence(note) {
+      const spender = spenderLabel();
+      const raw = rawUnits(state.allowance);
+      $('rawUnitNote').textContent = `${state.allowance.toFixed(2)} * 10^${getDecimals()} = ${raw}`;
+      $('approvalEvidence').textContent = `${note || '상태 갱신'} | spender=${spender}, staking allowance=${state.allowance.toFixed(2)} HNL, other allowance=${state.otherAllowance.toFixed(2)} HNL, raw=${raw}`;
+    }
+
+    function updateBoard(note) {
+      $('userBalance').textContent = state.userBalance.toFixed(2);
+      $('allowance').textContent = state.allowance.toFixed(2);
+      $('stakedAmount').textContent = state.staked.toFixed(2);
+      updateApprovalEvidence(note);
+    }
+
+    function setFlow(activeId, status) {
+      ['flowApprove', 'flowStake', 'flowReward', 'flowClaim', 'flowWithdraw'].forEach((id) => {
+        $(id).className = 'node';
+      });
+      $(activeId).classList.add(status || 'active');
+    }
+
+    function animateVault(kind) {
+      const vault = $('vault');
+      vault.classList.remove('run', 'reward');
+      void vault.offsetWidth;
+      vault.classList.add(kind);
+    }
+
+    function approve() {
+      const gas = Number($('nativeGas').value);
+      const amount = Number($('approveAmount').value);
+      if (gas <= 0) {
+        setResult('approvalResult', 'fail', 'approve 실패: insufficient funds', 'approve는 토큰 송금은 아니지만 쓰기 트랜잭션이므로 gas용 Sepolia ETH가 필요합니다.');
+        setFlow('flowApprove', 'fail');
+        return;
+      }
+      if (amount <= 0) {
+        setResult('approvalResult', 'fail', 'approve 실패: amount=0', '0 또는 음수 approve는 실습 흐름에서 의미가 없습니다. 허용할 수량을 입력합니다.');
+        setFlow('flowApprove', 'fail');
+        return;
+      }
+      if ($('spenderSelect').value !== 'staking') {
+        state.otherAllowance = amount;
+        setResult('approvalResult', 'warn', 'approve 주의: spender 불일치', `${spenderLabel()}에 ${amount} HNL을 승인했습니다. approve는 성공해도 stakingAddress allowance는 늘지 않으므로 stake의 transferFrom은 실패합니다.`);
+        setFlow('flowApprove', 'active');
+        updateBoard('잘못된 spender 승인');
+        return;
+      }
+      state.allowance = amount;
+      setResult('approvalResult', 'good', 'approve 성공', `토큰은 이동하지 않았고 stakingAddress allowance만 ${amount} HNL로 기록되었습니다. raw amount는 ${rawUnits(amount)}입니다.`);
+      setFlow('flowApprove', 'ok');
+      updateBoard('approve 후 balance는 그대로');
+    }
+
+    function revokeApproval() {
+      if ($('spenderSelect').value === 'staking') {
+        state.allowance = 0;
+      } else {
+        state.otherAllowance = 0;
+      }
+      setResult('approvalResult', 'good', 'approve(0) revoke 완료', `${spenderLabel()}에 남아 있던 승인을 0으로 줄였습니다. revoke는 토큰을 돌려받는 기능이 아니라 spender의 남은 사용 한도를 제거하는 보안 습관입니다.`);
+      setFlow('flowApprove', 'ok');
+      updateBoard('approve(0) 후 남은 승인 확인');
+    }
+
+    function checkAllowance() {
+      setResult('approvalResult', 'warn', 'allowance 조회', `owner는 사용자 주소입니다. stake가 읽는 값은 allowance(user, stakingAddress)=${state.allowance.toFixed(2)} HNL이고, 현재 선택한 ${spenderLabel()}의 raw 단위 증거는 ${rawUnits($('spenderSelect').value === 'staking' ? state.allowance : state.otherAllowance)}입니다.`);
+      updateBoard('조회는 상태 변경 없음');
+    }
+
+    function stake() {
+      const amount = Number($('stakeAmount').value);
+      const gas = Number($('nativeGas').value);
+      if (gas <= 0) {
+        setResult('approvalResult', 'fail', 'stake 실패: insufficient funds', 'stake도 쓰기 트랜잭션이므로 gas용 native ETH가 필요합니다.');
+        setFlow('flowStake', 'fail');
+        return;
+      }
+      if (amount <= 0) {
+        setResult('approvalResult', 'fail', 'stake 실패: amount=0', '컨트랙트 require가 0토큰 staking을 막는 경우입니다.');
+        setFlow('flowStake', 'fail');
+        return;
+      }
+      if (state.userBalance < amount) {
+        setResult('approvalResult', 'fail', 'stake 실패: ERC20 balance 부족', '사용자 토큰 balance가 stake 수량보다 작습니다. Faucet 또는 transfer로 토큰을 확보합니다.');
+        setFlow('flowStake', 'fail');
+        return;
+      }
+      if (state.allowance < amount) {
+        const hint = state.otherAllowance >= amount
+          ? '다른 spender에는 승인이 남아 있지만 stakingAddress allowance는 부족합니다. Token 주소나 외부 주소가 아니라 Staking 컨트랙트 주소에 approve해야 합니다.'
+          : 'allowance가 stake 수량보다 작습니다. 먼저 approve(stakingAddress, amount)를 실행합니다.';
+        setResult('approvalResult', 'fail', 'stake 실패: transferFrom failed', hint);
+        setFlow('flowStake', 'fail');
+        return;
+      }
+      state.userBalance -= amount;
+      state.allowance -= amount;
+      state.staked += amount;
+      state.lastUpdate = Number($('elapsedSeconds').value);
+      setResult('approvalResult', 'good', 'stake 성공', `transferFrom이 통과해 사용자 balance와 staking allowance가 줄고 staked amount가 증가했습니다. 전송 raw amount는 ${rawUnits(amount)}입니다.`);
+      setFlow('flowStake', 'ok');
+      animateVault('run');
+      updateBoard('stake 후 실제 이동');
+    }
+
+    function resetApproval() {
+      state.userBalance = Number($('userBalanceInput').value) || 120;
+      state.allowance = 0;
+      state.otherAllowance = 0;
+      state.staked = 0;
+      state.accrued = 0;
+      state.lastUpdate = 0;
+      $('approveAmount').value = 80;
+      $('stakeAmount').value = 50;
+      $('spenderSelect').value = 'staking';
+      $('tokenDecimals').value = 18;
+      $('nativeGas').value = 0.05;
+      $('approvalResult').className = 'result status';
+      $('approvalResult').innerHTML = '<h3>상태 대기</h3><p>approve, allowance 조회, stake 버튼을 순서대로 눌러 보세요.</p>';
+      setFlow('flowApprove', 'active');
+      $('vault').classList.remove('run', 'reward');
+      updateBoard('초기 상태');
+    }
+
+    function calcPending() {
+      const seconds = Number($('elapsedSeconds').value);
+      const rate = Number($('rewardRate').value);
+      const delta = Math.max(0, seconds - state.lastUpdate);
+      $('rewardDeltaValue').textContent = `${delta}초`;
+      return Math.max(0, state.staked * rate * delta);
+    }
+
+    function updateRewardBoard(pending = calcPending()) {
+      $('pendingRewardValue').textContent = pending.toFixed(4);
+      $('accruedRewardValue').textContent = state.accrued.toFixed(4);
+      $('lastUpdateValue').textContent = state.lastUpdate.toFixed(0);
+    }
+
+    function updateTimeText() {
+      $('timeText').textContent = `${$('elapsedSeconds').value}초`;
+      updateRewardBoard();
+    }
+
+    function pendingReward() {
+      const pending = calcPending();
+      updateRewardBoard(pending);
+      const delta = Math.max(0, Number($('elapsedSeconds').value) - state.lastUpdate);
+      setResult('rewardResult', pending > 0 ? 'good' : 'warn', 'pendingReward 계산(view)', `lazy update 기준 예상 보상은 ${pending.toFixed(4)} HNL입니다. 마지막 정산 시각 ${state.lastUpdate}초 이후 delta=${delta}초만 계산합니다. 이 조회는 stored reward와 lastUpdate를 바꾸지 않고, claim/withdraw 같은 쓰기 함수에서 정산 상태가 갱신됩니다.`);
+      setFlow('flowReward', pending > 0 ? 'ok' : 'active');
+      animateVault('reward');
+    }
+
+    function claimReward() {
+      const pending = calcPending();
+      const pool = Number($('rewardPool').value);
+      if (pending <= 0) {
+        setResult('rewardResult', 'fail', 'claim 실패: nothing to claim', 'staked amount가 0이거나 시간이 충분히 지나지 않아 pendingReward가 0입니다.');
+        setFlow('flowClaim', 'fail');
+        return;
+      }
+      if (pool < pending) {
+        setResult('rewardResult', 'fail', 'claim 실패: reward transfer failed', 'Staking 컨트랙트의 reward pool 잔액이 pendingReward보다 작습니다.');
+        setFlow('flowClaim', 'fail');
+        return;
+      }
+      $('rewardPool').value = (pool - pending).toFixed(4);
+      state.userBalance += pending;
+      state.accrued = 0;
+      state.lastUpdate = Number($('elapsedSeconds').value);
+      updateRewardBoard(0);
+      setResult('rewardResult', 'good', 'claimReward 성공', `보상 ${pending.toFixed(4)} HNL이 지급되고 staked amount는 ${state.staked.toFixed(2)} HNL로 유지됩니다. lastUpdate가 ${state.lastUpdate}초로 갱신되어 같은 시간 구간을 반복 청구할 수 없습니다.`);
+      setFlow('flowClaim', 'ok');
+      updateBoard('claim 후 보상 수령');
+    }
+
+    function withdraw() {
+      if ($('lockState').value === 'locked') {
+        setResult('rewardResult', 'fail', 'withdraw 실패: lock/time 조건', '잠금 시간이 끝나지 않아 withdraw require 조건이 실패했습니다.');
+        setFlow('flowWithdraw', 'fail');
+        return;
+      }
+      if (state.staked <= 0) {
+        setResult('rewardResult', 'fail', 'withdraw 실패: staked amount 없음', '회수할 원금이 없습니다. 먼저 stake를 성공시켜야 합니다.');
+        setFlow('flowWithdraw', 'fail');
+        return;
+      }
+      const pending = calcPending();
+      if (pending > 0) {
+        updateRewardBoard(pending);
+        setResult('rewardResult', 'warn', 'withdraw 전 보상 확인 필요', `현재 pending reward가 ${pending.toFixed(4)} HNL입니다. 이 시뮬레이터에서는 claimReward로 보상을 먼저 받은 뒤 withdraw로 원금을 회수하게 하여 claim과 withdraw의 차이를 분리합니다.`);
+        setFlow('flowWithdraw', 'active');
+        return;
+      }
+      state.userBalance += state.staked;
+      const returned = state.staked;
+      state.staked = 0;
+      state.accrued = 0;
+      state.lastUpdate = Number($('elapsedSeconds').value);
+      updateRewardBoard(0);
+      setResult('rewardResult', 'good', 'withdraw 성공', `원금 ${returned.toFixed(2)} HNL이 사용자 balance로 돌아왔습니다. claimReward와 달리 원금 회수 단계이므로 staked amount가 0으로 줄었습니다.`);
+      setFlow('flowWithdraw', 'ok');
+      updateBoard('withdraw 후 원금 회수');
+    }
+
+    function resetReward() {
+      $('rewardRate').value = 0.05;
+      $('elapsedSeconds').value = 0;
+      $('rewardPool').value = 200;
+      $('lockState').value = 'open';
+      state.accrued = 0;
+      state.lastUpdate = 0;
+      $('rewardDeltaValue').textContent = '0초';
+      updateTimeText();
+      updateRewardBoard(0);
+      $('rewardResult').className = 'result status';
+      $('rewardResult').innerHTML = '<h3>보상 대기</h3><p>먼저 staking을 실행하거나 staked amount를 만든 뒤 reward를 계산하세요.</p>';
+      setFlow('flowApprove', 'active');
+    }
+
+    const classifier = {
+      insufficient: ['gas', 'gas용 native ETH 부족입니다. approve/stake/claim/withdraw 모두 쓰기 트랜잭션이면 Sepolia ETH가 필요합니다.', '다음 증거: 지갑 native ETH 잔액, tx hash, gas limit, failed receipt'],
+      nonce: ['nonce', '컨트랙트 로직이 아니라 계정 트랜잭션 순서 문제입니다. pending tx와 MetaMask 활동 기록을 확인합니다.', '다음 증거: account nonce latest/pending, pending tx 목록, MetaMask activity'],
+      spenderMismatch: ['spender', 'approve가 성공했더라도 spender가 stakingAddress가 아니면 stake가 읽는 allowance는 0입니다. approval 이벤트의 spender와 allowance(user, stakingAddress)를 대조합니다.', '다음 증거: Approval(owner, spender, value), allowance(user, stakingAddress)'],
+      approvalRace: ['allowance', '기존 allowance를 0이 아닌 값에서 다른 0이 아닌 값으로 바로 바꾸면 오래된 ERC20 approve race 문제가 생길 수 있습니다. 먼저 approve(spender, 0)로 revoke한 뒤 새 수량을 승인합니다.', '다음 증거: 현재 allowance, revoke tx, 새 approve tx'],
+      rawUnits: ['decimals', '화면의 1 HNL과 컨트랙트 raw amount 1은 다릅니다. decimals=18이면 1 HNL은 1000000000000000000 raw unit입니다.', '다음 증거: token decimals, parseUnits 입력값, raw amount'],
+      transferFrom: ['allowance', '사용자 ERC20 balance 부족, allowance 부족, 또는 approve를 다른 spender/staking address에 준 경우입니다.', '다음 증거: balanceOf(user), allowance(user, stakingAddress), spender 주소'],
+      nothing: ['require', 'pendingReward가 0인 조건 실패입니다. staking 수량, 경과 시간, reward rate를 확인합니다.', '다음 증거: staked amount, lastUpdate, pendingReward(user)'],
+      rewardTransfer: ['rewardPool', 'Staking 컨트랙트의 배포 가능 reward reserve가 부족합니다. 같은 ERC20로 원금과 보상을 함께 보관하면 balanceOf(stakingAddress)에서 totalStaked를 뺀 값처럼 구현별 계산을 확인해야 합니다.', '다음 증거: reward reserve, totalStaked, balanceOf(stakingAddress), failed transfer receipt'],
+      locked: ['lock', 'withdraw 잠금 시간 또는 unlock 조건이 아직 통과하지 않았습니다.', '다음 증거: unlockTime, block.timestamp, withdraw require 조건'],
+      reverted: ['require', '컨트랙트 require 조건 중 하나가 실패했습니다. revert 메시지와 코드 조건을 직접 매칭합니다.', '다음 증거: revert reason, 함수 인자, require 조건, receipt status']
+    };
+
+    const validMessagesByStep = {
+      approve: ['insufficient', 'nonce', 'approvalRace', 'rawUnits', 'reverted'],
+      stake: ['insufficient', 'nonce', 'spenderMismatch', 'rawUnits', 'transferFrom', 'reverted'],
+      reward: ['rawUnits', 'nothing', 'reverted'],
+      claim: ['insufficient', 'nonce', 'nothing', 'rewardTransfer', 'rawUnits', 'reverted'],
+      withdraw: ['insufficient', 'nonce', 'locked', 'reverted']
+    };
+
+    function classify() {
+      const msg = $('failureMessage').value;
+      const step = $('failureStep').value;
+      const guess = $('causeGuess').value;
+      const mode = $('mode').value;
+      const [answer, explanation, evidence] = classifier[msg];
+      if (!validMessagesByStep[step].includes(msg)) {
+        setResult('classifierResult', 'fail', '단계와 메시지 불일치', `${step} 단계에서 보통 ${msg} 메시지를 1순위로 보지 않습니다. 먼저 실패 단계가 approve, stake, reward, claim, withdraw 중 어디인지 다시 맞춘 뒤 메시지를 고릅니다. 다음 증거: tx action, 함수명, receipt logs, UI 버튼 순서.`);
+        return;
+      }
+      const acceptable = msg === 'transferFrom' && guess === 'balance' ? true : guess === answer;
+      const env = mode === 'sepolia'
+        ? 'Sepolia에서는 MetaMask 네트워크, gas용 Sepolia ETH, Etherscan tx hash, pending nonce까지 추가로 봅니다.'
+        : 'Remix VM에서는 gas/nonce 변수가 단순하므로 balance, allowance, require 조건을 먼저 봅니다.';
+      setResult('classifierResult', acceptable ? 'good' : 'fail', acceptable ? `${step} 단계 원인 판별 성공` : `${step} 단계 재분류 필요`, `${explanation} ${env} ${evidence}`);
+    }
+
+    function resetClassifier() {
+      $('failureStep').value = 'approve';
+      $('failureMessage').value = 'insufficient';
+      $('causeGuess').value = 'gas';
+      $('mode').value = 'vm';
+      $('classifierResult').className = 'result status';
+      $('classifierResult').innerHTML = '<h3>판별 대기</h3><p>approve/stake/reward/claim/withdraw 중 실패한 단계와 메시지를 고르면 확인 순서를 제안한다.</p>';
+    }
+
+    $('approveBtn').addEventListener('click', approve);
+    $('revokeBtn').addEventListener('click', revokeApproval);
+    $('allowanceBtn').addEventListener('click', checkAllowance);
+    $('stakeBtn').addEventListener('click', stake);
+    $('resetApproval').addEventListener('click', resetApproval);
+    $('spenderSelect').addEventListener('change', () => updateBoard('spender 선택 변경'));
+    $('tokenDecimals').addEventListener('input', () => updateBoard('decimals 표시 변경'));
+    $('elapsedSeconds').addEventListener('input', updateTimeText);
+    $('pendingBtn').addEventListener('click', pendingReward);
+    $('claimBtn').addEventListener('click', claimReward);
+    $('withdrawBtn').addEventListener('click', withdraw);
+    $('resetReward').addEventListener('click', resetReward);
+    $('classifyBtn').addEventListener('click', classify);
+    $('resetClassifier').addEventListener('click', resetClassifier);
+    resetApproval();
+    resetReward();
+    resetClassifier();
+  </script>
+</body>
+</html>
