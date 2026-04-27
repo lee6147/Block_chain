@@ -1,4 +1,4 @@
-node_modules/
+﻿node_modules/
 .env
 .DS_Store
 *.log
@@ -22,12 +22,8 @@ coverage/
 Thumbs.db
 desktop.ini
 
-# Nested duplicate copies kept local-only after 2026-04-27 cleanup
-week/week_1_Blockchain Lab Report/
-week/week_2-wallet-price-tracker/
-week/week3-sepolia-lab/
-week/week4/
-week/week5/
+# Local-only cloned/helper repos under week; canonical course files live in week/week*
 week/week/
 week/Block_chain_push_work/
 week/ui-ux-pro-max-skill/
+

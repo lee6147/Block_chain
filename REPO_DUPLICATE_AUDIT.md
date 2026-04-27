@@ -3,56 +3,40 @@
 Date: 2026-04-27
 Scope: `C:\Users\user\Desktop\Stable_coin`
 
-## Finding
+## Updated decision
 
-The repository had two competing layouts:
+The canonical course layout is now the nested `week/` course workspace:
 
 ```text
-Stable_coin/week_1_Blockchain Lab Report
-Stable_coin/week_2-wallet-price-tracker
-Stable_coin/week3-sepolia-lab
-Stable_coin/week4
-Stable_coin/week5
-
-Stable_coin/week/week_1_Blockchain Lab Report
-Stable_coin/week/week_2-wallet-price-tracker
-Stable_coin/week/week3-sepolia-lab
-Stable_coin/week/week4
-Stable_coin/week/week5
-Stable_coin/week/week/...
+week/week_1_Blockchain Lab Report/
+week/week_2-wallet-price-tracker/
+week/week3-sepolia-lab/
+week/week4/
+week/week5/
+week/week6/
 ```
 
-The `week/` directory is also a nested Git repository and contains another duplicate `week/week/` subtree plus old clone folders.
+The root-level Week 1-5 copies were removed after the user clarified that the intended source of truth is `C:\Users\user\Desktop\Stable_coin\week`.
 
-## Pair comparison, excluding `.git`, `node_modules`, and local agent/runtime state
+## Why this changed
 
-| Root path | Duplicate inside `week/` | Result |
+An earlier cleanup pass temporarily treated the root-level Week 1-5 folders as canonical and made the `week/week*` folders local-only. That was wrong for the user's intended local layout. This pass flips the Git-tracked layout so the repository matches the actual teaching workspace under `week/`.
+
+## Safety checks
+
+Before switching the canonical layout, the duplicated pairs were compared while excluding `.git`, `node_modules`, and local agent/runtime state:
+
+| Root path | `week/` path | Result |
 | --- | --- | --- |
-| `week_1_Blockchain Lab Report` | `week/week_1_Blockchain Lab Report` | Same files; differences are line endings only. |
-| `week_2-wallet-price-tracker` | `week/week_2-wallet-price-tracker` | Same files; differences are line endings only. |
-| `week3-sepolia-lab` | `week/week3-sepolia-lab` | 41/41 files identical. |
-| `week4` | `week/week4` | Same files; differences are line endings only. |
-| `week5` | `week/week5` | Mostly same; root is newer for shared files. `week/week5` had two extra useful files. |
+| `week_1_Blockchain Lab Report` | `week/week_1_Blockchain Lab Report` | Same files; differences were line endings only. |
+| `week_2-wallet-price-tracker` | `week/week_2-wallet-price-tracker` | Same files after the duplicated `HTML/` copy had been removed earlier. |
+| `week3-sepolia-lab` | `week/week3-sepolia-lab` | Same teaching files. |
+| `week4` | `week/week4` | Same teaching files. |
+| `week5` | `week/week5` | Same teaching files; `blockchain_abi_analysis.md` and `week5-study.html` are present under `week/week5`. |
 
-Extra files preserved from `week/week5`:
+## Current cleanup rule
 
-- `week5/blockchain_abi_analysis.md`
-- `week5/week5-study.html`
-
-## Canonical layout decision
-
-Keep root-level week folders as canonical for Week 1-5:
-
-```text
-week_1_Blockchain Lab Report/
-week_2-wallet-price-tracker/
-week3-sepolia-lab/
-week4/
-week5/
-```
-
-Keep `week/week6` for now because the current Giwa/ERC20 DApp work is there and root `week6/` only contained empty gitlink remnants after the previous cleanup.
-
-## Cleanup action
-
-Use `git rm --cached` for duplicate `week/` subtrees so local files remain on disk but the GitHub repository stops carrying duplicate copies.
+- Keep course materials under `week/week*`.
+- Keep `week/week6` as the active Giwa/ERC20 teaching path.
+- Do not track `node_modules`, `.omc`, `.omx`, `.bkit`, `.claude`, `.agents`, or helper repos such as `week/ui-ux-pro-max-skill`.
+- Do not recreate root-level Week 1-5 folders unless the project intentionally changes layout again.
