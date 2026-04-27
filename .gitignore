@@ -3,3 +3,21 @@ node_modules/
 .DS_Store
 *.log
 .vscode/
+
+# Build outputs and generated caches
+.next/
+dist/
+build/
+.cache/
+coverage/
+
+# Local agent/runtime state
+.omx/
+.omc/
+.claude/
+.agents/
+.bkit/
+
+# Editor/OS noise
+Thumbs.db
+desktop.ini

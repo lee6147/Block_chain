@@ -1,7 +1,0 @@
-=== Ralph Progress Log ===
-Project: Sepolia Faucet Simulator 극한 완성도 개선
-Started: 2026-04-09
-
---- Iteration 1 ---
-Status: Starting
-Stories: US-001 ~ US-006 (all passes: false)
