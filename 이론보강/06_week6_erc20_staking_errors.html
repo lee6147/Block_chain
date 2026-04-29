@@ -106,6 +106,7 @@
     }
 
     .lead { max-width: 920px; color: var(--muted); font-size: 1.06rem; }
+    .section-lead { max-width: 920px; color: #344256; }
     .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
     .two { display: grid; grid-template-columns: minmax(280px, 0.92fr) minmax(300px, 1.08fr); gap: 16px; align-items: start; }
     .concept, .scenario, .result, .callout, .ledger, .classifier-card {
@@ -127,6 +128,58 @@
       display: block;
       margin-bottom: 4px;
       color: #0f3765;
+    }
+
+    .compact-note-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .compact-note-grid > .guide {
+      margin-top: 0;
+    }
+
+    .sequence {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .sequence-step {
+      min-height: 116px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: linear-gradient(180deg, #ffffff, #f8fbff);
+      padding: 12px;
+    }
+
+    .sequence-step b {
+      display: inline-grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      margin-bottom: 8px;
+      border-radius: 999px;
+      color: #ffffff;
+      background: var(--blue);
+      font-size: 0.9rem;
+    }
+
+    .sequence-step strong {
+      display: block;
+      line-height: 1.25;
+      color: #0f3765;
+    }
+
+    .sequence-step span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
     }
 
     .muted { color: var(--muted); }
@@ -316,7 +369,7 @@
     }
 
     @media (max-width: 900px) {
-      .grid, .two, .controls, .flow, .balance-board, .classifier-grid { grid-template-columns: 1fr; }
+      .grid, .two, .controls, .flow, .balance-board, .classifier-grid, .sequence, .compact-note-grid { grid-template-columns: 1fr; }
       .button-row button { flex: 1 1 100%; }
       section { padding: 18px; }
       .vault { min-height: 280px; }
@@ -339,11 +392,11 @@
     </nav>
     <nav aria-label="주차 내비게이션">
       <a href="#first-run">처음 순서</a>
-      <a href="#goals">학습 목표</a>
+      <a href="#approval">Approve/Stake</a>
+      <a href="#reward">Reward</a>
+      <a href="#classifier">오류 판별</a>
       <a href="#concept">정석 개념</a>
-      <a href="#approval">Approve/Stake 시뮬레이터</a>
-      <a href="#reward">Reward 시뮬레이터</a>
-      <a href="#classifier">오류 원인 판별기</a>
+      <a href="#goals">학습 목표</a>
       <a href="#practice">실습 연결</a>
     </nav>
   </header>
@@ -363,52 +416,29 @@
     </section>
     <section id="first-run">
       <h2>처음 눌러볼 순서</h2>
-      <div class="guide">
-        <strong>권장 흐름</strong>
-        <p>approve()를 먼저 눌러 allowance만 증가하는지 보고, allowance 조회로 spender가 Staking 컨트랙트인지 확인한 뒤 stake()를 실행한다. 그다음 시간을 늘려 pendingReward()를 확인하고, claimReward()로 보상만 받은 뒤 withdraw()로 원금을 회수한다.</p>
+      <p class="section-lead">이 페이지는 설명을 오래 읽기보다 아래 6단계를 한 번 눌러 보면서 상태 변화를 보는 구조다.</p>
+      <div class="sequence" aria-label="Week6 권장 버튼 순서">
+        <div class="sequence-step"><b>1</b><strong>approve()</strong><span>송금 아님, allowance 기록</span></div>
+        <div class="sequence-step"><b>2</b><strong>allowance 조회</strong><span>spender가 Staking인지 확인</span></div>
+        <div class="sequence-step"><b>3</b><strong>stake()</strong><span>transferFrom 실제 이동</span></div>
+        <div class="sequence-step"><b>4</b><strong>pendingReward()</strong><span>보상 계산만 확인</span></div>
+        <div class="sequence-step"><b>5</b><strong>claimReward()</strong><span>보상만 수령</span></div>
+        <div class="sequence-step"><b>6</b><strong>withdraw()</strong><span>원금 회수</span></div>
       </div>
-      <div class="guide">
-        <strong>정상 작동 기준</strong>
-        <p>approve 후 balance는 그대로, stake 후 balance와 allowance는 감소, pendingReward는 시간과 staked amount에 따라 증가, claim 후 pending은 0에 가까워지고 staked amount는 유지, withdraw 후 staked amount는 0으로 돌아가야 한다. 초기화는 이 모든 상태와 판별기 선택값을 학습 시작 상태로 되돌린다.</p>
-      </div>
-      <details class="guide">
-        <summary><strong>더 깊게 보기: 다중 stake 전 기존 보상 정산</strong></summary>
-        <p>이미 50 HNL을 맡긴 상태에서 30 HNL을 추가 stake한다면, 먼저 50 HNL이 지난 시간 동안 만든 reward를 정산하고 그다음 staked amount를 80 HNL로 바꿔야 한다. 그렇지 않으면 과거 시간까지 80 HNL을 맡긴 것처럼 보상이 부풀 수 있다.</p>
-      </details>
-    </section>
-
-    <section id="goals">
-      <h2>학습 목표</h2>
-      <div class="grid">
-        <div class="concept"><strong>ERC20 권한 모델</strong><br>`balanceOf`, `approve`, `allowance`, `transferFrom` 관계를 설명한다.</div>
-        <div class="concept"><strong>Staking 흐름</strong><br>approve는 허가, stake는 실제 이동, claim/withdraw는 보상과 원금 회수임을 구분한다.</div>
-        <div class="concept"><strong>오류 진단</strong><br>approve, stake, reward, claim, withdraw 실패를 balance, allowance, reward pool, lock, gas, nonce, require로 좁힌다.</div>
+      <div class="compact-note-grid">
+        <div class="guide">
+          <strong>정상 작동 기준</strong>
+          <p>approve 후 balance는 그대로, stake 후 balance와 allowance는 감소, claim 후 staked amount는 유지, withdraw 후 staked amount는 0으로 돌아가야 한다.</p>
+        </div>
+        <details class="guide">
+          <summary><strong>더 깊게 보기: 다중 stake 전 기존 보상 정산</strong></summary>
+          <p>이미 50 HNL을 맡긴 상태에서 30 HNL을 추가 stake한다면, 먼저 50 HNL이 지난 시간 동안 만든 reward를 정산하고 그다음 staked amount를 80 HNL로 바꿔야 한다.</p>
+        </details>
       </div>
     </section>
-
-    <section id="concept">
-      <h2>정석 개념 설명</h2>
-      <p>ERC20은 이더리움 계열에서 fungible token을 다루기 위한 표준 인터페이스다. `approve(spender, amount)`는 송금이 아니라 `spender`가 내 토큰을 사용할 수 있는 한도를 storage에 기록하는 함수다. 실전에서는 spender 주소와 승인 수량을 확인하고, 무제한 승인과 오래 남은 승인은 revoke/approve(0)로 줄일 수 있어야 한다.</p>
-      <p>Staking 컨트랙트가 사용자의 토큰을 가져가려면 사용자가 먼저 `token.approve(stakingAddress, amount)`를 호출해야 한다. 실제 이동은 `stake(amount)` 내부에서 `token.transferFrom(msg.sender, address(this), amount)`가 실행될 때 일어난다.</p>
-      <div class="callout">
-        <strong>비유로 먼저 이해하기</strong>
-        <p>`approve`는 자동이체 한도 등록이고, `stake`는 등록된 한도 안에서 실제로 돈을 옮기는 단계다. 보상은 사물함에 토큰을 맡긴 시간에 따라 쌓이는 포인트처럼 이해할 수 있다.</p>
-      </div>
-      <div class="guide">
-        <strong>개념 보강: 비유 → 정석 정의 → 확인 질문</strong>
-        <p>approve는 허가, allowance는 남은 한도, transferFrom은 실제 이동, reward는 호출 시점에 계산되는 보상이다. 확인 질문은 "지금 실패가 토큰 balance, allowance, spender 주소, reward pool, lock, gas, nonce 중 어느 문에서 막혔는가?"이다.</p>
-      </div>
-    </section>
-
     <section id="approval">
       <h2>Approve/Stake 시뮬레이터</h2>
       <p><strong>왜 해보는가:</strong> Week6에서 가장 많이 헷갈리는 지점은 approve를 송금으로 착각하는 것이다. 이 시뮬레이터는 approve 후에도 사용자 balance가 줄지 않고 allowance만 증가하며, stake 후에야 balance와 allowance가 줄어드는 것을 보여준다.</p>
-      <div class="guide"><strong>예측 → 실행 → 상태 변화 → 해석</strong><p>approve 전에는 balance가 줄지 않고 allowance만 늘 것이라고 예측한다. stake 후에는 balance와 allowance가 줄고 staked amount가 늘어야 하며, 이것이 transferFrom의 실제 이동이다.</p></div>
-      <div class="guide"><strong>보안 안전난간</strong><p>approve는 테스트넷에서도 "누구에게 얼마까지 허용했는가"를 보는 훈련이다. 메인넷에서는 spender 주소 확인, 무제한 승인 회피, revoke/approve(0) 습관이 중요하다.</p></div>
-      <details class="guide">
-        <summary><strong>더 깊게 보기: approve race와 approve(0)</strong></summary>
-        <p>남은 allowance를 0이 아닌 값에서 또 다른 0이 아닌 값으로 바로 바꾸는 흐름은 오래된 ERC20 approve race 설명에서 자주 다룬다. 초보자 단계에서는 현재 allowance를 확인하고, 필요하면 approve(0)으로 revoke한 뒤 새 수량을 승인하는 순서만 기억한다.</p>
-      </details>
       <div class="two">
         <div class="scenario">
           <h3>ERC20 상태</h3>
@@ -462,15 +492,20 @@
         <div class="balance"><b>staked amount</b><span id="stakedAmount">0</span> HNL</div>
         <div class="balance"><b>raw unit evidence</b><span id="rawUnitNote">0 * 10^18 = 0</span></div>
       </div>
-      <div class="guide"><strong>approve 보안 체크</strong><p><span id="approvalEvidence">spender=Staking 컨트랙트 주소, allowance=0 HNL, decimals=18</span></p></div>
+      <div class="compact-note-grid">
+        <div class="guide"><strong>예측 → 실행 → 상태 변화 → 해석</strong><p>approve 전에는 balance가 줄지 않고 allowance만 늘 것이라고 예측한다. stake 후에는 balance와 allowance가 줄고 staked amount가 늘어야 하며, 이것이 transferFrom의 실제 이동이다.</p></div>
+        <div class="guide"><strong>approve 보안 체크</strong><p><span id="approvalEvidence">spender=Staking 컨트랙트 주소, allowance=0 HNL, decimals=18</span></p></div>
+      </div>
+      <details class="guide">
+        <summary><strong>더 깊게 보기: approve race와 approve(0)</strong></summary>
+        <p>남은 allowance를 0이 아닌 값에서 또 다른 0이 아닌 값으로 바로 바꾸는 흐름은 오래된 ERC20 approve race 설명에서 자주 다룬다. 초보자 단계에서는 현재 allowance를 확인하고, 필요하면 approve(0)으로 revoke한 뒤 새 수량을 승인하는 순서만 기억한다.</p>
+      </details>
       <p><strong>실제 실습에서 어디에 해당하는가:</strong> `04_Remix_VM_테스트.md`의 Step 5 approve, Step 6 stake, `ApproveForm.tsx`, `AllowanceChecker.tsx`, Week6 DApp의 approve/stake 버튼에 해당한다.</p>
     </section>
-
     <section id="reward">
       <h2>Reward 증가 시뮬레이터</h2>
       <p><strong>왜 해보는가:</strong> 보상은 매초 모든 사용자에게 실제로 쓰는 것이 아니라, `stake`, `claimReward`, `unstake` 같은 상태 변경 함수가 호출될 때 lazy update로 계산된다. reward pool이 비어 있으면 claim도 실패할 수 있다.</p>
       <p><strong>단위 안전난간:</strong> 이 계산기는 화면 표시 단위(HNL)로 움직이는 교육용 근사 모델이다. 실제 컨트랙트는 `uint256` raw unit을 쓰므로 50 HNL은 decimals=18 기준 `50 * 10^18`로 변환한 뒤 계산하고, 화면에는 다시 formatUnits로 보여준다.</p>
-      <div class="guide"><strong>예측 → 실행 → 상태 변화 → 해석</strong><p>pendingReward 실행 전에는 보상이 경과 시간과 staked amount에 비례할지 예측한다. claim/withdraw 결과는 lazy update, reward pool, lock 조건 중 어디에 걸렸는지로 해석한다.</p></div>
       <div class="two">
         <div class="scenario">
           <h3>보상 조건</h3>
@@ -516,7 +551,10 @@
         <div class="balance"><b>lastUpdate</b><span id="lastUpdateValue">0</span>초</div>
         <div class="balance"><b>reward delta</b><span id="rewardDeltaValue">0초</span></div>
       </div>
-      <div class="guide"><strong>claim vs withdraw</strong><p><span id="rewardEvidence">claimReward는 보상만 이동시키고 staked amount를 유지한다. 이 페이지의 teaching mode는 claimReward를 먼저 눌러 보상과 원금 회수를 분리한다. 실제 컨트랙트에서는 withdraw가 보상을 자동 정산하거나 원금만 회수할 수 있으므로 구현별 코드를 확인한다.</span></p></div>
+      <div class="compact-note-grid">
+        <div class="guide"><strong>예측 → 실행 → 상태 변화 → 해석</strong><p>pendingReward 실행 전에는 보상이 경과 시간과 staked amount에 비례할지 예측한다. claim/withdraw 결과는 lazy update, reward pool, lock 조건 중 어디에 걸렸는지로 해석한다.</p></div>
+        <div class="guide"><strong>claim vs withdraw</strong><p><span id="rewardEvidence">claimReward는 보상만 이동시키고 staked amount를 유지한다. 이 페이지의 teaching mode는 claimReward를 먼저 눌러 보상과 원금 회수를 분리한다. 실제 컨트랙트에서는 withdraw가 보상을 자동 정산하거나 원금만 회수할 수 있으므로 구현별 코드를 확인한다.</span></p></div>
+      </div>
       <details class="guide">
         <summary><strong>더 깊게 보기: 교육용 reward 계산의 한계</strong></summary>
         <p>이 화면은 HNL 단위의 근사 모델로 lazy update를 설명한다. 실제 컨트랙트는 raw unit, decimals, rounding, totalStaked, reward reserve를 함께 처리하므로 배포 전에는 코드와 테스트로 산식을 다시 확인한다.</p>
@@ -527,7 +565,6 @@
       </div>
       <p><strong>실제 실습에서 어디에 해당하는가:</strong> `03_Staking_컨트랙트_작성.md`의 `_updateReward`, `pendingReward`, `claimReward`, `unstake`와 `05_Sepolia_배포_검증.md`의 이벤트/tx hash 확인에 해당한다.</p>
     </section>
-
     <section id="classifier">
       <h2>오류 원인 판별기</h2>
       <p><strong>왜 해보는가:</strong> Week6 오류는 approve, stake, reward, claim, withdraw 중 어느 단계에서 났는지 먼저 나눠야 한다. 그다음 balance, allowance, reward pool, lock, gas, nonce, require 조건으로 좁힌다.</p>
@@ -592,7 +629,27 @@
       </div>
       <p><strong>실제 실습에서 어디에 해당하는가:</strong> Week6 DApp에서 버튼을 누른 뒤 MetaMask, Remix console, Etherscan, `balanceOf`, `allowance`, `pendingReward`를 어떤 순서로 볼지 정하는 훈련이다.</p>
     </section>
-
+    <section id="concept">
+      <h2>정석 개념 설명</h2>
+      <p>ERC20은 이더리움 계열에서 fungible token을 다루기 위한 표준 인터페이스다. `approve(spender, amount)`는 송금이 아니라 `spender`가 내 토큰을 사용할 수 있는 한도를 storage에 기록하는 함수다. 실전에서는 spender 주소와 승인 수량을 확인하고, 무제한 승인과 오래 남은 승인은 revoke/approve(0)로 줄일 수 있어야 한다.</p>
+      <p>Staking 컨트랙트가 사용자의 토큰을 가져가려면 사용자가 먼저 `token.approve(stakingAddress, amount)`를 호출해야 한다. 실제 이동은 `stake(amount)` 내부에서 `token.transferFrom(msg.sender, address(this), amount)`가 실행될 때 일어난다.</p>
+      <div class="callout">
+        <strong>비유로 먼저 이해하기</strong>
+        <p>`approve`는 자동이체 한도 등록이고, `stake`는 등록된 한도 안에서 실제로 돈을 옮기는 단계다. 보상은 사물함에 토큰을 맡긴 시간에 따라 쌓이는 포인트처럼 이해할 수 있다.</p>
+      </div>
+      <div class="guide">
+        <strong>개념 보강: 비유 → 정석 정의 → 확인 질문</strong>
+        <p>approve는 허가, allowance는 남은 한도, transferFrom은 실제 이동, reward는 호출 시점에 계산되는 보상이다. 확인 질문은 "지금 실패가 토큰 balance, allowance, spender 주소, reward pool, lock, gas, nonce 중 어느 문에서 막혔는가?"이다.</p>
+      </div>
+    </section>
+    <section id="goals">
+      <h2>학습 목표</h2>
+      <div class="grid">
+        <div class="concept"><strong>ERC20 권한 모델</strong><br>`balanceOf`, `approve`, `allowance`, `transferFrom` 관계를 설명한다.</div>
+        <div class="concept"><strong>Staking 흐름</strong><br>approve는 허가, stake는 실제 이동, claim/withdraw는 보상과 원금 회수임을 구분한다.</div>
+        <div class="concept"><strong>오류 진단</strong><br>approve, stake, reward, claim, withdraw 실패를 balance, allowance, reward pool, lock, gas, nonce, require로 좁힌다.</div>
+      </div>
+    </section>
     <section id="practice">
       <h2>수업 실습과 연결</h2>
       <table>
