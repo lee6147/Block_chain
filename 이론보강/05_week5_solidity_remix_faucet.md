@@ -83,6 +83,20 @@ Week5 자료의 `week5-concepts-lab1.md`는 `pragma`, `contract`, 상태 변수,
 5. 성공하면 `Withdrawal(user, amount)` 이벤트와 잔액 변화를 확인한다.
 6. 실패하면 에러 메시지를 보고 쿨다운, Faucet 잔액, 지갑 gas, 네트워크를 분리해 확인한다.
 
+왜 배우는가를 한 문장으로 줄이면 "버튼을 누르는 법"이 아니라 "실패한 위치를 좁히는 법"을 배우는 것이다. 컴파일 실패는 아직 체인에 간 것이 아니고, 배포 실패는 컨트랙트 주소가 만들어지지 않은 것이며, `withdraw()` revert는 이미 지갑 서명과 트랜잭션 실행 단계까지 간 뒤 컨트랙트 조건이 실패한 것이다. 이 차이를 모르면 모든 오류가 Remix, MetaMask, Faucet 고장처럼 보인다.
+
+실패 의미는 다음 순서로 읽는다.
+
+| 실패 위치 | 아직 일어나지 않은 일 | 먼저 볼 증거 |
+| --- | --- | --- |
+| Compile 실패 | tx hash, gas 지불, 상태 변경이 모두 없음 | Remix compiler 오류 줄, pragma, import, 타입 |
+| Deploy 실패 | 컨트랙트 주소가 만들어지지 않음 | 지갑 네트워크, Sepolia ETH, 생성자 인자, gas |
+| Read 실패 | 상태 변경은 없음 | ABI, 컨트랙트 주소, 함수 인자 |
+| Write revert | 성공 event와 storage 변경이 없음 | revert reason, require 조건, receipt status |
+| Faucet 수령 실패 | 토큰/ETH가 사용자에게 지급되지 않음 | Faucet 잔량, cooldown, 일일 제한, 네트워크 |
+
+처음 실습 경로는 `Compile -> Deploy -> Read/Write -> Faucet withdraw -> 오류 분류`로 고정한다. 중간에 막히면 다음 단계로 넘어가지 않고, 지금 단계가 컴파일 전인지, 컨트랙트 주소 생성 전인지, write tx 실행 후 require 실패인지 먼저 말하게 한다.
+
 04.07 강의자료와 04.14 강의자료는 Faucet 코드, `mapping`, `block.timestamp`, OpenZeppelin `Ownable`, cooldown 조건을 반복해서 보여준다. 이론 보강에서는 이 내용을 실습 버튼 순서와 에러 분류표로 다시 묶는다.
 
 ## 자주 헷갈리는 지점
@@ -107,7 +121,7 @@ Week5 자료의 `week5-concepts-lab1.md`는 `pragma`, `contract`, 상태 변수,
 
 ## HTML 시뮬레이터 설계
 
-새 HTML을 만든다면 Week5 시뮬레이터는 "Faucet 실행 판별기"로 설계한다. 이 작업에서는 HTML을 만들지 않고, 구현 설계만 남긴다.
+짝이 되는 HTML 확장판은 "Faucet 실행 판별기"를 구현하며, 다음 설계를 기준으로 검토한다.
 
 - 화면 1: Remix 단계 카드
   - Compile, Deploy, Call 세 단계를 탭으로 보여준다.
@@ -118,12 +132,21 @@ Week5 자료의 `week5-concepts-lab1.md`는 `pragma`, `contract`, 상태 변수,
   - 결과: require 1 통과/실패, require 2 통과/실패, 상태 변경, 이벤트 발생 여부를 순서대로 표시한다.
 - 화면 3: 에러 분류 훈련
   - "ParserError", "Faucet empty", "Cooldown active", "insufficient funds", "nonce too low", "execution reverted" 카드를 보여준다.
-  - 사용자가 컴파일/Faucet 수령/트랜잭션 실행 중 하나로 분류하면 이유를 피드백한다.
+  - 사용자가 컴파일/Faucet 수령/트랜잭션 실행 중 하나로 분류하면 이유를 피드백한다. 단, Faucet empty/cooldown도 write transaction에서는 `execution reverted`로 보일 수 있으므로 이 분류는 "증상이 속한 원인 영역"임을 명시한다.
 - 화면 4: 이벤트 영수증
   - 성공 시 `Withdrawal(address indexed user, uint256 amount)` 로그가 receipt에 추가되는 모습을 보여준다.
   - 실패 시 상태와 이벤트가 바뀌지 않는 것을 강조한다.
 
 시각화 핵심은 "조건 실패 전에는 상태가 바뀌지 않는다"와 "성공할 때만 storage 변경과 event log가 남는다"이다.
+
+시뮬레이터 타당성 기준:
+
+- Remix 단계 시뮬레이터는 Compile, Deploy, Read, Write를 한 화면에 넣더라도 결과 해석은 반드시 단계별로 분리해야 한다.
+- Faucet 시뮬레이터는 쿨다운 실패와 Faucet 컨트랙트 잔액 부족을 다른 require 실패로 보여줘야 한다.
+- Faucet empty/cooldown은 Faucet 원인 영역이지만, MetaMask나 receipt에서는 execution reverted로 보일 수 있음을 함께 보여줘야 한다.
+- 실패한 `withdraw()`는 `lastWithdrawalTime` 갱신과 `Withdrawal` event가 남지 않는 것으로 표현해야 한다.
+- `insufficient funds`는 우선 gas용 native ETH 부족으로 안내하고, Faucet 컨트랙트 잔액 부족과 섞지 않는다.
+- 기능을 더 늘리기보다 "예측 -> 실행 -> 상태 변화 -> 해석" 순서가 화면에서 먼저 보이게 하는 것이 우선이다.
 
 ## 체크리스트
 

@@ -116,9 +116,20 @@ Staking 진단은 다음처럼 더 좁힌다.
 | gas/nonce | MetaMask와 explorer 확인 | pending tx 정리, gas용 Sepolia ETH 확보 |
 | require 조건 | revert 메시지와 코드 매칭 | 메시지가 가리키는 조건을 직접 확인 |
 
+정상 작동 검토 기준은 다음 순서로 둔다. 이 순서가 깨지면 기능을 추가하기 전에 설명, 버튼 배치, 결과 문구를 먼저 고친다.
+
+1. `approve(stakingAddress, amount)` 후 사용자 `balanceOf(user)`는 줄지 않고 `allowance(user, stakingAddress)`만 증가한다.
+2. `allowance` 조회는 owner가 사용자 주소, spender가 Staking 컨트랙트 주소임을 보여준다.
+3. `stake(amount)` 성공 후 사용자 balance와 allowance는 줄고, staked amount는 증가한다.
+4. 시간이 지나도 storage가 매초 자동으로 쓰이는 것이 아니라, `pendingReward` 조회 또는 claim/withdraw 시점에 lazy update 계산을 해석한다.
+5. `pendingReward > 0`이고 reward pool이 충분하면 `claimReward()`가 보상을 지급하고 staked amount는 유지된다.
+6. `withdraw`는 원금 회수 단계이며, lock/time 조건과 보상 선청구 여부를 분리해 안내한다.
+7. reset은 사용자 balance, allowance, staked amount, pending reward, lastUpdate, 판별기 선택값을 모두 초기 학습 상태로 되돌린다.
+8. 오류 판별기는 선택한 단계와 대표 메시지가 맞지 않으면 "단계/메시지 불일치"를 먼저 보여줘야 한다.
+
 ## HTML 시뮬레이터 설계
 
-새 HTML을 만든다면 Week6 시뮬레이터는 "ERC20 권한과 staking 에러 판별기"로 설계한다. 이 작업에서는 HTML을 만들지 않고, 구현 설계만 남긴다.
+짝이 되는 HTML 확장판은 "ERC20 권한과 staking 에러 판별기"를 구현하며, 다음 설계를 기준으로 검토한다.
 
 - 화면 1: ERC20 권한 모델
   - 입력값: 사용자 balance, staking 컨트랙트 주소, approve 수량, stake 수량.
@@ -136,6 +147,15 @@ Staking 진단은 다음처럼 더 좁힌다.
   - Remix VM에서는 gas/nonce/explorer 변수를 단순화하고, Sepolia에서는 MetaMask, Sepolia ETH, Etherscan tx hash를 추가로 보여준다.
 
 시각화 핵심은 "`approve`는 허가, `transferFrom`은 실제 이동"과 "staking 실패는 토큰 잔액, 승인 한도, 보상 금고, 시간 조건, 지갑 트랜잭션 조건을 따로 봐야 한다"이다.
+
+시뮬레이터 타당성 기준:
+
+- approve와 stake를 한 버튼처럼 묶지 않는다. approve 성공만으로 토큰이 이동했다는 인상을 주면 부적합하다.
+- allowance 조회는 stake 전후로 남은 한도가 바뀌는 증거를 보여줘야 한다.
+- reward 계산은 `pendingReward -> claimReward -> withdraw` 순서로 실습하게 하되, claim과 withdraw의 역할을 섞지 않는다.
+- 이 자료의 기본 시뮬레이터는 teaching mode로 `claimReward`를 먼저 눌러 보상과 원금 회수를 분리한다. 실제 컨트랙트는 withdraw가 보상을 자동 정산하거나 원금만 회수하도록 구현될 수 있으므로 구현별 문서와 코드를 확인하게 한다.
+- `insufficient funds`, `nonce too low`, `transferFrom failed`, `nothing to claim`, `reward transfer failed`, `withdraw locked`는 서로 다른 원인으로 분류되어야 한다.
+- Remix VM 모드와 Sepolia 모드는 같은 성공 기준으로 설명하지 않는다. Sepolia에서는 gas, nonce, tx hash, explorer 증거가 추가된다.
 
 ## 체크리스트
 

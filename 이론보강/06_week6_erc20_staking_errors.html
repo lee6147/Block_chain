@@ -305,7 +305,12 @@
     <span class="pill">Week6 이론 보강</span>
     <h1>ERC20, Staking, Error Diagnosis</h1>
     <p class="lead">ERC20 staking은 `approve -> stake -> reward 증가 -> claim/withdraw` 순서로 진행된다. 이 페이지는 권한, 잔액, 보상 금고, lock/time, gas, nonce, require 조건을 분리해 보는 오프라인 정적 시뮬레이터이며 실제 지갑이나 RPC를 호출하지 않는다.</p>
+    <nav aria-label="커리큘럼 이동">
+      <a href="index.html">목차</a>
+      <a href="05_week5_solidity_remix_faucet.html">이전 Week5</a>
+    </nav>
     <nav aria-label="주차 내비게이션">
+      <a href="#first-run">처음 순서</a>
       <a href="#goals">학습 목표</a>
       <a href="#concept">정석 개념</a>
       <a href="#approval">Approve/Stake 시뮬레이터</a>
@@ -316,6 +321,18 @@
   </header>
 
   <main>
+    <section id="first-run">
+      <h2>처음 눌러볼 순서</h2>
+      <div class="guide">
+        <strong>권장 흐름</strong>
+        <p>approve()를 먼저 눌러 allowance만 증가하는지 보고, allowance 조회로 spender가 Staking 컨트랙트인지 확인한 뒤 stake()를 실행한다. 그다음 시간을 늘려 pendingReward()를 확인하고, claimReward()로 보상만 받은 뒤 withdraw()로 원금을 회수한다.</p>
+      </div>
+      <div class="guide">
+        <strong>정상 작동 기준</strong>
+        <p>approve 후 balance는 그대로, stake 후 balance와 allowance는 감소, pendingReward는 시간과 staked amount에 따라 증가, claim 후 pending은 0에 가까워지고 staked amount는 유지, withdraw 후 staked amount는 0으로 돌아가야 한다. 초기화는 이 모든 상태와 판별기 선택값을 학습 시작 상태로 되돌린다.</p>
+      </div>
+    </section>
+
     <section id="goals">
       <h2>학습 목표</h2>
       <div class="grid">
@@ -404,7 +421,7 @@
     <section id="reward">
       <h2>Reward 증가 시뮬레이터</h2>
       <p><strong>왜 해보는가:</strong> 보상은 매초 모든 사용자에게 실제로 쓰는 것이 아니라, `stake`, `claimReward`, `unstake` 같은 상태 변경 함수가 호출될 때 lazy update로 계산된다. reward pool이 비어 있으면 claim도 실패할 수 있다.</p>
-      <p><strong>단위 안전난간:</strong> 이 계산기는 화면 표시 단위(HNL)로 움직이는 교육용 모델이다. 실제 컨트랙트는 `uint256` raw unit을 쓰므로 50 HNL은 decimals=18 기준 `50 * 10^18`로 변환한 뒤 계산하고, 화면에는 다시 formatUnits로 보여준다.</p>
+      <p><strong>단위 안전난간:</strong> 이 계산기는 화면 표시 단위(HNL)로 움직이는 교육용 근사 모델이다. 실제 컨트랙트는 `uint256` raw unit을 쓰므로 50 HNL은 decimals=18 기준 `50 * 10^18`로 변환한 뒤 계산하고, 화면에는 다시 formatUnits로 보여준다.</p>
       <div class="guide"><strong>예측 → 실행 → 상태 변화 → 해석</strong><p>pendingReward 실행 전에는 보상이 경과 시간과 staked amount에 비례할지 예측한다. claim/withdraw 결과는 lazy update, reward pool, lock 조건 중 어디에 걸렸는지로 해석한다.</p></div>
       <div class="two">
         <div class="scenario">
@@ -451,13 +468,18 @@
         <div class="balance"><b>lastUpdate</b><span id="lastUpdateValue">0</span>초</div>
         <div class="balance"><b>reward delta</b><span id="rewardDeltaValue">0초</span></div>
       </div>
-      <div class="guide"><strong>claim vs withdraw</strong><p><span id="rewardEvidence">claimReward는 보상만 이동시키고 staked amount를 유지한다. withdraw는 원금을 돌려주며 보상 처리는 컨트랙트 구현에 따라 별도 claim 또는 내부 정산이 필요하다.</span></p></div>
+      <div class="guide"><strong>claim vs withdraw</strong><p><span id="rewardEvidence">claimReward는 보상만 이동시키고 staked amount를 유지한다. 이 페이지의 teaching mode는 claimReward를 먼저 눌러 보상과 원금 회수를 분리한다. 실제 컨트랙트에서는 withdraw가 보상을 자동 정산하거나 원금만 회수할 수 있으므로 구현별 코드를 확인한다.</span></p></div>
+      <div class="guide">
+        <strong>타당성 기준</strong>
+        <p>이 시뮬레이터는 approve와 stake를 분리해서 보여줘야 한다. allowance 조회, pendingReward, claimReward, withdraw, reset이 서로 다른 상태 변화를 남기면 적합하고, approve 성공만으로 토큰이 맡겨진 것처럼 보이면 부적합하다.</p>
+      </div>
       <p><strong>실제 실습에서 어디에 해당하는가:</strong> `03_Staking_컨트랙트_작성.md`의 `_updateReward`, `pendingReward`, `claimReward`, `unstake`와 `05_Sepolia_배포_검증.md`의 이벤트/tx hash 확인에 해당한다.</p>
     </section>
 
     <section id="classifier">
       <h2>오류 원인 판별기</h2>
       <p><strong>왜 해보는가:</strong> Week6 오류는 approve, stake, reward, claim, withdraw 중 어느 단계에서 났는지 먼저 나눠야 한다. 그다음 balance, allowance, reward pool, lock, gas, nonce, require 조건으로 좁힌다.</p>
+      <p><strong>언제 쓰는가:</strong> 권장 흐름을 눌러보다가 MetaMask, Remix console, Etherscan, DApp 메시지가 서로 다르게 보일 때 쓰는 fallback 화면이다. 먼저 실패한 버튼을 고르고, 그다음 메시지와 원인 추정을 맞춘다.</p>
       <div class="guide"><strong>예측 → 실행 → 상태 변화 → 해석</strong><p>메시지를 고르기 전 원인을 먼저 추정한다. 판별 결과는 DApp이 고장났다는 결론이 아니라, MetaMask, Etherscan, Remix console, balanceOf, allowance, pendingReward 중 다음 확인 화면을 정하는 힌트다.</p></div>
       <div class="classifier-grid">
         <div class="classifier-card">
@@ -535,7 +557,7 @@
     </section>
   </main>
 
-  <footer>오프라인 정적 학습 페이지. 실제 wallet, RPC, chain, explorer 호출 없음.</footer>
+  <footer>오프라인 정적 학습 페이지. 실제 wallet, RPC, chain, explorer 호출 없음. <a href="05_week5_solidity_remix_faucet.html">이전 Week5</a> · <a href="index.html">목차</a></footer>
 
   <script>
     const $ = (id) => document.getElementById(id);
@@ -760,7 +782,7 @@
       const pending = calcPending();
       if (pending > 0) {
         updateRewardBoard(pending);
-        setResult('rewardResult', 'warn', 'withdraw 전 보상 확인 필요', `현재 pending reward가 ${pending.toFixed(4)} HNL입니다. 이 시뮬레이터에서는 claimReward로 보상을 먼저 받은 뒤 withdraw로 원금을 회수하게 하여 claim과 withdraw의 차이를 분리합니다.`);
+        setResult('rewardResult', 'warn', 'teaching mode: claim 먼저', `현재 pending reward가 ${pending.toFixed(4)} HNL입니다. 이 시뮬레이터에서는 claimReward로 보상을 먼저 받은 뒤 withdraw로 원금을 회수하게 하여 claim과 withdraw의 차이를 분리합니다. 실제 컨트랙트는 withdraw가 보상을 자동 정산하거나 원금만 회수할 수 있으므로 구현별 코드를 확인합니다.`);
         setFlow('flowWithdraw', 'active');
         return;
       }

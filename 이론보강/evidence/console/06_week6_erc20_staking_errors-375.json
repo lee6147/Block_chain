@@ -4,6 +4,6 @@
     "scrollWidth": 375,
     "clientWidth": 375,
     "buttonCount": 25,
-    "bodyText": "Week6 이론 보강\nERC20, Staking, Error Diagnosis\n\nERC20 staking은 `approve -> stake -> reward 증가 -> claim/withdraw` 순서로 진행된다. 이 페이지는 권한, 잔액, 보상 금고, lock/time, gas, nonce, require 조건을 분리해 보는 오프라인 정적 시뮬레이터이며 실제 지갑이나 RPC를 호출하지 않는다.\n\n학습 목표\n정석 개념\nApprove/Stake 시뮬레이터\nReward 시뮬레이터\n오류 원인 판별기\n실습 연결\n학습 목표\nERC20 권한 모델\n`balanceOf`, `approve`, `allowance`, `transferFrom` 관계를 설명한다.\nStaking 흐름\napprove는 허가, stake는 실제 이동, claim/withdraw는 보상과 원금 회수임을 구분한다.\n오류 진단\napprove, stake, reward, claim, withdraw 실패를 balance, allo"
+    "bodyText": "Week6 이론 보강\nERC20, Staking, Error Diagnosis\n\nERC20 staking은 `approve -> stake -> reward 증가 -> claim/withdraw` 순서로 진행된다. 이 페이지는 권한, 잔액, 보상 금고, lock/time, gas, nonce, require 조건을 분리해 보는 오프라인 정적 시뮬레이터이며 실제 지갑이나 RPC를 호출하지 않는다.\n\n목차\n이전 Week5\n처음 순서\n학습 목표\n정석 개념\nApprove/Stake 시뮬레이터\nReward 시뮬레이터\n오류 원인 판별기\n실습 연결\n처음 눌러볼 순서\n권장 흐름\n\napprove()를 먼저 눌러 allowance만 증가하는지 보고, allowance 조회로 spender가 Staking 컨트랙트인지 확인한 뒤 stake()를 실행한다. 그다음 시간을 늘려 pendingReward()를 확인하고, claimReward()로 보상만 받은 뒤 withdraw()로 원금을 회수한다.\n\n정상"
   }
 }
