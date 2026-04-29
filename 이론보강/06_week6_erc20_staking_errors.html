@@ -21,9 +21,24 @@
 
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
+    .skip-link {
+      position: absolute;
+      left: 12px;
+      top: -64px;
+      z-index: 1000;
+      padding: 10px 14px;
+      border: 3px solid var(--ink);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .skip-link:focus { top: 12px; }
     body {
       margin: 0;
       font-family: "Segoe UI", "Malgun Gothic", system-ui, sans-serif;
+      font-size: 16px;
       line-height: 1.65;
       color: var(--ink);
       background:
@@ -61,7 +76,7 @@
     nav a, .pill {
       display: inline-flex;
       align-items: center;
-      min-height: 36px;
+      min-height: 44px;
       padding: 7px 12px;
       border: 1px solid var(--line);
       border-radius: 999px;
@@ -69,6 +84,10 @@
       background: #f8fafc;
       text-decoration: none;
       font-size: 0.92rem;
+    }
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 3px solid #111827;
+      outline-offset: 3px;
     }
 
     main {
@@ -129,7 +148,7 @@
 
     select, input[type="number"], input[type="range"] {
       width: 100%;
-      min-height: 40px;
+      min-height: 44px;
       border: 1px solid #bac6d4;
       border-radius: 8px;
       padding: 7px 10px;
@@ -139,7 +158,7 @@
     }
 
     button {
-      min-height: 42px;
+      min-height: 44px;
       border: 0;
       border-radius: 8px;
       padding: 10px 14px;
@@ -287,6 +306,14 @@
       color: var(--muted);
       font-size: 0.92rem;
     }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
 
     @media (max-width: 900px) {
       .grid, .two, .controls, .flow, .balance-board, .classifier-grid { grid-template-columns: 1fr; }
@@ -301,6 +328,7 @@
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">본문으로 건너뛰기</a>
   <header>
     <span class="pill">Week6 이론 보강</span>
     <h1>ERC20, Staking, Error Diagnosis</h1>
@@ -320,7 +348,19 @@
     </nav>
   </header>
 
-  <main>
+  <main id="main" tabindex="-1">
+    <section id="read-first" aria-labelledby="read-first-title">
+      <h2 id="read-first-title">오늘 이해할 3문장</h2>
+      <div class="grid">
+        <div class="concept"><strong>1. approve는 송금이 아니다.</strong><br>토큰은 그대로 있고 allowance만 기록된다.</div>
+        <div class="concept"><strong>2. stake가 실제 이동이다.</strong><br>Staking 컨트랙트가 transferFrom으로 allowance와 balance를 줄인다.</div>
+        <div class="concept"><strong>3. 보상은 조회와 수령이 다르다.</strong><br>pendingReward는 계산이고, claim/withdraw는 상태를 바꾸는 쓰기 트랜잭션이다.</div>
+      </div>
+      <div class="guide">
+        <strong>처음이면 이 순서로</strong>
+        <p>approve -> allowance 조회 -> stake -> pendingReward -> claim -> withdraw 순서로 누른다. 초기화는 영역별로 나뉜다. Approve/Stake 초기화는 balance, allowance, staked amount를 되돌리고, Reward 초기화는 보상 흐름을 되돌리며, 오류 판별기 초기 상태는 선택값을 학습 시작 상태로 되돌린다.</p>
+      </div>
+    </section>
     <section id="first-run">
       <h2>처음 눌러볼 순서</h2>
       <div class="guide">
@@ -331,6 +371,10 @@
         <strong>정상 작동 기준</strong>
         <p>approve 후 balance는 그대로, stake 후 balance와 allowance는 감소, pendingReward는 시간과 staked amount에 따라 증가, claim 후 pending은 0에 가까워지고 staked amount는 유지, withdraw 후 staked amount는 0으로 돌아가야 한다. 초기화는 이 모든 상태와 판별기 선택값을 학습 시작 상태로 되돌린다.</p>
       </div>
+      <details class="guide">
+        <summary><strong>더 깊게 보기: 다중 stake 전 기존 보상 정산</strong></summary>
+        <p>이미 50 HNL을 맡긴 상태에서 30 HNL을 추가 stake한다면, 먼저 50 HNL이 지난 시간 동안 만든 reward를 정산하고 그다음 staked amount를 80 HNL로 바꿔야 한다. 그렇지 않으면 과거 시간까지 80 HNL을 맡긴 것처럼 보상이 부풀 수 있다.</p>
+      </details>
     </section>
 
     <section id="goals">
@@ -361,6 +405,10 @@
       <p><strong>왜 해보는가:</strong> Week6에서 가장 많이 헷갈리는 지점은 approve를 송금으로 착각하는 것이다. 이 시뮬레이터는 approve 후에도 사용자 balance가 줄지 않고 allowance만 증가하며, stake 후에야 balance와 allowance가 줄어드는 것을 보여준다.</p>
       <div class="guide"><strong>예측 → 실행 → 상태 변화 → 해석</strong><p>approve 전에는 balance가 줄지 않고 allowance만 늘 것이라고 예측한다. stake 후에는 balance와 allowance가 줄고 staked amount가 늘어야 하며, 이것이 transferFrom의 실제 이동이다.</p></div>
       <div class="guide"><strong>보안 안전난간</strong><p>approve는 테스트넷에서도 "누구에게 얼마까지 허용했는가"를 보는 훈련이다. 메인넷에서는 spender 주소 확인, 무제한 승인 회피, revoke/approve(0) 습관이 중요하다.</p></div>
+      <details class="guide">
+        <summary><strong>더 깊게 보기: approve race와 approve(0)</strong></summary>
+        <p>남은 allowance를 0이 아닌 값에서 또 다른 0이 아닌 값으로 바로 바꾸는 흐름은 오래된 ERC20 approve race 설명에서 자주 다룬다. 초보자 단계에서는 현재 allowance를 확인하고, 필요하면 approve(0)으로 revoke한 뒤 새 수량을 승인하는 순서만 기억한다.</p>
+      </details>
       <div class="two">
         <div class="scenario">
           <h3>ERC20 상태</h3>
@@ -402,7 +450,7 @@
             <p class="small muted">approve는 길을 열고, stake가 실제로 토큰을 이동시킵니다.</p>
             <div class="token t1">U</div><div class="token t2">U</div><div class="token t3">S</div><div class="token t4">R</div>
           </div>
-          <div id="approvalResult" class="result status">
+          <div id="approvalResult" class="result status" role="status" aria-live="polite">
             <h3>상태 대기</h3>
             <p>approve, allowance 조회, stake 버튼을 순서대로 눌러 보세요.</p>
           </div>
@@ -450,7 +498,7 @@
             <button id="resetReward" class="secondary">초기화</button>
           </div>
         </div>
-        <div id="rewardResult" class="result status">
+        <div id="rewardResult" class="result status" role="status" aria-live="polite">
           <h3>보상 대기</h3>
           <p>먼저 staking을 실행하거나 staked amount를 만든 뒤 reward를 계산하세요.</p>
         </div>
@@ -469,6 +517,10 @@
         <div class="balance"><b>reward delta</b><span id="rewardDeltaValue">0초</span></div>
       </div>
       <div class="guide"><strong>claim vs withdraw</strong><p><span id="rewardEvidence">claimReward는 보상만 이동시키고 staked amount를 유지한다. 이 페이지의 teaching mode는 claimReward를 먼저 눌러 보상과 원금 회수를 분리한다. 실제 컨트랙트에서는 withdraw가 보상을 자동 정산하거나 원금만 회수할 수 있으므로 구현별 코드를 확인한다.</span></p></div>
+      <details class="guide">
+        <summary><strong>더 깊게 보기: 교육용 reward 계산의 한계</strong></summary>
+        <p>이 화면은 HNL 단위의 근사 모델로 lazy update를 설명한다. 실제 컨트랙트는 raw unit, decimals, rounding, totalStaked, reward reserve를 함께 처리하므로 배포 전에는 코드와 테스트로 산식을 다시 확인한다.</p>
+      </details>
       <div class="guide">
         <strong>타당성 기준</strong>
         <p>이 시뮬레이터는 approve와 stake를 분리해서 보여줘야 한다. allowance 조회, pendingReward, claimReward, withdraw, reset이 서로 다른 상태 변화를 남기면 적합하고, approve 성공만으로 토큰이 맡겨진 것처럼 보이면 부적합하다.</p>
@@ -533,7 +585,7 @@
             <button id="resetClassifier" class="secondary">초기 상태</button>
           </div>
         </div>
-        <div id="classifierResult" class="result status">
+        <div id="classifierResult" class="result status" role="status" aria-live="polite">
           <h3>판별 대기</h3>
           <p>approve/stake/reward/claim/withdraw 중 실패한 단계와 메시지를 고르면 확인 순서를 제안한다.</p>
         </div>

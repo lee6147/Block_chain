@@ -32,7 +32,11 @@ ERC20은 이더리움 계열에서 fungible token을 다루기 위한 표준 인
 
 실전에서는 `approve`가 보안 위험도 만든다. 잘못된 `spender` 주소에 승인하면 그 주소가 허용량 안에서 토큰을 가져갈 수 있다. 무제한 승인은 편하지만 피해 범위도 커진다. 따라서 수업에서는 테스트넷과 메인넷을 구분하고, `spender`가 정말 Staking 컨트랙트인지 확인하며, 필요 이상으로 큰 승인이나 오래 남은 승인은 revoke/approve(0)로 줄일 수 있음을 함께 안내한다.
 
+또 하나의 안전난간은 오래된 ERC20의 approve race 문제다. 이미 `allowance=100`이 남아 있는데 곧바로 `approve(200)`으로 바꾸면, 일부 상황에서는 이전 승인과 새 승인이 겹쳐 해석될 위험을 설명하는 자료가 많다. 초보자에게는 복잡한 공격 과정보다 `현재 allowance 확인 -> approve(spender, 0)으로 revoke -> 새 수량 approve` 순서만 기억시킨다.
+
 Week6 staking의 정석 흐름은 다음이다.
+
+초보자에게는 버튼 순서를 고정해서 안내한다. `approve -> allowance 조회 -> stake -> pendingReward -> claimReward -> withdraw` 순서가 깨지면, 새 기능을 추가하기 전에 지금 어느 상태가 바뀌었는지부터 다시 본다.
 
 1. ERC20 토큰 주소를 정한다.
 2. Staking 컨트랙트를 ERC20 주소와 함께 배포한다.
@@ -44,6 +48,8 @@ Week6 staking의 정석 흐름은 다음이다.
 8. `claimReward()`로 보상을 받거나 `unstake(amount)`/`withdraw` 계열 함수로 원금을 회수한다.
 
 Staking 컨트랙트의 보상 원리는 `amount * rewardRatePerSecond * delta / 1e18`이다. 여기서 `delta`는 마지막 갱신 이후 지난 시간이다. 모든 사용자에게 매초 반복해서 보상을 쓰는 것이 아니라, `stake`, `claimReward`, `unstake` 같은 상태 변경 함수가 호출될 때 `_updateReward`로 그동안 쌓였을 보상을 한 번에 계산한다. 이것이 lazy update 패턴이다.
+
+다중 stake에서는 새 수량을 더하기 전에 기존에 쌓인 reward를 먼저 정산해야 한다. 예를 들어 50개를 60초 맡긴 뒤 다시 30개를 stake하면, 60초 동안 50개가 만든 reward를 먼저 기록하고 그다음 staked amount를 80개로 바꾼다. 이 순서를 생략하면 과거 시간까지 80개를 맡긴 것처럼 계산되어 보상이 부풀 수 있다.
 
 화면 표시 단위와 컨트랙트 내부 단위는 분리해야 한다. 예를 들어 18 decimals 토큰에서 화면의 `50 HNL`은 `parseUnits("50", 18)`처럼 `50 * 10^18` raw unit으로 변환되어 계산되고, 결과를 학생에게 보여줄 때는 `formatUnits(rawReward, 18)`처럼 다시 화면 단위로 바꾼다.
 
@@ -67,6 +73,7 @@ Staking 컨트랙트의 보상 원리는 `amount * rewardRatePerSecond * delta /
 | approve 보안 | 자동이체 권한을 누구에게 줄지 확인 | spender 주소와 승인 수량을 제한하고 필요 시 revoke하는 습관 | 잘못된 주소나 무제한 승인은 토큰 손실 위험을 키운다 | approve 수량, spender 주소, revoke/approve(0) | 테스트넷에서 해본 approve 감각을 메인넷에도 그대로 적용해도 된다 | 내가 승인한 spender는 누구이고, 얼마까지 가져갈 수 있는가? |
 | transferFrom/stake | 허가받은 관리자가 실제 이동 | spender가 allowance 범위 안에서 owner 토큰을 이동 | staking은 approve 다음의 실제 상태 변경이다 | `stake(amount)`, staking balance 증가 | allowance만 충분하면 항상 stake 된다 | balance와 allowance 중 하나만 부족해도 어떻게 되는가? |
 | reward lazy update | 출석할 때 몰아서 포인트 정산 | 상태 변경 함수 호출 시점에 지난 시간 보상을 계산 | 매초 모든 사용자 상태를 쓰지 않아 gas를 줄인다 | `_updateReward`, `pendingReward`, claim | 보상은 매초 storage에 자동 저장된다 | 시간이 지나도 함수 호출 전 storage는 왜 그대로일 수 있는가? |
+| 다중 stake 전 정산 | 사물함에 물건을 더 넣기 전 기존 포인트를 계산 | stake 수량이 바뀌기 전 기존 기간의 reward를 먼저 저장 | 과거 보상을 새 stake 수량으로 과대 계산하지 않게 한다 | `_updateReward`가 `stake` 초반에 호출되는지 | 추가 stake를 하면 과거 시간도 새 수량으로 계산된다 | 새 stake 전에 기존 reward를 먼저 정산했는가? |
 | 오류 진단 | 잠긴 문 찾기 | balance, allowance, pool, lock, gas, nonce, require 조건을 분리해 원인을 좁히는 과정 | 실행 실패를 DApp 고장으로 뭉뚱그리지 않는다 | classifier, MetaMask, Etherscan, Remix console | insufficient funds는 ERC20 부족이다 | gas용 ETH 부족과 ERC20 balance 부족은 어떻게 구분하는가? |
 
 ## 수업 실습과 연결
@@ -94,6 +101,13 @@ Staking 컨트랙트의 보상 원리는 `amount * rewardRatePerSecond * delta /
 | "`claimReward`가 실패했으니 staking이 안 된 것이다" | staking은 됐지만 시간이 짧거나 reward pool이 비어 있을 수 있다. `pendingReward`와 컨트랙트 잔액을 본다. |
 | "`nonce too low`는 컨트랙트 버그다" | 지갑의 트랜잭션 순서 문제다. pending 트랜잭션, 계정 nonce, MetaMask 활동 기록을 확인한다. |
 | "`insufficient funds`는 토큰 부족이다" | 보통 gas로 쓸 native ETH 부족이다. ERC20 잔액 부족과 분리한다. |
+
+<details>
+<summary>더 깊게 보기: reward accounting을 단순화할 때 생기는 위험</summary>
+
+교육용 화면은 HNL 단위와 초 단위로 계산하지만 실제 컨트랙트는 `uint256` raw unit, decimals, rounding, reward reserve를 함께 다룬다. 그래서 HTML 결과는 개념 확인용이며, 실제 배포 전에는 `parseUnits`, `formatUnits`, `_updateReward`, `totalStaked`, reward pool 산식을 코드와 테스트로 확인해야 한다.
+
+</details>
 
 오류 분류표는 다음 순서로 사용한다.
 

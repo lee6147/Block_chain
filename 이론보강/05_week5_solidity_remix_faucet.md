@@ -22,6 +22,8 @@ Solidity 컨트랙트의 정의는 EVM에서 실행되는 코드와 블록체인
 
 Remix 실행 흐름은 다음처럼 나뉜다.
 
+초보자용 원칙은 `Compile 성공 전에는 Deploy가 없다`이다. Compile은 체인에 트랜잭션을 보내는 단계가 아니라 설계도를 ABI와 bytecode로 바꿀 수 있는지 확인하는 단계다. 따라서 Compile 오류가 남아 있으면 gas, Faucet, MetaMask, 네트워크를 보지 말고 Solidity 버전, import, 세미콜론, 타입부터 고친다.
+
 | 단계 | 의미 | 실패하면 볼 것 |
 | --- | --- | --- |
 | 컴파일 | Solidity 소스를 ABI와 bytecode로 바꾸는 단계 | pragma 버전, import 경로, 문법, 타입, 함수 선언 |
@@ -46,6 +48,25 @@ require(
 ```
 
 첫 번째 조건은 사용자별 쿨다운이다. `mapping(address => uint256) lastWithdrawalTime`이 주소마다 마지막 수령 시각을 저장한다. 두 번째 조건은 Faucet 컨트랙트 자체의 ETH 잔액이다. 둘 중 하나라도 실패하면 출금은 일어나지 않고, `lastWithdrawalTime`도 갱신되지 않아야 한다.
+
+Faucet이 실패했을 때는 아래 다섯 갈래를 먼저 나눈다.
+
+| 갈래 | 초보자 질문 | 확인 증거 |
+| --- | --- | --- |
+| cooldown | 같은 주소가 너무 빨리 다시 받으려 했는가? | `lastWithdrawalTime[msg.sender]`, `LOCK_TIME`, 경과 시간 |
+| Faucet 잔액 | Faucet 컨트랙트 물탱크가 비었는가? | `address(this).balance`, 요청 금액 |
+| 지갑 gas | write transaction 수수료를 낼 Sepolia ETH가 있는가? | MetaMask native ETH 잔액, failed receipt |
+| 네트워크 | 지갑이 수업 네트워크에 붙어 있는가? | Sepolia 선택 여부, 컨트랙트 주소와 explorer |
+| require 조건 | 컨트랙트 코드의 어떤 조건이 거짓인가? | revert reason, Remix console, receipt status |
+
+`execution reverted`가 보이면 다음 버튼을 무작정 다시 누르지 않는다. 먼저 1) 어떤 함수였는가, 2) write transaction인가, 3) 어떤 require가 막혔는가, 4) 성공 event와 storage 변경이 남았는가를 확인한다.
+
+<details>
+<summary>더 깊게 보기: revert는 실패했지만 상태를 망가뜨리지 않는 안전장치</summary>
+
+`revert`는 실행 중 바뀌던 상태를 되돌린다. 그래서 cooldown 실패나 Faucet 잔액 부족이 발생하면 `lastWithdrawalTime`과 event log가 남지 않아야 한다. 이 성질 덕분에 실패한 요청이 중간 상태만 남겨 다음 실습을 더 꼬이게 만들지 않는다.
+
+</details>
 
 상태 변경은 Checks-Effects-Interactions 순서로 이해한다.
 
@@ -105,7 +126,7 @@ Week5 자료의 `week5-concepts-lab1.md`는 `pragma`, `contract`, 상태 변수,
 | --- | --- |
 | "컴파일이 안 된다" | 아직 블록체인에 보낸 것이 아니다. Solidity 문법, 버전, import, 타입 오류를 본다. |
 | "Faucet이 안 된다" | Sepolia ETH Faucet 문제인지, 수업용 Faucet 컨트랙트 수령 문제인지 먼저 나눈다. |
-| "트랜잭션 실패" | 지갑 서명 후 네트워크에 보냈지만 실행 조건, gas, nonce, 잔액 중 하나에서 실패한 것이다. |
+| "트랜잭션 실패" | 지갑 서명 후 네트워크에 보냈지만 실행 조건, gas, nonce, 잔액 중 하나에서 실패한 것이다. 먼저 tx hash/receipt가 있는지 보고, 있으면 `execution reverted`의 require 조건을 좁힌다. |
 | "`require`가 오류를 냈다" | `require`는 오류 원인이 아니라 조건문이다. 조건이 거짓이라 `revert`된 것이다. |
 | "`event`는 상태 변수다" | event는 storage가 아니라 트랜잭션 receipt의 log다. 컨트랙트 내부에서 다시 읽는 데이터가 아니다. |
 | "`view` 함수도 gas가 든다" | 외부에서 단순 조회하면 gas를 내지 않는다. 다른 상태 변경 함수 안에서 실행되면 그 트랜잭션 일부라 gas가 든다. |
