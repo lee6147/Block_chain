@@ -19,7 +19,21 @@
       --shadow: 0 10px 24px rgba(24, 34, 45, .08);
     }
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: Arial, "Noto Sans KR", sans-serif; line-height: 1.65; color: var(--ink); background: #eef2f6; }
+    .skip-link {
+      position: absolute;
+      left: 12px;
+      top: -64px;
+      z-index: 1000;
+      padding: 10px 14px;
+      border: 3px solid var(--ink);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .skip-link:focus { top: 12px; }
+    body { margin: 0; font-family: Arial, "Noto Sans KR", sans-serif; font-size: 16px; line-height: 1.65; color: var(--ink); background: #eef2f6; }
     header { padding: 32px 20px 20px; background: linear-gradient(135deg, #ffffff 0%, #eaf0ff 100%); border-bottom: 1px solid var(--line); }
     .wrap { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
     h1 { margin: 0 0 12px; font-size: clamp(27px, 4vw, 42px); line-height: 1.18; letter-spacing: 0; }
@@ -28,7 +42,7 @@
     p { margin: 0 0 12px; }
     nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
     nav a, button {
-      min-height: 42px;
+      min-height: 44px;
       border: 1px solid var(--line);
       border-radius: 7px;
       padding: 9px 12px;
@@ -37,6 +51,10 @@
       text-decoration: none;
       font-weight: 700;
       cursor: pointer;
+    }
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 3px solid #111827;
+      outline-offset: 3px;
     }
     button.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
     main { padding: 22px 0 42px; }
@@ -56,7 +74,7 @@
     .label { display: block; margin: 10px 0 5px; font-weight: 700; color: var(--muted); }
     input, select {
       width: 100%;
-      min-height: 42px;
+      min-height: 44px;
       border: 1px solid var(--line);
       border-radius: 7px;
       padding: 9px 10px;
@@ -86,6 +104,14 @@
     .choice-grid label { display: flex; align-items: flex-start; gap: 8px; }
     .choice-grid input[type="checkbox"] { width: auto; min-height: auto; margin-top: 6px; }
     .safe-banner { margin-top: 12px; padding: 12px; border: 1px solid #f0c36a; border-radius: 8px; background: #fff8e8; color: #5d3b00; font-weight: 700; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
     @media (max-width: 880px) {
       .grid, .two, .stage-grid, .lane, .check-panel, .receipt-grid, .choice-grid { grid-template-columns: 1fr; }
       section { padding: 16px; }
@@ -95,6 +121,7 @@
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">본문으로 건너뛰기</a>
   <header>
     <div class="wrap">
       <h1>Week 2. 지갑과 트랜잭션: 서명, RPC, 블록 포함, Explorer 확인</h1>
@@ -108,9 +135,25 @@
     </div>
   </header>
 
-  <main class="wrap">
+  <main class="wrap" id="main" tabindex="-1">
+    <section id="read-first" aria-labelledby="read-first-title">
+      <h2 id="read-first-title">오늘 이해할 3문장</h2>
+      <div class="grid">
+        <div class="card"><strong>1. 지갑은 금고가 아니다.</strong><p>지갑은 개인키로 서명하는 도구이고, 자산 기록은 체인에 있다.</p></div>
+        <div class="card"><strong>2. 트랜잭션은 요청서다.</strong><p>작성, 서명, RPC 전송, 블록 포함, receipt 확인까지 가야 성공 여부를 판단한다.</p></div>
+        <div class="card"><strong>3. 역할을 나누면 오류가 줄어든다.</strong><p>Provider, Signer, RPC, Explorer를 분리해서 보면 어디서 막혔는지 찾기 쉽다.</p></div>
+      </div>
+      <div class="guide">
+        <strong>처음이면 이 순서로</strong>
+        <p>트랜잭션 흐름 버튼을 왼쪽부터 누른 뒤 receipt 상태를 확인하고, 역할 구분 시뮬레이터에서 Provider와 Signer의 차이를 다시 확인한다.</p>
+      </div>
+    </section>
     <section id="concept">
       <h2>정석 개념 요약</h2>
+      <div class="guide">
+        <strong>비유로 먼저 이해하기</strong>
+        <p>지갑은 돈이 든 상자가 아니라 송금 신청서에 도장을 찍는 도장 보관함이다. RPC는 그 신청서를 접수하는 창구이고, Explorer는 접수 뒤 실제 처리 결과를 조회하는 공개 화면이다.</p>
+      </div>
       <div class="grid">
         <div class="card"><h3>EOA와 주소</h3><p>EOA는 개인키가 제어하는 일반 지갑 계정이고, 주소는 공개 가능한 식별자다. 주소를 알아도 자산을 움직일 수는 없다.</p></div>
         <div class="card"><h3>개인키와 서명</h3><p>개인키는 트랜잭션에 서명하는 비밀 값이다. 네트워크에는 개인키가 아니라 트랜잭션 데이터와 서명값이 전송된다.</p></div>
@@ -237,6 +280,28 @@
         </tbody>
       </table>
       <p><strong>실제 실습 연결:</strong> Faucet 실패는 테스트 자금 준비 문제이고, 전송 실패는 서명된 요청의 검증/실행 문제다. 둘을 분리하면 Week3의 gas, nonce, pending 진단으로 자연스럽게 넘어간다.</p>
+    </section>
+
+    <section id="practice">
+      <h2>수업 실습과 연결</h2>
+      <table>
+        <thead><tr><th>Week2 실습 화면</th><th>이 페이지에서 확인한 개념</th></tr></thead>
+        <tbody>
+          <tr><td>MetaMask 연결</td><td>주소 조회와 서명 권한 요청은 다르다.</td></tr>
+          <tr><td>Sepolia 전환</td><td>chainId와 explorer 네트워크가 맞아야 receipt를 찾을 수 있다.</td></tr>
+          <tr><td><code>/api/send-eth</code></td><td>서명된 트랜잭션을 RPC로 제출하는 단계다.</td></tr>
+          <tr><td>Etherscan 링크</td><td>tx hash만이 아니라 receipt status, blockNumber, gasUsed를 확인한다.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="checklist" aria-labelledby="checklist-title">
+      <h2 id="checklist-title">초보자 체크리스트</h2>
+      <div class="grid">
+        <div class="card"><h3>무엇을 눌렀는가</h3><p>트랜잭션 단계, 역할 구분, 오류 진단 버튼을 눌러 작성, 서명, RPC, receipt가 다른 단계임을 확인한다.</p></div>
+        <div class="card"><h3>무엇이 바뀌었는가</h3><p>서명 전에는 receipt가 없고, RPC 제출 뒤에는 tx hash가 생길 수 있으며, 성공 판정은 explorer receipt status까지 봐야 한다.</p></div>
+        <div class="card"><h3>왜 중요한가</h3><p>지갑은 코인을 담는 통이 아니라 개인키로 승인 의사를 증명하는 서명 도구라고 설명한다.</p></div>
+      </div>
     </section>
   </main>
 

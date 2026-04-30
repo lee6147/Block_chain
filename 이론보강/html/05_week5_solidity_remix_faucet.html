@@ -452,10 +452,14 @@
 
     <section id="concept">
       <h2>정석 개념 설명</h2>
+      <div class="callout">
+        <strong>비유로 먼저 이해하기</strong>
+        <p>컨트랙트는 자동 판매기, Faucet은 무료 음수대, Remix는 설계도 검사와 버튼 테스트를 하는 작업대에 가깝다. 쿨다운이나 잔액 조건을 어기면 버튼은 눌렸지만 물건이나 물은 나오지 않는다.</p>
+      </div>
       <p>Solidity 컨트랙트의 정의는 EVM에서 실행되는 코드와 블록체인 storage에 저장되는 상태의 묶음이다. 상태 변수는 모든 노드가 복제하는 영구 데이터이므로 쓰기에는 gas가 든다.</p>
       <p><code>require(condition, "message")</code>는 조건이 참일 때만 다음 줄로 진행한다. 조건이 거짓이면 EVM은 <code>REVERT</code>로 실행을 멈추고, 그 트랜잭션 안에서 바뀌던 상태를 원상복구한다.</p>
       <div class="callout">
-        <strong>비유로 먼저 이해하기</strong>
+        <strong>비유 다시 보기</strong>
         <p>컨트랙트는 자동 판매기, Faucet은 무료 음수대, Remix는 설계도 검사와 버튼 테스트를 하는 작업대에 가깝다. 쿨다운이나 잔액 조건을 어기면 버튼은 눌렸지만 물건이나 물은 나오지 않는다.</p>
       </div>
       <div class="guide">
@@ -673,6 +677,15 @@
           <tr><td>이벤트</td><td>receipt의 logs에 남은 기록</td><td>성공 여부, event 이름, indexed 값</td></tr>
         </tbody>
       </table>
+    </section>
+
+    <section id="checklist" aria-labelledby="checklist-title">
+      <h2 id="checklist-title">초보자 체크리스트</h2>
+      <div class="cards">
+        <article class="card"><h3>무엇을 눌렀는가</h3><p>Compile, Deploy, Function Call, Faucet 조건, 오류 분류 버튼을 눌러 실패 위치를 단계별로 나눈다.</p></article>
+        <article class="card"><h3>무엇이 바뀌었는가</h3><p>성공한 write transaction만 storage와 event를 바꾸고, require 실패는 실행을 멈추고 상태를 되돌린다.</p></article>
+        <article class="card"><h3>왜 중요한가</h3><p>컴파일 오류, Faucet 수령 오류, 트랜잭션 실행 오류를 한 문장으로 뭉치지 않고 따로 진단할 수 있어야 한다.</p></article>
+      </div>
     </section>
   </main>
 

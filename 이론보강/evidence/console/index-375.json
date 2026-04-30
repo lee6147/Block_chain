@@ -1,9 +1,0 @@
-{
-  "consoleErrors": [],
-  "metrics": {
-    "scrollWidth": 375,
-    "clientWidth": 375,
-    "buttonCount": 6,
-    "bodyText": "블록체인 실습 이론보강\n\nMD 원본을 먼저 만들고, HTML은 시뮬레이터와 시각 효과를 더한 확장판으로 사용하는 학습 묶음입니다.\n\nWeek1\nWeek2\nWeek3\nWeek4\nWeek5\nWeek6\n학습 흐름 시뮬레이터\n\n왜 해보는가: 학생들이 각 주차를 따로 외우지 않고, 기초 장부 개념에서 staking 오류 판별까지 이어지는 흐름을 먼저 잡게 하기 위한 시뮬레이션입니다.\n\n흐름 재생\n초기화\n장부와 해시\n지갑과 서명\n가스와 nonce\n스테이블코인 네트워크\n컨트랙트 상태\n권한과 보상\n초기 상태입니다. 흐름 재생을 누르면 학습 순서가 강조됩니다.\n\n실제 실습 연결: 이 순서는 CoinGecko 과제, MetaMask 연결, Sepolia 송금, Remix 배포, ERC20 staking DApp으로 이어집니다.\n\n자료 필터\n\n왜 해보는가: 기존 자료를 새로 다 만들지 않고, 새로 볼 자료와 재사용할 자료를 구분해서 학습 부담을 줄이기 위한 인터랙션입니다.\n\n전체 보기\n신규 보강\n기존 "
-  }
-}

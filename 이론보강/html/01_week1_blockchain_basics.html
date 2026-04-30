@@ -20,9 +20,24 @@
     }
 
     * { box-sizing: border-box; }
+    .skip-link {
+      position: absolute;
+      left: 12px;
+      top: -64px;
+      z-index: 1000;
+      padding: 10px 14px;
+      border: 3px solid var(--ink);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .skip-link:focus { top: 12px; }
     body {
       margin: 0;
       font-family: Arial, "Noto Sans KR", sans-serif;
+      font-size: 16px;
       line-height: 1.65;
       color: var(--ink);
       background: #eef3f8;
@@ -44,7 +59,7 @@
       margin-top: 18px;
     }
     nav a, button {
-      min-height: 42px;
+      min-height: 44px;
       border: 1px solid var(--line);
       border-radius: 7px;
       padding: 9px 12px;
@@ -53,6 +68,10 @@
       text-decoration: none;
       font-weight: 700;
       cursor: pointer;
+    }
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 3px solid #111827;
+      outline-offset: 3px;
     }
     button.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
     button.ghost { background: #fff; }
@@ -98,7 +117,7 @@
     .label { display: block; margin: 10px 0 5px; font-weight: 700; color: var(--muted); }
     input, textarea, select {
       width: 100%;
-      min-height: 42px;
+      min-height: 44px;
       border: 1px solid var(--line);
       border-radius: 7px;
       padding: 9px 10px;
@@ -164,6 +183,14 @@
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { border: 1px solid var(--line); padding: 10px; vertical-align: top; }
     th { background: #eef3f8; text-align: left; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
     @keyframes pulseBad {
       0% { transform: translateX(0); }
       25% { transform: translateX(-3px); }
@@ -179,6 +206,7 @@
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">본문으로 건너뛰기</a>
   <header>
     <div class="wrap">
       <h1>Week 1. 블록체인 기초: 공유 장부, 해시, 체인</h1>
@@ -193,9 +221,25 @@
     </div>
   </header>
 
-  <main class="wrap">
+  <main class="wrap" id="main" tabindex="-1">
+    <section id="read-first" aria-labelledby="read-first-title">
+      <h2 id="read-first-title">오늘 이해할 3문장</h2>
+      <div class="grid">
+        <div class="card"><strong>1. 블록은 기록 묶음이다.</strong><p>거래와 상태 변화가 일정한 단위로 묶이면 블록이 된다.</p></div>
+        <div class="card"><strong>2. 해시는 지문이다.</strong><p>데이터가 조금만 바뀌어도 해시가 달라져 변경 흔적을 찾을 수 있다.</p></div>
+        <div class="card"><strong>3. 체인은 연결 검증이다.</strong><p>이전 블록의 해시를 다음 블록이 기억하기 때문에 중간 수정이 드러난다.</p></div>
+      </div>
+      <div class="guide">
+        <strong>처음이면 이 순서로</strong>
+        <p>개념 요약을 읽고, 해시 시뮬레이터에서 Block #2 문장을 바꾼 뒤, 분산 원장 비교에서 중앙 서버와 노드 검증의 차이를 확인한다.</p>
+      </div>
+    </section>
     <section id="concept">
       <h2>정석 개념 요약</h2>
+      <div class="guide">
+        <strong>비유로 먼저 이해하기</strong>
+        <p>블록체인은 반 학생들이 함께 들고 있는 출석부 사본과 비슷하다. 블록은 한 페이지, 해시는 그 페이지의 지문, 체인은 다음 페이지가 이전 페이지 지문을 적어 두는 연결이다.</p>
+      </div>
       <div class="grid">
         <div class="card"><h3>블록</h3><p>거래나 상태 변경 기록을 일정 단위로 묶은 장부의 한 페이지다. 데이터, 이전 해시, 현재 해시가 함께 의미를 만든다.</p></div>
         <div class="card"><h3>해시</h3><p>입력을 고정 길이 값으로 요약한 결과다. 같은 입력은 같은 해시를 만들지만, 한 글자만 바뀌어도 결과가 크게 바뀐다.</p></div>
@@ -297,6 +341,15 @@
           <tr><td>30초 자동 갱신</td><td>블록체인 상태도 새 블록 생성에 따라 계속 변한다.</td></tr>
         </tbody>
       </table>
+    </section>
+
+    <section id="checklist" aria-labelledby="checklist-title">
+      <h2 id="checklist-title">초보자 체크리스트</h2>
+      <div class="grid">
+        <div class="card"><h3>무엇을 눌렀는가</h3><p>블록 데이터 수정, 장부 비교, API/RPC 읽기 버튼을 눌러 각 상태가 어떻게 바뀌는지 말할 수 있다.</p></div>
+        <div class="card"><h3>무엇이 바뀌었는가</h3><p>데이터 한 글자가 바뀌면 현재 해시가 바뀌고, 다음 블록의 previous hash와 맞지 않아 체인 연결이 깨진다는 점을 확인한다.</p></div>
+        <div class="card"><h3>왜 중요한가</h3><p>블록체인은 수정 불가능한 마법 파일이 아니라 변경 시도가 검증 과정에서 드러나는 공유 장부 구조라고 설명한다.</p></div>
+      </div>
     </section>
   </main>
 

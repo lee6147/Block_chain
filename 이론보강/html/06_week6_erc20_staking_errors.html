@@ -414,6 +414,22 @@
         <p>approve -> allowance 조회 -> stake -> pendingReward -> claim -> withdraw 순서로 누른다. 초기화는 영역별로 나뉜다. Approve/Stake 초기화는 balance, allowance, staked amount를 되돌리고, Reward 초기화는 보상 흐름을 되돌리며, 오류 판별기 초기 상태는 선택값을 학습 시작 상태로 되돌린다.</p>
       </div>
     </section>
+    <section id="concept-first">
+      <h2>비유와 정석 개념 먼저 보기</h2>
+      <div class="callout">
+        <strong>비유로 먼저 이해하기</strong>
+        <p><code>approve</code>는 자동이체 한도 등록이고, <code>stake</code>는 등록된 한도 안에서 실제로 돈을 옮기는 단계다. 보상은 사물함에 토큰을 맡긴 시간에 따라 쌓이는 포인트처럼 이해한다.</p>
+      </div>
+      <div class="grid">
+        <div class="concept"><strong>approve / allowance</strong><br>spender가 내 토큰을 사용할 수 있는 최대 한도를 기록한다. 이때 사용자 balance는 줄지 않는다.</div>
+        <div class="concept"><strong>stake / transferFrom</strong><br>Staking 컨트랙트가 allowance 범위 안에서 토큰을 실제로 이동한다. 이때 balance, allowance, staked amount가 바뀐다.</div>
+        <div class="concept"><strong>reward / claim / withdraw</strong><br>pendingReward는 계산이고, claim과 withdraw는 reward pool, lock, staked amount 조건을 확인하는 쓰기 트랜잭션이다.</div>
+      </div>
+      <div class="guide">
+        <strong>확인 질문</strong>
+        <p>지금 실패가 토큰 balance, allowance, spender 주소, reward pool, lock, gas, nonce 중 어느 문에서 막혔는가? 이 질문에 답한 뒤 아래 버튼을 누른다.</p>
+      </div>
+    </section>
     <section id="first-run">
       <h2>처음 눌러볼 순서</h2>
       <p class="section-lead">이 페이지는 설명을 오래 읽기보다 아래 6단계를 한 번 눌러 보면서 상태 변화를 보는 구조다.</p>
@@ -663,6 +679,15 @@
           <tr><td>claim/withdraw</td><td>reward pool, lock/time, accrued reward, staked amount</td><td>`nothing to claim`, `reward transfer failed`, withdraw lock, claim과 withdraw 혼동</td></tr>
         </tbody>
       </table>
+    </section>
+
+    <section id="checklist" aria-labelledby="checklist-title">
+      <h2 id="checklist-title">초보자 체크리스트</h2>
+      <div class="cards">
+        <article class="card"><h3>무엇을 눌렀는가</h3><p>approve, allowance 조회, stake, reward 계산, claim/withdraw, 오류 판별 순서대로 눌러 본다.</p></article>
+        <article class="card"><h3>무엇이 바뀌었는가</h3><p>approve는 allowance만 바꾸고, stake가 실행될 때 transferFrom으로 balance와 staked amount가 바뀐다.</p></article>
+        <article class="card"><h3>왜 중요한가</h3><p>staking 실패를 balance, allowance, reward pool, lock, gas, nonce, require 조건으로 나눠 설명할 수 있어야 한다.</p></article>
+      </div>
     </section>
   </main>
 
