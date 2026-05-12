@@ -1,0 +1,1882 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://sepolia-rpc.giwa.io https://*.giwa.io; img-src 'self' data:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none';">
+  <title>K-USDC 카페 결제 DApp</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f4ee;
+      --surface: #fffdf8;
+      --surface-2: #f0f7f8;
+      --ink: #142233;
+      --muted: #66727f;
+      --line: #dfd4c7;
+      --rail: #0d1b2a;
+      --rail-2: #17324a;
+      --teal: #0f9f96;
+      --teal-2: #0b7f91;
+      --blue: #2563eb;
+      --amber: #b7791f;
+      --amber-soft: #fff4d6;
+      --coffee: #7a5230;
+      --cream: #fffaf0;
+      --red: #b42318;
+      --red-soft: #fff0ed;
+      --green: #12715b;
+      --green-soft: #e9fbf4;
+      --shadow: 0 16px 38px rgba(16, 32, 51, 0.09);
+      --radius: 8px;
+      font-family: "Noto Sans KR", "Pretendard", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-width: 320px; scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background:
+        linear-gradient(180deg, #f9f6ef 0%, var(--bg) 52%, #eef6f7 100%);
+      color: var(--ink);
+      line-height: 1.5;
+      letter-spacing: 0;
+      overflow-x: hidden;
+    }
+    button, input, select, textarea {
+      font: inherit;
+      letter-spacing: 0;
+    }
+    button {
+      min-height: 44px;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease, border-color 160ms ease;
+    }
+    button:hover:not(:disabled) { transform: translateY(-1px); }
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.58;
+      transform: none;
+    }
+    input, select, textarea {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdf8;
+      color: var(--ink);
+      padding: 10px 12px;
+    }
+    input[type="checkbox"] {
+      width: auto;
+      min-height: auto;
+      padding: 0;
+      accent-color: var(--teal);
+    }
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible {
+      outline: 3px solid rgba(15, 159, 150, 0.35);
+      outline-offset: 2px;
+    }
+    a { color: var(--blue); }
+    .app-shell {
+      display: grid;
+      grid-template-columns: minmax(240px, 292px) minmax(0, 1fr);
+      min-height: 100vh;
+      width: 100%;
+      max-width: 100vw;
+    }
+    .status-rail {
+      background: linear-gradient(180deg, var(--rail), var(--rail-2));
+      color: #eaf4ff;
+      padding: 22px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      min-width: 0;
+    }
+    .brand-block {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: rgba(15, 159, 150, 0.18);
+      color: #5eead4;
+      border: 1px solid rgba(223, 212, 199, 0.2);
+    }
+    .brand-block h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.2;
+      font-weight: 760;
+    }
+    .brand-block p {
+      margin: 4px 0 0;
+      color: #a9bfd4;
+      font-size: 13px;
+    }
+    .rail-section {
+      padding: 18px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .rail-title {
+      margin: 0 0 10px;
+      color: #a9bfd4;
+      font-size: 12px;
+      text-transform: none;
+      font-weight: 720;
+    }
+    .rail-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+      padding: 7px 0;
+      font-size: 14px;
+    }
+    .rail-row span:first-child { color: #a9bfd4; }
+    .rail-row strong {
+      font-size: 13px;
+      text-align: right;
+      overflow-wrap: anywhere;
+      color: #ffffff;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 30px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 720;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+    .pill::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .pill.ok { color: var(--green); background: var(--green-soft); border-color: #b9ead8; }
+    .pill.warn { color: var(--amber); background: var(--amber-soft); border-color: #f3d58d; }
+    .pill.bad { color: var(--red); background: var(--red-soft); border-color: #ffd0c8; }
+    .pill.neutral { color: #425466; background: #eef3f7; border-color: #d8e2eb; }
+    .rail-pill { background: rgba(255,255,255,0.08); color: #c7d7e7; border-color: rgba(255,255,255,0.13); }
+    .rail-pill.ok { color: #5eead4; background: rgba(15,159,150,0.15); border-color: rgba(94,234,212,0.3); }
+    .rail-pill.warn { color: #fcd38a; background: rgba(183,121,31,0.16); border-color: rgba(252,211,138,0.28); }
+    .main {
+      min-width: 0;
+      padding: 22px;
+    }
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: start;
+      margin-bottom: 18px;
+    }
+    .eyebrow {
+      margin: 0 0 6px;
+      color: var(--coffee);
+      font-size: 13px;
+      font-weight: 780;
+      text-transform: none;
+    }
+    .topbar h2 {
+      margin: 0;
+      font-size: clamp(24px, 3vw, 38px);
+      line-height: 1.08;
+      max-width: 820px;
+    }
+    .topbar p {
+      margin: 10px 0 0;
+      max-width: 760px;
+      color: var(--muted);
+    }
+    .actions-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 10px 14px;
+      color: var(--ink);
+      background: #eef5f5;
+      border: 1px solid var(--line);
+      font-weight: 760;
+    }
+    .btn svg { width: 18px; height: 18px; flex: 0 0 auto; }
+    .btn.primary {
+      color: #fff;
+      background: linear-gradient(135deg, var(--teal), var(--blue));
+      border-color: transparent;
+      box-shadow: 0 12px 26px rgba(15, 127, 150, 0.24);
+    }
+    .btn.ghost { background: #fff; }
+    .btn.danger { color: var(--red); background: var(--red-soft); border-color: #ffd0c8; }
+    .btn.compact { min-height: 38px; padding: 8px 10px; font-size: 13px; }
+    .tabbar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 0 14px;
+      scrollbar-width: thin;
+    }
+    .tabbar button {
+      flex: 0 0 auto;
+      min-width: 118px;
+      padding: 9px 13px;
+      background: #f2eee7;
+      color: #425466;
+      border: 1px solid var(--line);
+      font-weight: 760;
+    }
+    .tabbar button[aria-selected="true"] {
+      background: #102033;
+      color: #ffffff;
+      border-color: #102033;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .stack { display: grid; gap: 16px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 16px 16px 0;
+    }
+    .card-header h3 {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.25;
+    }
+    .card-header p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .card-body { padding: 16px; }
+    .receipt-card {
+      background:
+        linear-gradient(180deg, var(--surface), var(--cream));
+      border-color: #d7c5b3;
+      position: relative;
+    }
+    .receipt-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 4px;
+      border-radius: var(--radius) 0 0 var(--radius);
+      background: linear-gradient(180deg, var(--coffee), var(--teal));
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .field { display: grid; gap: 6px; min-width: 0; }
+    label {
+      font-size: 13px;
+      font-weight: 720;
+      color: #334155;
+    }
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+    .inline-check {
+      display: inline-flex;
+      align-items: center;
+      justify-self: start;
+      width: fit-content;
+      max-width: 100%;
+      gap: 8px;
+      min-height: 36px;
+      margin-top: 2px;
+      padding: 7px 10px;
+      border: 1px solid #dbe7e4;
+      border-radius: 999px;
+      background: #f8fafc;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 720;
+      line-height: 1.3;
+      cursor: pointer;
+      user-select: none;
+    }
+    .inline-check input {
+      width: 18px;
+      min-height: 18px;
+      height: 18px;
+      flex: 0 0 18px;
+      margin: 0;
+      cursor: pointer;
+    }
+    input[readonly] {
+      background: #f8fafc;
+      color: #475569;
+      cursor: not-allowed;
+    }
+    .full { grid-column: 1 / -1; }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .metric {
+      border: 1px solid var(--line);
+      background: #fbf8f0;
+      border-radius: 8px;
+      padding: 12px;
+      min-width: 0;
+    }
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 720;
+    }
+    .metric strong {
+      display: block;
+      margin-top: 5px;
+      font-size: 18px;
+      line-height: 1.1;
+      overflow-wrap: anywhere;
+    }
+    .metric small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .metric.fee-highlight {
+      background: var(--amber-soft);
+      border-color: #f1cf83;
+    }
+    .menu-card {
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(15, 159, 150, 0.14), transparent 30%),
+        linear-gradient(135deg, #fffdf8 0%, #eef6f7 52%, #f7f4ee 100%);
+    }
+    .menu-kicker {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: #102033;
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 780;
+    }
+    .menu-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .menu-item {
+      display: grid;
+      gap: 8px;
+      width: 100%;
+      min-height: 132px;
+      padding: 13px;
+      text-align: left;
+      color: var(--ink);
+      background: rgba(255, 253, 248, 0.9);
+      border: 1px solid #d7c5b3;
+      border-radius: 10px;
+      box-shadow: 0 8px 18px rgba(16, 32, 51, 0.06);
+      cursor: pointer;
+    }
+    .menu-item:hover:not(:disabled) {
+      border-color: var(--teal);
+      box-shadow: 0 12px 24px rgba(15, 127, 150, 0.14);
+    }
+    .menu-item[aria-pressed="true"] {
+      background: linear-gradient(135deg, #102033, #0b7f91);
+      color: #ffffff;
+      border-color: transparent;
+    }
+    .menu-item[aria-pressed="true"] .menu-desc,
+    .menu-item[aria-pressed="true"] .menu-meta {
+      color: rgba(255,255,255,0.82);
+    }
+    .menu-title-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .menu-name {
+      font-size: 15px;
+      font-weight: 820;
+      line-height: 1.25;
+    }
+    .menu-price {
+      flex: 0 0 auto;
+      font-weight: 850;
+      color: var(--teal-2);
+    }
+    .menu-item[aria-pressed="true"] .menu-price { color: #5eead4; }
+    .menu-desc, .menu-meta {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .menu-meta {
+      font-weight: 760;
+      color: var(--coffee);
+    }
+    .menu-controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .cart-panel {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid #d7c5b3;
+      border-radius: 10px;
+      background: rgba(255, 250, 240, 0.78);
+    }
+    .cart-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      font-weight: 820;
+    }
+    .cart-items { display: grid; gap: 8px; }
+    .cart-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid rgba(215, 197, 179, 0.9);
+      border-radius: 8px;
+      background: #fffdf8;
+    }
+    .cart-row-title { display: block; font-weight: 780; overflow-wrap: anywhere; }
+    .cart-row-meta { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; }
+    .qty-controls { display: inline-flex; gap: 6px; align-items: center; }
+    .qty-btn {
+      min-width: 34px;
+      min-height: 34px;
+      padding: 6px 9px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      color: var(--ink);
+      font-weight: 820;
+    }
+    .qty-count { min-width: 24px; text-align: center; font-weight: 820; }
+    .remove-btn { color: var(--red); background: var(--red-soft); border-color: #ffd0c8; }
+    .cart-totals {
+      display: grid;
+      gap: 5px;
+      padding-top: 8px;
+      border-top: 1px dashed #c7b299;
+      font-size: 13px;
+    }
+    .cart-total-row { display: flex; justify-content: space-between; gap: 10px; }
+    .cart-total-row.final { font-size: 16px; font-weight: 850; color: var(--teal-2); }
+    .selected-menu {
+      margin-top: 12px;
+      padding: 11px 12px;
+      border: 1px dashed #c7b299;
+      border-radius: 8px;
+      background: rgba(255, 250, 240, 0.72);
+      color: #334155;
+      font-size: 13px;
+    }
+    .callout {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #f2d28c;
+      background: var(--amber-soft);
+      color: #60410f;
+      font-size: 13px;
+    }
+    .callout strong { color: #3f2b08; }
+    .status-line {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      color: #334155;
+      font-size: 13px;
+    }
+    .status-line.error { background: var(--red-soft); color: var(--red); }
+    .status-line.success { background: var(--green-soft); color: var(--green); }
+    .status-line.pending { background: var(--amber-soft); color: var(--amber); }
+    .tab-panel[hidden] { display: none; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-top: 12px;
+    }
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdf8;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 620px;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #f2eee7;
+      color: #475569;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+    tr:last-child td { border-bottom: 0; }
+    code, .mono {
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+    .inspector-list {
+      display: grid;
+      gap: 10px;
+    }
+    .operation {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbf8f0;
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+    }
+    .operation strong { font-size: 14px; }
+    .operation pre {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      color: #334155;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdf8;
+      color: #334155;
+      font-weight: 720;
+      cursor: pointer;
+      user-select: none;
+    }
+    .switch input {
+      width: 20px;
+      min-height: 20px;
+      height: 20px;
+      accent-color: var(--teal);
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
+    .icon { width: 18px; height: 18px; }
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.55);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 800ms linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+    @media (max-width: 1040px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .status-rail {
+        position: static;
+        height: auto;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0 20px;
+      }
+      .brand-block { grid-column: 1 / -1; }
+      .grid { grid-template-columns: 1fr; }
+      .topbar { grid-template-columns: 1fr; }
+      .actions-row { justify-content: flex-start; }
+    }
+    @media (max-width: 720px) {
+      .main, .status-rail { padding: 16px; }
+      .main { order: 1; }
+      .status-rail { order: 2; }
+      .form-grid, .metrics, .menu-list, .menu-controls { grid-template-columns: 1fr; }
+      .status-rail { grid-template-columns: 1fr; }
+      .rail-section { grid-column: 1 / -1; }
+      .rail-row {
+        display: grid;
+        grid-template-columns: minmax(82px, 0.42fr) minmax(0, 1fr);
+        align-items: start;
+      }
+      .rail-row strong {
+        min-width: 0;
+        text-align: left;
+      }
+      .rail-pill { white-space: normal; }
+      .card-header { display: grid; }
+      .topbar h2 { font-size: 26px; }
+      .tabbar button { min-width: 104px; }
+      .btn { width: 100%; }
+      .toolbar .btn { width: auto; flex: 1 1 180px; }
+      .switch { width: 100%; }
+      .app-shell, .main, .status-rail, .topbar, .tabbar, .status-line, .card {
+        max-width: 100vw;
+      }
+      .main, .status-rail {
+        width: 100%;
+        overflow-x: hidden;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="status-rail" aria-label="지갑과 GIWA Sepolia 상태">
+      <div class="brand-block">
+        <div class="brand-mark" aria-hidden="true">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 9h16v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9Z"></path>
+            <path d="M8 9V7a4 4 0 0 1 8 0v2"></path>
+            <path d="M9 15h6"></path>
+          </svg>
+        </div>
+        <div>
+          <h1>K-USDC 카페 결제</h1>
+          <p>GIWA Sepolia 강의용 POS</p>
+        </div>
+      </div>
+
+      <section class="rail-section" aria-labelledby="rail-wallet-title">
+        <h2 id="rail-wallet-title" class="rail-title">지갑</h2>
+        <div class="rail-row"><span>모드</span><strong id="rail-mode">모의</strong></div>
+        <div class="rail-row"><span>계정</span><strong id="rail-account">연결 안 됨</strong></div>
+        <div class="rail-row"><span>네트워크</span><strong id="rail-network">GIWA Sepolia 대상</strong></div>
+        <div class="rail-row"><span>상태</span><strong><span id="rail-wallet-pill" class="pill rail-pill warn">준비</span></strong></div>
+      </section>
+
+      <section class="rail-section" aria-labelledby="rail-chain-title">
+        <h2 id="rail-chain-title" class="rail-title">GIWA 기본값</h2>
+        <div class="rail-row"><span>chainId</span><strong>91342</strong></div>
+        <div class="rail-row"><span>hex</span><strong>0x164ce</strong></div>
+        <div class="rail-row"><span>RPC</span><strong>sepolia-rpc.giwa.io</strong></div>
+        <div class="rail-row"><span>Explorer</span><strong>sepolia-explorer.giwa.io</strong></div>
+      </section>
+
+      <section class="rail-section" aria-labelledby="rail-contract-title">
+        <h2 id="rail-contract-title" class="rail-title">계약</h2>
+        <div class="rail-row"><span>K-USDC</span><strong id="rail-token">미설정</strong></div>
+        <div class="rail-row"><span>CafePayment</span><strong id="rail-payment">미설정</strong></div>
+        <div class="rail-row"><span>최근 거래</span><strong id="rail-tx">없음</strong></div>
+      </section>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <p class="eyebrow">카페 카운터 결제 화면</p>
+          <h2>K-USDC로 주문을 받고, approve(승인) 후 CafePayment.pay로 결제 흐름을 확인합니다.</h2>
+          <p>강의 중에는 모의 모드로 전체 주문을 시연하고, 실습 때는 지갑 모드로 GIWA Sepolia 테스트넷 조회와 MetaMask 확인 거래를 진행합니다.</p>
+        </div>
+        <div class="actions-row">
+          <label class="switch" for="mock-mode">
+            <input id="mock-mode" type="checkbox" checked>
+            모의 모드
+          </label>
+          <button id="connect-wallet" class="btn primary" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M19 7V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-1"></path>
+              <path d="M16 12h6"></path>
+              <path d="m19 9 3 3-3 3"></path>
+            </svg>
+            MetaMask 연결
+          </button>
+        </div>
+      </div>
+
+      <nav class="tabbar" aria-label="결제 역할 탭">
+        <button id="tab-customer" type="button" role="tab" aria-selected="true" aria-controls="panel-customer">고객 결제</button>
+        <button id="tab-merchant" type="button" role="tab" aria-selected="false" aria-controls="panel-merchant">점주 정산</button>
+        <button id="tab-nodit" type="button" role="tab" aria-selected="false" aria-controls="panel-nodit">Nodit 추적</button>
+      </nav>
+
+      <div id="app-status" class="status-line pending" role="status" aria-live="polite">모의 모드가 켜져 있습니다. 지갑 모드를 사용할 때 K-USDC와 CafePayment 주소를 입력하세요.</div>
+
+      <section id="panel-customer" class="tab-panel" role="tabpanel" aria-labelledby="tab-customer">
+        <div class="grid" style="margin-top:16px">
+          <div class="stack">
+            <article class="card menu-card" aria-labelledby="menu-board-title">
+              <div class="card-header">
+                <div>
+                  <span class="menu-kicker">국민대 캠퍼스 컨셉</span>
+                  <h3 id="menu-board-title">북악 K-USDC 카페 메뉴판</h3>
+                  <p>메뉴를 누르면 주문 금액과 orderId 메모가 바로 채워집니다.</p>
+                </div>
+              </div>
+              <div class="card-body">
+                <div id="menu-list" class="menu-list" aria-label="카페 메뉴 선택"></div>
+                <div class="menu-controls" aria-label="할인 설정">
+                  <div class="field">
+                    <label for="discount-preset">할인 프리셋</label>
+                    <select id="discount-preset">
+                      <option value="0">할인 없음</option>
+                      <option value="500">국민대 학생 할인 5%</option>
+                      <option value="1000">동아리/팀플 할인 10%</option>
+                      <option value="1500">시험기간 응원 할인 15%</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="discount-bps">직접 할인율(bps)</label>
+                    <input id="discount-bps" type="number" min="0" max="10000" step="1" value="0">
+                    <span class="hint">100 bps = 1%, 500 bps = 5%입니다.</span>
+                  </div>
+                </div>
+                <div class="cart-panel" aria-label="선택한 메뉴 장바구니">
+                  <div class="cart-header">
+                    <span>선택한 메뉴</span>
+                    <button id="clear-cart" class="btn compact danger" type="button">전체 취소</button>
+                  </div>
+                  <div id="cart-items" class="cart-items" aria-live="polite"></div>
+                  <div class="cart-totals">
+                    <div class="cart-total-row"><span>소계</span><strong id="cart-subtotal">0.00 K-USDC</strong></div>
+                    <div class="cart-total-row"><span>할인</span><strong id="cart-discount">0.00 K-USDC</strong></div>
+                    <div class="cart-total-row final"><span>최종 결제액</span><strong id="cart-total">0.00 K-USDC</strong></div>
+                  </div>
+                </div>
+                <div id="selected-menu" class="selected-menu" aria-live="polite">메뉴를 여러 개 담거나 수량을 조정할 수 있습니다.</div>
+              </div>
+            </article>
+
+
+         </div>
+
+          <aside class="stack">
+            <article class="card receipt-card">
+              <div class="card-header">
+                <div>
+                  <h3>주문서 / 영수증</h3>
+                  <p>토큰, CafePayment 계약, 가맹점 지갑, 주문 금액을 입력합니다. approve 후 pay(token, amount, orderId)로 결제합니다.</p>
+                </div>
+                <span id="payment-readiness" class="pill warn">설정 필요</span>
+              </div>
+              <div class="card-body">
+                <div class="form-grid">
+                  <div class="field">
+                    <label for="token-address">K-USDC 토큰 주소</label>
+                    <input id="token-address" inputmode="text" autocomplete="off" placeholder="0x...">
+                    <span class="hint">모의 모드에서는 강의용 예시 K-USDC 주소가 자동 입력됩니다. 지갑 모드에서는 실제 배포 주소로 바꾸세요.</span>
+                  </div>
+                  <div class="field">
+                    <label for="payment-address">CafePayment 결제 계약</label>
+                    <input id="payment-address" inputmode="text" autocomplete="off" placeholder="0x...">
+                    <span class="hint">모의 모드에서는 강의용 예시 CafePayment 주소가 자동 입력됩니다. approve의 spender입니다.</span>
+                  </div>
+                  <div class="field">
+                    <label for="merchant-address">계약 merchantWallet 확인값</label>
+                    <input id="merchant-address" inputmode="text" autocomplete="off" value="0x1111111111111111111111111111111111111111">
+                    <span id="merchant-address-hint" class="hint">실제 pay() 인자는 아니며, CafePayment 계약이 내부적으로 정산할 merchantWallet 참고값입니다. 지갑 조회 후 계약값으로 확인합니다.</span>
+                  </div>
+                  <div class="field">
+                    <label for="payment-amount">총 결제액</label>
+                    <input id="payment-amount" type="number" min="0" step="0.01" value="12.50" readonly>
+                    <span class="hint">기본값은 장바구니/할인에서 자동 계산됩니다. 직접 수정하려면 아래 수동 수정 모드를 켜세요.</span>
+                  </div>
+                  <div class="field full">
+                    <label for="payment-memo">메뉴 메모 / orderId</label>
+                    <input id="payment-memo" autocomplete="off" value="KMU-team-project-set-D0" maxlength="128" pattern="[A-Za-z0-9._:+\-]{1,128}" readonly>
+                    <span class="hint">결제 orderId 문자열입니다. 1~128자의 영문/숫자/._:+-만 허용하며, 기본값은 장바구니에서 생성됩니다.</span>
+                    <label class="inline-check" for="manual-order-override">
+                      <input id="manual-order-override" type="checkbox">
+                      금액/orderId 직접 수정 모드
+                    </label>
+                  </div>
+                </div>
+
+
+                <div class="metrics" aria-label="결제 금액 미리보기">
+                  <div class="metric">
+                    <span>총 결제액</span>
+                    <strong id="gross-preview">12.50</strong>
+                    <small>고객이 지불하고 merchantWallet이 수령하는 K-USDC</small>
+                  </div>
+                </div>
+
+                <div class="callout">
+                  <strong>영수증 경계</strong>
+                  <span>온체인에서 강제되는 값은 token, amount, orderId입니다. 메뉴·할인·가맹점 표시는 orderId와 Nodit 컨텍스트에 담는 오프체인 영수증 메타데이터입니다.</span>
+                </div>
+                <div class="callout">
+                  <strong>CDN 데모 경계</strong>
+                  <span>이 단일 HTML은 강의 휴대성을 위해 jsDelivr에서 ethers를 불러옵니다. 운영 배포 전에는 ethers를 로컬 고정 파일로 제공하고 CSP에서 unsafe-inline을 제거하세요.</span>
+                </div>
+
+                <div class="toolbar">
+                  <button id="refresh-balances" class="btn ghost" type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path d="M21 12a9 9 0 0 1-15.3 6.4"></path>
+                      <path d="M3 12A9 9 0 0 1 18.3 5.6"></path>
+                      <path d="M18 2v4h4"></path>
+                      <path d="M6 22v-4H2"></path>
+                    </svg>
+                    잔액 새로고침
+                  </button>
+                  <button id="approve-payment" class="btn" type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path d="m9 12 2 2 4-4"></path>
+                      <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
+                    </svg>
+                    approve(승인)
+                  </button>
+                  <button id="pay-approved" class="btn primary" type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path d="M3 7h18v10H3z"></path>
+                      <path d="M7 12h.01"></path>
+                      <path d="M17 12h.01"></path>
+                      <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path>
+                    </svg>
+                    승인액으로 결제
+                  </button>
+                </div>
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="card-header">
+                <div>
+                  <h3>잔액 / 승인액</h3>
+                  <p>지갑 모드에서는 MetaMask를 통해 balance(잔액)와 allowance(승인액)를 조회합니다.</p>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="metrics">
+                  <div class="metric">
+                    <span>잔액</span>
+                    <strong id="balance-display">1,250.00</strong>
+                    <small>K-USDC</small>
+                  </div>
+                  <div class="metric">
+                    <span>승인액</span>
+                    <strong id="allowance-display">0.00</strong>
+                    <small>CafePayment spender 기준</small>
+                  </div>
+                  <div class="metric">
+                    <span>Decimals</span>
+                    <strong id="decimals-display">6</strong>
+                    <small>토큰 소수점 단위</small>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="card-header">
+                <div>
+                  <h3>거래 추적</h3>
+                  <p>모의 거래 또는 실제 거래가 끝나면 Explorer 링크와 Nodit 추적 컨텍스트가 갱신됩니다.</p>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="callout">
+                  <strong>인증정보 경계</strong>
+                  <span>브라우저에 Nodit API 키를 넣지 않습니다. 실제 호출은 로컬 프록시, MCP 도구, 또는 백엔드에서 처리합니다.</span>
+                </div>
+                <div class="toolbar">
+                  <a id="explorer-link" class="btn ghost" href="https://sepolia-explorer.giwa.io" target="_blank" rel="noopener noreferrer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <path d="M14 3h7v7"></path>
+                      <path d="M10 14 21 3"></path>
+                      <path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"></path>
+                    </svg>
+                    Explorer 열기
+                  </a>
+                  <button id="copy-context" class="btn" type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Nodit 컨텍스트 복사
+                  </button>
+                </div>
+              </div>
+            </article>
+          </aside>
+        </div>
+      </section>
+
+      <section id="panel-merchant" class="tab-panel" role="tabpanel" aria-labelledby="tab-merchant" hidden>
+        <div class="stack" style="margin-top:16px">
+          <article class="card">
+            <div class="card-header">
+              <div>
+                <h3>점주 정산 / 로컬 시연 내역</h3>
+                <p>화면에서 기록한 결제 내역입니다. 실제 정산 검증은 거래 영수증 또는 토큰 전송 내역으로 확인하세요.</p>
+              </div>
+              <span class="pill ok">운영 중</span>
+            </div>
+            <div class="card-body">
+              <div class="metrics">
+                <div class="metric"><span>오늘 매출</span><strong id="merchant-gross">0.00</strong><small>K-USDC</small></div>
+              </div>
+              <div class="toolbar">
+                <button id="merchant-refresh" class="btn ghost" type="button">점주 화면 새로고침</button>
+              </div>
+            </div>
+          </article>
+          <article class="card">
+            <div class="card-header"><h3>최근 카페 결제(로컬)</h3></div>
+            <div class="card-body">
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>시각</th><th>고객</th><th>결제액</th><th>Tx</th></tr></thead>
+                  <tbody id="merchant-table"></tbody>
+                </table>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="panel-nodit" class="tab-panel" role="tabpanel" aria-labelledby="tab-nodit" hidden>
+        <div class="grid" style="margin-top:16px">
+          <article class="card">
+            <div class="card-header">
+              <div>
+                <h3>Nodit 추적</h3>
+                <p>브라우저 인증정보 경계 밖에서 사용할 안전한 operationId와 요청 컨텍스트입니다.</p>
+              </div>
+              <span class="pill ok">giwa / sepolia</span>
+            </div>
+            <div class="card-body">
+              <div class="inspector-list" id="nodit-operations"></div>
+            </div>
+          </article>
+          <article class="card">
+            <div class="card-header">
+              <div>
+                <h3>요청 컨텍스트</h3>
+                <p>인증정보를 가진 로컬 프록시, MCP 호출, 또는 백엔드 액션에 이 내용을 전달합니다.</p>
+              </div>
+            </div>
+            <div class="card-body">
+              <textarea id="nodit-context" readonly></textarea>
+              <div class="toolbar">
+                <button id="rebuild-context" class="btn ghost" type="button">컨텍스트 다시 만들기</button>
+                <button id="copy-context-2" class="btn primary" type="button">컨텍스트 복사</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module">
+    const GIWA = {
+      chainId: 91342,
+      chainIdHex: "0x164ce",
+      rpcUrl: "https://sepolia-rpc.giwa.io/",
+      explorer: "https://sepolia-explorer.giwa.io",
+      noditChain: "giwa",
+      noditNetwork: "sepolia"
+    };
+
+    const ERC20_ABI = [
+      "function decimals() view returns (uint8)",
+      "function balanceOf(address account) view returns (uint256)",
+      "function allowance(address owner, address spender) view returns (uint256)",
+      "function approve(address spender, uint256 amount) returns (bool)"
+    ];
+
+    const CAFE_ABI = [
+      "function pay(address token, uint256 amount, string orderId)",
+      "function merchantWallet() view returns (address)",
+      "function setTokenWhitelist(address token, bool allowed)",
+      "function isWhitelistedToken(address token) view returns (bool)",
+      "function owner() view returns (address)",
+      "event TokenWhitelistUpdated(address indexed token, bool allowed)"
+    ];
+
+    const MENU_ITEMS = [
+      { id: "bugak-americano", category: "북악 기본", name: "북악 아메리카노", desc: "강의 시작 전 가볍게 마시는 국민대 캠퍼스 기본 커피", price: 2.50 },
+      { id: "jeongneung-latte", category: "정릉 추천", name: "정릉 라떼", desc: "부드러운 우유감으로 실습 중간에 마시기 좋은 라떼", price: 3.80 },
+      { id: "campus-vanilla", category: "달콤한 휴식", name: "캠퍼스 바닐라라떼", desc: "팀플 회의 전에 분위기를 풀어주는 달콤한 메뉴", price: 4.20 },
+      { id: "library-coldbrew", category: "성곡도서관", name: "성곡도서관 콜드브루", desc: "집중 실습과 과제 정리에 맞춘 진한 콜드브루", price: 4.50 },
+      { id: "exam-cookie", category: "시험기간", name: "시험기간 쿠키 세트", desc: "커피 한 잔과 같이 결제하기 좋은 간단한 디저트 세트", price: 5.00 },
+      { id: "team-project-set", category: "팀플 세트", name: "국민대 팀플 세트", desc: "여러 명이 함께 시연하기 좋은 대표 주문 예시", price: 12.50 }
+    ];
+
+    const $ = (id) => document.getElementById(id);
+    const short = (value) => value && value.length > 13 ? `${value.slice(0, 6)}...${value.slice(-4)}` : value || "미설정";
+    const MAX_CART_QTY = 99;
+    const ORDER_ID_PATTERN = /^[A-Za-z0-9._:+-]{1,128}$/;
+    const MOCK_DEFAULTS = {
+      tokenAddress: "0x56DC54Aa9Aa663eFa303Ee263bA961ad3d386d97",
+      paymentAddress: "0x589b6657bdDE19248e8c2556400188b710B84231",
+      merchantAddress: "0x0CC8bEEbE1719C3805e2130F9d1f6E98447D5B94"
+    };
+    const LEGACY_MOCK_PLACEHOLDERS = new Set([
+      "0x1111111111111111111111111111111111111111",
+      "0x2222222222222222222222222222222222222222",
+      "0x3333333333333333333333333333333333333333"
+    ]);
+    const state = {
+      mock: true,
+      account: "",
+      provider: null,
+      signer: null,
+      ethers: null,
+      decimals: 6,
+      balance: 1250,
+      allowance: 0,
+      lastTx: "",
+      payments: [],
+      cart: { "team-project-set": 1 }
+    };
+    const STORAGE_KEY = "kusdc-cafe-payment-dapp:v1";
+
+    function isAddressLike(value) {
+      return /^0x[a-fA-F0-9]{40}$/.test(String(value || "").trim());
+    }
+
+    function shouldFillDemoAddress(id) {
+      const value = $(id).value.trim();
+      return !value || LEGACY_MOCK_PLACEHOLDERS.has(value);
+    }
+
+    function fillMockDefaults({ force = false } = {}) {
+      if (!state.mock) return;
+      if (force || shouldFillDemoAddress("token-address")) $("token-address").value = MOCK_DEFAULTS.tokenAddress;
+      if (force || shouldFillDemoAddress("payment-address")) $("payment-address").value = MOCK_DEFAULTS.paymentAddress;
+      if (force || shouldFillDemoAddress("merchant-address")) $("merchant-address").value = MOCK_DEFAULTS.merchantAddress;
+      $("merchant-address-hint").textContent = "REMIX 실습 성공값의 merchantWallet입니다. 실제 지갑 결제 시에도 계약에서 읽은 값 또는 토큰 전송 내역으로 다시 확인하세요.";
+    }
+
+    function loadSafeState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        if (typeof saved.mock === "boolean") {
+          state.mock = saved.mock;
+          $("mock-mode").checked = saved.mock;
+        }
+        if (isAddressLike(saved.tokenAddress)) $("token-address").value = saved.tokenAddress;
+        if (isAddressLike(saved.paymentAddress)) $("payment-address").value = saved.paymentAddress;
+        if (isAddressLike(saved.merchantAddress)) $("merchant-address").value = saved.merchantAddress;
+        if (/^0x[a-fA-F0-9]{64}$/.test(saved.lastTx || "")) state.lastTx = saved.lastTx;
+        if (saved.cart && typeof saved.cart === "object") {
+          const nextCart = {};
+          MENU_ITEMS.forEach((item) => {
+            const qty = Math.max(0, Math.min(MAX_CART_QTY, Math.floor(Number(saved.cart[item.id]) || 0)));
+            if (qty > 0) nextCart[item.id] = qty;
+          });
+          state.cart = nextCart;
+        }
+        if (Number.isFinite(Number(saved.discountBps))) $("discount-bps").value = String(saved.discountBps);
+        if (typeof saved.manualOrderOverride === "boolean") $("manual-order-override").checked = saved.manualOrderOverride;
+      } catch {
+        /* localStorage가 막힌 환경에서는 저장 상태 없이 실행 */
+      }
+    }
+
+    function saveSafeState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          mock: state.mock,
+          tokenAddress: $("token-address").value.trim(),
+          paymentAddress: $("payment-address").value.trim(),
+          merchantAddress: $("merchant-address").value.trim(),
+          discountBps: getDiscountBps(),
+          manualOrderOverride: isManualOrderOverride(),
+          cart: state.cart,
+          lastTx: state.lastTx
+        }));
+      } catch {
+        /* 저장 실패는 결제 흐름을 막지 않음 */
+      }
+    }
+
+    /** CafePayment에서 merchantWallet을 읽어 UI에 반영합니다(실패 시 무시). */
+    async function syncPaymentContractHints(ethersLib) {
+      if (state.mock) return;
+      const paymentAddr = $("payment-address").value.trim();
+      if (!/^0x[0-9a-fA-F]{40}$/.test(paymentAddr)) return;
+      try {
+        const payment = new ethersLib.Contract(paymentAddr, CAFE_ABI, state.provider);
+        const m = await payment.merchantWallet();
+        if (m && m !== ethersLib.ZeroAddress) {
+          $("merchant-address").value = m;
+          $("merchant-address-hint").textContent = "CafePayment 계약에서 읽은 merchantWallet 확인값입니다. pay() 호출 인자가 아니라 계약 내부 정산 기준입니다.";
+        }
+      } catch {
+        $("merchant-address-hint").textContent = "merchantWallet을 계약에서 확인하지 못했습니다. 수동 입력값은 참고용이며 실제 정산은 계약/토큰 전송 내역으로 확인하세요.";
+      }
+    }
+
+    const noditOps = [
+      {
+        label: "거래 영수증",
+        operationId: "giwa-eth_gettransactionreceipt",
+        purpose: "최근 CafePayment 쓰기 거래의 성공 여부, 사용 가스, 로그, 블록 번호를 확인합니다.",
+        request: () => ({ chain: "giwa", network: "sepolia", method: "eth_getTransactionReceipt", params: [state.lastTx || "<txHash>"] })
+      },
+      {
+        label: "CafePayment 거래 로그(선택)",
+        operationId: "giwa-eth_getlogs",
+        purpose: "현재 실습 계약의 이벤트 ABI가 확정된 경우에만 topic0을 넣어 조회합니다. ABI가 불확실하면 거래 영수증과 토큰 전송 조회를 우선 사용합니다.",
+        request: () => ({ chain: "giwa", network: "sepolia", method: "eth_getLogs", params: [{ address: $("payment-address").value || "<CafePayment>", fromBlock: "latest", toBlock: "latest", topics: ["<optional event topic0>"] }] })
+      },
+      {
+        label: "allowance(승인액) 조회",
+        operationId: "giwa-getTokenAllowance",
+        purpose: "고객 지갑에서 CafePayment spender로 허용한 K-USDC 승인액을 조회합니다.",
+        request: () => ({ chain: "giwa", network: "sepolia", contractAddress: $("token-address").value || "<K-USDC>", ownerAddress: state.account || "<customer>", spenderAddress: $("payment-address").value || "<CafePayment>" })
+      },
+      {
+        label: "계정별 토큰 전송",
+        operationId: "giwa-getTokenTransfersByAccount",
+        purpose: "결제 후 고객 또는 가맹점 계정의 K-USDC 전송 내역을 찾습니다.",
+        request: () => ({ chain: "giwa", network: "sepolia", accountAddress: state.account || $("merchant-address").value || "<account>", contractAddress: $("token-address").value || "<K-USDC>", page: 1, rpp: 10 })
+      },
+      {
+        label: "계약별 토큰 전송",
+        operationId: "giwa-getTokenTransfersByContract",
+        purpose: "강의용 K-USDC 토큰 계약에서 발생한 전송 내역을 전체 실습 기준으로 확인합니다.",
+        request: () => ({ chain: "giwa", network: "sepolia", contractAddress: $("token-address").value || "<K-USDC>", page: 1, rpp: 10 })
+      }
+    ];
+
+    function setBusy(button, busy, label) {
+      if (!button) return;
+      if (busy) {
+        button.dataset.label = button.textContent.trim();
+        button.dataset.html = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = `<span class="spinner" aria-hidden="true"></span>${label || "처리 중"}`;
+      } else {
+        button.disabled = false;
+        if (button.dataset.html) button.innerHTML = button.dataset.html;
+      }
+    }
+
+    function setStatus(message, tone = "pending") {
+      const node = $("app-status");
+      node.textContent = message;
+      node.className = `status-line ${tone}`;
+    }
+
+    function parseAmountString(value = $("payment-amount").value.trim()) {
+      if (!/^(?:0|[1-9]\d*)(?:\.\d+)?$/.test(value)) throw new Error("총 결제액은 0보다 큰 십진수 문자열로 입력하세요.");
+      const fraction = value.split(".")[1] || "";
+      if (fraction.length > state.decimals) throw new Error(`총 결제액의 소수 자릿수는 K-USDC decimals(${state.decimals}) 이하여야 합니다.`);
+      if (Number(value) <= 0) throw new Error("총 결제액은 0보다 큰 숫자로 입력하세요.");
+      return value;
+    }
+
+    function amountStringToNumber(value) {
+      const amount = Number(value);
+      if (!Number.isFinite(amount) || amount <= 0) throw new Error("총 결제액은 0보다 큰 숫자로 입력하세요.");
+      return amount;
+    }
+
+    function validateOrderId(value) {
+      const orderId = String(value || "").trim();
+      if (!ORDER_ID_PATTERN.test(orderId)) throw new Error("orderId는 1~128자의 영문/숫자/._:+- 문자만 사용할 수 있습니다.");
+      return orderId;
+    }
+
+    function isManualOrderOverride() {
+      return Boolean($("manual-order-override")?.checked);
+    }
+
+    function syncReceiptInputLock() {
+      const manual = isManualOrderOverride();
+      $("payment-amount").readOnly = !manual;
+      $("payment-memo").readOnly = !manual;
+    }
+
+    function validateAddressInput(id, label, required = true) {
+      const value = $(id).value.trim();
+      if (!value && !required) return "";
+      if (!/^0x[a-fA-F0-9]{40}$/.test(value)) throw new Error(`${label}은(는) 올바른 0x 주소여야 합니다.`);
+      return value;
+    }
+
+    function formatNumber(value, max = 6) {
+      return new Intl.NumberFormat("ko-KR", { maximumFractionDigits: max, minimumFractionDigits: value % 1 === 0 ? 2 : 0 }).format(value);
+    }
+
+    function feeMath() {
+      const gross = Math.max(0, Number($("payment-amount").value) || 0);
+      return { gross, fee: 0, net: gross };
+    }
+
+    function renderFee() {
+      const fee = feeMath();
+      $("gross-preview").textContent = formatNumber(fee.gross);
+      const ready = fee.gross > 0 && (state.mock || ($("token-address").value && $("payment-address").value && state.account));
+      $("payment-readiness").className = `pill ${ready ? "ok" : "warn"}`;
+      $("payment-readiness").textContent = ready ? "결제 준비" : "설정 필요";
+      updateMerchantTotals();
+    }
+
+    function renderRail() {
+      $("rail-mode").textContent = state.mock ? "모의" : "지갑";
+      $("rail-account").textContent = state.account ? short(state.account) : "연결 안 됨";
+      $("rail-network").textContent = state.mock ? "GIWA Sepolia 대상" : `chain ${GIWA.chainId}`;
+      $("rail-wallet-pill").className = `pill rail-pill ${state.account || state.mock ? "ok" : "warn"}`;
+      $("rail-wallet-pill").textContent = state.mock ? "모의 실행 중" : state.account ? "연결됨" : "연결 안 됨";
+      $("rail-token").textContent = short($("token-address").value);
+      $("rail-payment").textContent = short($("payment-address").value);
+      $("rail-tx").textContent = state.lastTx ? short(state.lastTx) : "없음";
+      $("balance-display").textContent = formatNumber(state.balance);
+      $("allowance-display").textContent = formatNumber(state.allowance);
+      $("decimals-display").textContent = String(state.decimals);
+      if (state.lastTx) {
+        $("explorer-link").href = `${GIWA.explorer}/tx/${state.lastTx}`;
+      } else {
+        $("explorer-link").href = GIWA.explorer;
+      }
+    }
+
+    function renderTables() {
+      const rows = state.payments.length ? state.payments : [{
+        time: "시연",
+        customer: state.account || "0xCAFE...MOCK",
+        gross: feeMath().gross,
+        tx: state.lastTx || "대기"
+      }];
+      $("merchant-table").innerHTML = rows.map((row) => `
+        <tr>
+          <td>${row.time}</td>
+          <td class="mono">${short(row.customer)}</td>
+          <td>${formatNumber(row.gross)}</td>
+          <td class="mono">${short(row.tx)}</td>
+        </tr>
+      `).join("");
+    }
+
+    function updateMerchantTotals() {
+      const rows = state.payments;
+      const fallback = feeMath();
+      const gross = rows.length ? rows.reduce((sum, row) => sum + row.gross, 0) : fallback.gross;
+      $("merchant-gross").textContent = formatNumber(gross);
+      renderTables();
+    }
+
+    async function loadEthers() {
+      if (state.ethers) return state.ethers;
+      try {
+        const mod = await import("https://cdn.jsdelivr.net/npm/ethers@6.13.5/+esm");
+        state.ethers = mod.ethers;
+        return state.ethers;
+      } catch (error) {
+        throw new Error("CDN에서 ethers v6를 불러오지 못했습니다. 오프라인에서는 모의 모드를 사용하거나 네트워크 연결을 확인하세요.");
+      }
+    }
+
+    const giwaChainParams = () => ({
+      chainId: GIWA.chainIdHex,
+      chainName: "GIWA Sepolia",
+      nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
+      rpcUrls: [GIWA.rpcUrl],
+      blockExplorerUrls: [GIWA.explorer]
+    });
+
+    function isChainNotAddedError(error) {
+      return error?.code === 4902 || /4902|not added|unrecognized|unknown chain/i.test(error?.message || "");
+    }
+
+    async function switchToGiwaChain() {
+      const current = await ethereum.request({ method: "eth_chainId" });
+      if (String(current).toLowerCase() === GIWA.chainIdHex) return;
+      try {
+        await ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: GIWA.chainIdHex }] });
+      } catch (error) {
+        if (!isChainNotAddedError(error)) throw error;
+        await ethereum.request({ method: "wallet_addEthereumChain", params: [giwaChainParams()] });
+        await ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: GIWA.chainIdHex }] });
+      }
+      const confirmed = await ethereum.request({ method: "eth_chainId" });
+      if (String(confirmed).toLowerCase() !== GIWA.chainIdHex) throw new Error("GIWA Sepolia로 네트워크가 전환되지 않았습니다. MetaMask 네트워크를 확인하세요.");
+    }
+
+    async function assertGiwaNetwork() {
+      if (!state.provider) return;
+      const network = await state.provider.getNetwork();
+      if (network.chainId !== BigInt(GIWA.chainId)) throw new Error(`현재 지갑 네트워크(chain ${network.chainId})가 GIWA Sepolia(${GIWA.chainId})가 아닙니다.`);
+    }
+
+    function resetWalletDerivedState(account = "") {
+      state.account = account;
+      state.provider = null;
+      state.signer = null;
+      state.balance = 0;
+      state.allowance = 0;
+      state.lastTx = "";
+    }
+
+    async function ensureWallet() {
+      if (state.mock) return null;
+      if (!globalThis.ethereum) throw new Error("지갑 모드에는 MetaMask 또는 EIP-1193 지갑이 필요합니다.");
+      const ethers = await loadEthers();
+      await ethereum.request({ method: "eth_requestAccounts" });
+      await switchToGiwaChain();
+      state.provider = new ethers.BrowserProvider(ethereum);
+      await assertGiwaNetwork();
+      state.signer = await state.provider.getSigner();
+      state.account = await state.signer.getAddress();
+      return { ethers, signer: state.signer };
+    }
+
+    async function assertContractDeployed(address, label) {
+      const code = await state.provider.getCode(address);
+      if (!code || code === "0x") throw new Error(`${label} 주소에 컨트랙트 코드가 없습니다. GIWA Sepolia인지, Remix 배포 주소가 맞는지 확인하세요: ${short(address)}`);
+    }
+
+    async function refreshTokenSnapshot(tokenAddress, paymentAddress) {
+      await assertContractDeployed(tokenAddress, "K-USDC 토큰");
+      const token = new state.ethers.Contract(tokenAddress, ERC20_ABI, state.signer);
+      state.decimals = Number(await token.decimals());
+      const rawBalance = await token.balanceOf(state.account);
+      const rawAllowance = await token.allowance(state.account, paymentAddress);
+      state.balance = Number(state.ethers.formatUnits(rawBalance, state.decimals));
+      state.allowance = Number(state.ethers.formatUnits(rawAllowance, state.decimals));
+      return { token, rawBalance, rawAllowance };
+    }
+
+    async function connectWallet() {
+      const btn = $("connect-wallet");
+      setBusy(btn, true, "연결 중");
+      try {
+        state.mock = $("mock-mode").checked;
+        if (state.mock) {
+          fillMockDefaults({ force: true });
+          state.account = "0xCAfE00000000000000000000000000000000CAFE";
+          setStatus("모의 지갑이 연결되었습니다. REMIX 실습 성공 주소로 실제 조회 없이 시연합니다.", "success");
+        } else {
+          await ensureWallet();
+          setStatus(`${short(state.account)} 지갑이 GIWA Sepolia에 연결되었습니다.`, "success");
+          await refreshBalances();
+        }
+        renderRail();
+      } catch (error) {
+        setStatus(error.message, "error");
+      } finally {
+        setBusy(btn, false);
+      }
+    }
+
+    async function refreshBalances() {
+      const btn = $("refresh-balances");
+      setBusy(btn, true, "조회 중");
+      try {
+        if (state.mock) {
+          state.decimals = 6;
+          state.balance = Math.max(0, state.balance);
+          setStatus("모의 잔액과 allowance(승인액)를 새로고침했습니다.", "success");
+        } else {
+          await ensureWallet();
+          const tokenAddress = validateAddressInput("token-address", "K-USDC 토큰 주소");
+          const paymentAddress = validateAddressInput("payment-address", "CafePayment 결제 계약");
+          await assertContractDeployed(paymentAddress, "CafePayment 결제 계약");
+          await refreshTokenSnapshot(tokenAddress, paymentAddress);
+          await syncPaymentContractHints(state.ethers);
+          setStatus("지갑 provider에서 실제 K-USDC 잔액과 allowance(승인액)를 조회했습니다.", "success");
+        }
+      } catch (error) {
+        setStatus(error.message, "error");
+      } finally {
+        setBusy(btn, false);
+        renderAll({ menu: false });
+      }
+    }
+
+    async function approvePayment() {
+      const btn = $("approve-payment");
+      setBusy(btn, true, "승인 중");
+      try {
+        const amountString = parseAmountString();
+        const amount = amountStringToNumber(amountString);
+        if (state.mock) {
+          state.allowance = amount;
+          setStatus(`모의 approve(승인)가 ${formatNumber(amount)} K-USDC로 설정되었습니다.`, "success");
+        } else {
+          await ensureWallet();
+          await assertGiwaNetwork();
+          const tokenAddress = validateAddressInput("token-address", "K-USDC 토큰 주소");
+          const paymentAddress = validateAddressInput("payment-address", "CafePayment 결제 계약");
+          await assertContractDeployed(paymentAddress, "CafePayment 결제 계약");
+          const { token } = await refreshTokenSnapshot(tokenAddress, paymentAddress);
+          const raw = state.ethers.parseUnits(amountString, state.decimals);
+          const tx = await token.approve(paymentAddress, raw);
+          state.lastTx = tx.hash;
+          setStatus(`approve(승인) 거래 제출: ${short(tx.hash)}. 영수증을 기다리는 중입니다.`, "pending");
+          await tx.wait();
+          await refreshTokenSnapshot(tokenAddress, paymentAddress);
+          setStatus(`approve(승인) 확인 완료: ${short(tx.hash)}.`, "success");
+        }
+      } catch (error) {
+        setStatus(error.shortMessage || error.message, "error");
+      } finally {
+        setBusy(btn, false);
+        renderRail();
+        rebuildContext();
+      }
+    }
+
+    function recordPayment(txHash, grossAmount = null) {
+      const gross = Number.isFinite(Number(grossAmount)) ? Number(grossAmount) : feeMath().gross;
+      const fee = { gross, fee: 0, net: gross };
+      state.payments.unshift({
+        time: "시연",
+        customer: state.account || "0xCAfE00000000000000000000000000000000CAFE",
+        gross: fee.gross,
+        fee: fee.fee,
+        net: fee.net,
+        tx: txHash
+      });
+      state.payments = state.payments.slice(0, 8);
+      state.balance = Math.max(0, state.balance - fee.gross);
+      state.allowance = Math.max(0, state.allowance - fee.gross);
+    }
+
+    async function payApproved() {
+      const btn = $("pay-approved");
+      setBusy(btn, true, "결제 중");
+      try {
+        const intent = buildPaymentIntent();
+        const amount = amountStringToNumber(intent.amountString);
+        if (state.mock) {
+          if (state.allowance < amount) throw new Error("allowance(승인액)가 총 결제액보다 작습니다. 먼저 approve(승인)를 실행하세요.");
+          state.lastTx = "0x" + "cafe".repeat(16);
+          recordPayment(state.lastTx, amount);
+          setStatus("모의 결제가 완료되었습니다. Nodit 추적 탭에서 후속 조회 컨텍스트를 확인하세요.", "success");
+        } else {
+          await ensureWallet();
+          await assertGiwaNetwork();
+          await assertContractDeployed(intent.paymentAddress, "CafePayment 결제 계약");
+          const snapshot = await refreshTokenSnapshot(intent.tokenAddress, intent.paymentAddress);
+          const raw = state.ethers.parseUnits(intent.amountString, state.decimals);
+          if (snapshot.rawAllowance < raw) throw new Error("체인에서 다시 확인한 allowance(승인액)가 총 결제액보다 작습니다. 먼저 approve(승인)를 실행하세요.");
+          if (snapshot.rawBalance < raw) throw new Error("체인에서 다시 확인한 K-USDC 잔액이 총 결제액보다 작습니다.");
+          const payment = new state.ethers.Contract(intent.paymentAddress, CAFE_ABI, state.signer);
+          const tx = await payment.pay(intent.tokenAddress, raw, intent.orderId);
+          state.lastTx = tx.hash;
+          setStatus(`결제 거래 제출: ${short(tx.hash)}. 영수증을 기다리는 중입니다.`, "pending");
+          await tx.wait();
+          recordPayment(tx.hash, amount);
+          await refreshTokenSnapshot(intent.tokenAddress, intent.paymentAddress);
+          setStatus(`결제 확인 완료: ${short(tx.hash)}.`, "success");
+        }
+      } catch (error) {
+        setStatus(error.shortMessage || error.message, "error");
+      } finally {
+        setBusy(btn, false);
+        renderRail();
+        updateMerchantTotals();
+        rebuildContext();
+      }
+    }
+
+    function buildContext() {
+      return {
+        chain: GIWA.noditChain,
+        network: GIWA.noditNetwork,
+        chainId: GIWA.chainId,
+        chainIdHex: GIWA.chainIdHex,
+        tokenAddress: $("token-address").value.trim() || "<K-USDC>",
+        cafePaymentAddress: $("payment-address").value.trim() || "<CafePayment>",
+        customer: state.account || "<customer>",
+        merchant: $("merchant-address").value.trim() || "<merchant>",
+        amount: $("payment-amount").value,
+        orderDraft: buildOrderDraft(),
+        lastTransactionHash: state.lastTx || "<txHash>",
+        operations: noditOps.map((op) => ({ operationId: op.operationId, request: op.request() })),
+        credentialBoundary: "실제 Nodit 호출은 서버, 로컬 프록시, 또는 MCP 도구에서 처리합니다. 브라우저 코드에 private credentials를 넣지 마세요."
+      };
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function getMenuItem(id) {
+      return MENU_ITEMS.find((item) => item.id === id);
+    }
+
+    function getCartLines() {
+      return MENU_ITEMS
+        .map((item) => ({ ...item, qty: state.cart[item.id] || 0 }))
+        .filter((item) => item.qty > 0);
+    }
+
+    function getDiscountBps() {
+      const raw = Number($("discount-bps").value || 0);
+      if (!Number.isFinite(raw)) return 0;
+      return Math.max(0, Math.min(10000, Math.round(raw)));
+    }
+
+    function normalizeDiscountInput() {
+      const normalized = getDiscountBps();
+      $("discount-bps").value = String(normalized);
+      return normalized;
+    }
+
+    const toCents = (value) => Math.round(Number(value) * 100);
+    const fromCents = (cents) => cents / 100;
+    const formatKusdcCents = (cents) => fromCents(cents).toFixed(2);
+
+    function getCartTotals() {
+      const lines = getCartLines();
+      const subtotalCents = lines.reduce((sum, item) => sum + toCents(item.price) * item.qty, 0);
+      const discountBps = getDiscountBps();
+      const discountCents = Math.min(subtotalCents, Math.round(subtotalCents * discountBps / 10000));
+      const totalCents = Math.max(0, subtotalCents - discountCents);
+      return {
+        lines,
+        subtotalCents,
+        discountBps,
+        discountCents,
+        totalCents,
+        subtotal: fromCents(subtotalCents),
+        discount: fromCents(discountCents),
+        total: fromCents(totalCents)
+      };
+    }
+
+    function menuOrderId() {
+      const { lines, discountBps } = getCartTotals();
+      if (!lines.length) return "";
+      const body = lines.map((item) => `${item.id}x${item.qty}`).join("+");
+      return `KMU-${body}-D${discountBps}`;
+    }
+
+    function buildOrderDraft() {
+      const totals = getCartTotals();
+      return {
+        lines: totals.lines.map((item) => ({ id: item.id, name: item.name, qty: item.qty, unitPrice: item.price })),
+        subtotal: formatKusdcCents(totals.subtotalCents),
+        discountBps: totals.discountBps,
+        discount: formatKusdcCents(totals.discountCents),
+        total: formatKusdcCents(totals.totalCents),
+        orderId: menuOrderId(),
+        boundary: "off-chain receipt metadata"
+      };
+    }
+
+    function buildPaymentIntent({ requireAddresses = !state.mock } = {}) {
+      const draft = buildOrderDraft();
+      const amountString = isManualOrderOverride() ? parseAmountString() : parseAmountString(draft.total);
+      const orderId = validateOrderId(isManualOrderOverride() ? $("payment-memo").value : draft.orderId);
+      if (!isManualOrderOverride()) {
+        $("payment-amount").value = amountString;
+        $("payment-memo").value = orderId;
+      }
+      return {
+        tokenAddress: validateAddressInput("token-address", "K-USDC 토큰 주소", requireAddresses),
+        paymentAddress: validateAddressInput("payment-address", "CafePayment 결제 계약", requireAddresses),
+        merchantAddress: validateAddressInput("merchant-address", "계약 merchantWallet 확인값", false),
+        amountString,
+        orderId
+      };
+    }
+
+    function updateOrderFromCart({ force = false } = {}) {
+      if (isManualOrderOverride() && !force) return;
+      const draft = buildOrderDraft();
+      $("payment-amount").value = draft.total;
+      $("payment-memo").value = draft.orderId;
+    }
+
+    function renderMenu() {
+      const totals = getCartTotals();
+      $("menu-list").innerHTML = MENU_ITEMS.map((item) => {
+        const qty = state.cart[item.id] || 0;
+        return `
+          <button class="menu-item" type="button" data-menu-id="${escapeHtml(item.id)}" aria-pressed="${String(qty > 0)}">
+            <span class="menu-meta">${escapeHtml(item.category)}${qty ? ` · ${qty}개 담김` : ""}</span>
+            <span class="menu-title-row">
+              <span class="menu-name">${escapeHtml(item.name)}</span>
+              <span class="menu-price">${item.price.toFixed(2)} K-USDC</span>
+            </span>
+            <span class="menu-desc">${escapeHtml(item.desc)}</span>
+          </button>
+        `;
+      }).join("");
+      $("cart-items").innerHTML = totals.lines.length ? totals.lines.map((item) => `
+        <div class="cart-row">
+          <span>
+            <span class="cart-row-title">${escapeHtml(item.name)}</span>
+            <span class="cart-row-meta">${item.price.toFixed(2)} K-USDC x ${item.qty} = ${formatKusdcCents(toCents(item.price) * item.qty)} K-USDC</span>
+          </span>
+          <span class="qty-controls" aria-label="${escapeHtml(item.name)} 수량 조정">
+            <button class="qty-btn" type="button" data-cart-action="decrease" data-menu-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(item.name)} 1개 빼기">-</button>
+            <span class="qty-count">${item.qty}</span>
+            <button class="qty-btn" type="button" data-cart-action="increase" data-menu-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(item.name)} 1개 추가" ${item.qty >= MAX_CART_QTY ? "disabled" : ""}>+</button>
+            <button class="qty-btn remove-btn" type="button" data-cart-action="remove" data-menu-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(item.name)} 취소">취소</button>
+          </span>
+        </div>
+      `).join("") : `<div class="selected-menu">담긴 메뉴가 없습니다. 메뉴판에서 원하는 메뉴를 눌러 주세요.</div>`;
+      $("cart-subtotal").textContent = `${formatKusdcCents(totals.subtotalCents)} K-USDC`;
+      $("cart-discount").textContent = `${formatKusdcCents(totals.discountCents)} K-USDC (${totals.discountBps} bps)`;
+      $("cart-total").textContent = `${formatKusdcCents(totals.totalCents)} K-USDC`;
+      $("selected-menu").textContent = totals.lines.length
+        ? `현재 ${totals.lines.reduce((sum, item) => sum + item.qty, 0)}개 메뉴 · 최종 ${formatKusdcCents(totals.totalCents)} K-USDC - orderId ${menuOrderId()}`
+        : "메뉴를 여러 개 담거나 수량을 조정할 수 있습니다.";
+    }
+
+    function renderAll({ menu = true, fee = true, rail = true, context = true } = {}) {
+      if (menu) renderMenu();
+      if (fee) renderFee();
+      if (rail) renderRail();
+      if (context) rebuildContext();
+    }
+
+    function changeCartItem(id, delta) {
+      const item = getMenuItem(id);
+      if (!item) return;
+      const next = Math.max(0, Math.min(MAX_CART_QTY, (state.cart[id] || 0) + delta));
+      if (next === 0) delete state.cart[id];
+      else state.cart[id] = next;
+      updateOrderFromCart();
+      renderAll();
+    }
+
+    function removeCartItem(id) {
+      delete state.cart[id];
+      updateOrderFromCart();
+      renderAll();
+    }
+
+    function clearCart() {
+      state.cart = {};
+      updateOrderFromCart();
+      renderAll();
+      setStatus("선택한 메뉴를 모두 취소했습니다.", "pending");
+    }
+
+    function applyMenuItem(id) {
+      const item = getMenuItem(id);
+      if (!item) return;
+      changeCartItem(id, 1);
+      setStatus(`${item.name} 1개를 장바구니에 추가했습니다. 수량 조정과 취소도 가능합니다.`, "success");
+    }
+
+    function renderOperations() {
+      $("nodit-operations").innerHTML = noditOps.map((op) => `
+        <div class="operation">
+          <strong>${escapeHtml(op.label)}</strong>
+          <span class="mono">${escapeHtml(op.operationId)}</span>
+          <span>${escapeHtml(op.purpose)}</span>
+          <pre>${escapeHtml(JSON.stringify(op.request(), null, 2))}</pre>
+        </div>
+      `).join("");
+    }
+
+    function rebuildContext() {
+      renderOperations();
+      $("nodit-context").value = JSON.stringify(buildContext(), null, 2);
+      saveSafeState();
+    }
+
+    async function copyContext() {
+      try {
+        await navigator.clipboard.writeText($("nodit-context").value);
+        setStatus("Nodit 요청 컨텍스트를 복사했습니다.", "success");
+      } catch {
+        $("nodit-context").select();
+        setStatus("컨텍스트를 선택했습니다. 키보드 단축키로 복사하세요.", "pending");
+      }
+    }
+
+    function setupTabs() {
+      const tabs = ["customer", "merchant", "nodit"];
+      tabs.forEach((name) => {
+        $(`tab-${name}`).addEventListener("click", () => {
+          tabs.forEach((other) => {
+            const selected = other === name;
+            $(`tab-${other}`).setAttribute("aria-selected", String(selected));
+            $(`panel-${other}`).hidden = !selected;
+          });
+          if (name === "nodit") rebuildContext();
+        });
+      });
+    }
+
+    function setupEvents() {
+      setupTabs();
+      $("mock-mode").addEventListener("change", () => {
+        state.mock = $("mock-mode").checked;
+        if (state.mock) fillMockDefaults({ force: true });
+        if (!state.mock) resetWalletDerivedState();
+        setStatus(state.mock ? "모의 모드가 켜졌습니다. 강의용 예시 주소로 바로 시연할 수 있습니다." : "지갑 모드가 선택되어 모의 잔액/승인액을 초기화했습니다. MetaMask 연결 후 GIWA Sepolia를 조회하세요.", "pending");
+        renderAll({ menu: false });
+      });
+      ["token-address", "payment-address", "merchant-address", "payment-amount", "payment-memo"].forEach((id) => {
+        $(id).addEventListener("input", () => renderAll());
+      });
+      $("manual-order-override").addEventListener("change", () => {
+        syncReceiptInputLock();
+        updateOrderFromCart({ force: !isManualOrderOverride() });
+        setStatus(isManualOrderOverride() ? "금액/orderId 직접 수정 모드입니다. orderId 형식과 실제 결제액을 직접 확인하세요." : "장바구니 금액/orderId 자동 계산 모드로 돌아왔습니다.", "pending");
+        renderAll();
+      });
+      $("discount-preset").addEventListener("change", () => {
+        $("discount-bps").value = $("discount-preset").value;
+        normalizeDiscountInput();
+        updateOrderFromCart();
+        renderAll();
+      });
+      $("discount-bps").addEventListener("input", () => {
+        normalizeDiscountInput();
+        updateOrderFromCart();
+        renderAll();
+      });
+      $("menu-list").addEventListener("click", (event) => {
+        const button = event.target.closest("[data-menu-id]");
+        if (!button) return;
+        applyMenuItem(button.dataset.menuId);
+      });
+      $("cart-items").addEventListener("click", (event) => {
+        const button = event.target.closest("[data-cart-action]");
+        if (!button) return;
+        const id = button.dataset.menuId;
+        if (button.dataset.cartAction === "increase") changeCartItem(id, 1);
+        if (button.dataset.cartAction === "decrease") changeCartItem(id, -1);
+        if (button.dataset.cartAction === "remove") removeCartItem(id);
+      });
+      $("clear-cart").addEventListener("click", clearCart);
+      $("connect-wallet").addEventListener("click", connectWallet);
+      $("refresh-balances").addEventListener("click", refreshBalances);
+      $("approve-payment").addEventListener("click", approvePayment);
+      $("pay-approved").addEventListener("click", payApproved);
+      $("copy-context").addEventListener("click", copyContext);
+      $("copy-context-2").addEventListener("click", copyContext);
+      $("rebuild-context").addEventListener("click", rebuildContext);
+      $("merchant-refresh").addEventListener("click", () => {
+        updateMerchantTotals();
+        setStatus("로컬 결제 상태로 점주 정산 화면을 새로고침했습니다.", "success");
+      });
+      if (globalThis.ethereum) {
+        ethereum.on?.("accountsChanged", (accounts) => {
+          resetWalletDerivedState(accounts?.[0] || "");
+          renderAll({ menu: false });
+          if (!state.mock) setStatus("계정이 변경되어 잔액과 allowance를 초기화했습니다. 다시 연결/조회하세요.", "pending");
+        });
+        ethereum.on?.("chainChanged", () => {
+          resetWalletDerivedState();
+          renderAll({ menu: false });
+          if (!state.mock) setStatus("네트워크가 변경되어 지갑 상태를 초기화했습니다. GIWA Sepolia로 다시 연결하세요.", "pending");
+        });
+      }
+    }
+
+    function init() {
+      loadSafeState();
+      if (state.mock) fillMockDefaults({ force: true });
+      if (!state.mock) resetWalletDerivedState();
+      normalizeDiscountInput();
+      syncReceiptInputLock();
+      updateOrderFromCart({ force: !isManualOrderOverride() });
+      setupEvents();
+      renderAll();
+    }
+
+    init();
+  </script>
+</body>
+</html>
