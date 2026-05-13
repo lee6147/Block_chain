@@ -50,6 +50,20 @@ A passing run regenerates or preserves these evidence logs:
 - `logs/parity1_attack.log`
 - `logs/parity2_freeze.log`
 
+## Student walkthrough
+
+Recommended order for students:
+
+1. Read **Safety boundary** first: this is a local Hardhat lab, not a live-network deployment.
+2. Run `npm ci` and `npm test`.
+3. Open the four files under `logs/` and match each result to the assignment part.
+4. Read the matching vulnerable contract under `contracts/`.
+5. Read the matching driver under `scripts/` to see how the scenario is reproduced.
+6. Compare the fixed contracts and fixed-flow log lines.
+7. Use `diagrams/delegatecall_storage_collision.md` when Parity #1 storage writes feel confusing.
+
+Korean note: 학생은 먼저 `npm test`로 전체 재현을 확인한 뒤, `logs/` → `contracts/` → `scripts/` 순서로 읽으면 공격 원인과 수정 방식을 가장 쉽게 따라갈 수 있습니다.
+
 ## Repository structure
 
 ```text
@@ -82,6 +96,12 @@ week_12/
     parity2_freeze.log
   diagrams/
     delegatecall_storage_collision.md
+  screenshots/
+    README.md
+    01-npm-test-dao-attack.png
+    02-dao-fixes-cei-guard.png
+    03-dao-fixes-pull-payment.png
+    04-parity1-unauthorized-initialization.png
   07_smart_contract_security_dao_parity (1).html
   student_ai_prompt_week12.md
   hardhat.config.js
@@ -97,6 +117,7 @@ Keep the review focus on the executable lab package, not on generated local tool
 | Category | Include / rely on | Notes |
 | --- | --- | --- |
 | Core submission | `contracts/`, `scripts/`, `logs/`, `diagrams/`, `README.md`, `package.json`, `package-lock.json`, `hardhat.config.js` | These files prove the three assignment parts and the local verification path. |
+| Visual evidence | `screenshots/` | Optional console screenshots for easier human review. Text logs remain the primary evidence. |
 | Auxiliary study material | `07_smart_contract_security_dao_parity (1).html`, `student_ai_prompt_week12.md` | Helpful for learning or prompting, but not the primary executable evidence. |
 | Regenerable local output | `artifacts/`, `cache/`, `node_modules/` | Created by install/compile/test. Do not treat these as hand-written deliverables. |
 | Agent/runtime state | `.omx/` | Local workflow state only; not part of the assignment evidence. |
@@ -233,6 +254,40 @@ These files are useful for study or prompting, but they are not the core executa
 - `07_smart_contract_security_dao_parity (1).html` — teaching/reference HTML for the DAO and Parity topics.
 - `student_ai_prompt_week12.md` — student-facing AI prompt/support note.
 
+## Visual evidence screenshots
+
+Screenshots are included only as reviewer-friendly visual evidence. The text logs under `logs/` are still the canonical evidence because they are reproducible and easier to compare.
+
+| Screenshot file | Shows | Canonical log |
+| --- | --- | --- |
+| `screenshots/01-npm-test-dao-attack.png` | `npm test` start and vulnerable DAO reentrancy drain output. | `logs/dao_attack.log` |
+| `screenshots/02-dao-fixes-cei-guard.png` | CEI and local reentrancy guard blocking the reentrant path. | `logs/dao_fixes.log` |
+| `screenshots/03-dao-fixes-pull-payment.png` | Pull-over-push avoiding the callback path and preserving claim behavior. | `logs/dao_fixes.log` |
+| `screenshots/04-parity1-unauthorized-initialization.png` | Parity #1 unauthorized initialization and fixed-wallet protection. | `logs/parity1_attack.log` |
+
+<details>
+<summary>Open screenshot previews</summary>
+
+### DAO attack run
+
+<img src="screenshots/01-npm-test-dao-attack.png" alt="DAO attack npm test output" width="760">
+
+### DAO CEI and guard fixes
+
+<img src="screenshots/02-dao-fixes-cei-guard.png" alt="DAO CEI and guard fix output" width="760">
+
+### DAO pull-payment fix
+
+<img src="screenshots/03-dao-fixes-pull-payment.png" alt="DAO pull-payment fix output" width="760">
+
+### Parity #1 unauthorized initialization
+
+<img src="screenshots/04-parity1-unauthorized-initialization.png" alt="Parity unauthorized initialization output" width="760">
+
+</details>
+
+Parity #2 is fully documented in `logs/parity2_freeze.log`; the included screenshots do not replace that log.
+
 ## Verification checklist for reviewers
 
 Run these commands from `week_12/`:
@@ -253,3 +308,4 @@ Pass criteria:
 - DAO fixes log shows the CEI and guard reverts plus the pull-payment safe path.
 - Parity #1 log shows uninitialized wallets drained and fixed wallet protected.
 - Parity #2 log shows wallet balances frozen in place, not stolen, and the fixed shared-library wallet remains usable.
+
