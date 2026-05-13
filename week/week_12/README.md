@@ -258,6 +258,8 @@ These files are useful for study or prompting, but they are not the core executa
 
 Screenshots are included only as reviewer-friendly visual evidence. The text logs under `logs/` are still the canonical evidence because they are reproducible and easier to compare.
 
+The screenshots below are shown directly in this README so students can compare their terminal output with an expected run. The text logs remain the canonical evidence.
+
 | Screenshot file | Shows | Canonical log |
 | --- | --- | --- |
 | `screenshots/01-npm-test-dao-attack.png` | `npm test` start and vulnerable DAO reentrancy drain output. | `logs/dao_attack.log` |
@@ -265,26 +267,21 @@ Screenshots are included only as reviewer-friendly visual evidence. The text log
 | `screenshots/03-dao-fixes-pull-payment.png` | Pull-over-push avoiding the callback path and preserving claim behavior. | `logs/dao_fixes.log` |
 | `screenshots/04-parity1-unauthorized-initialization.png` | Parity #1 unauthorized initialization and fixed-wallet protection. | `logs/parity1_attack.log` |
 
-<details>
-<summary>Open screenshot previews</summary>
-
 ### DAO attack run
 
-<img src="screenshots/01-npm-test-dao-attack.png" alt="DAO attack npm test output" width="760">
+<img src="screenshots/01-npm-test-dao-attack.png" alt="DAO attack npm test output" width="820">
 
 ### DAO CEI and guard fixes
 
-<img src="screenshots/02-dao-fixes-cei-guard.png" alt="DAO CEI and guard fix output" width="760">
+<img src="screenshots/02-dao-fixes-cei-guard.png" alt="DAO CEI and guard fix output" width="820">
 
 ### DAO pull-payment fix
 
-<img src="screenshots/03-dao-fixes-pull-payment.png" alt="DAO pull-payment fix output" width="760">
+<img src="screenshots/03-dao-fixes-pull-payment.png" alt="DAO pull-payment fix output" width="820">
 
 ### Parity #1 unauthorized initialization
 
-<img src="screenshots/04-parity1-unauthorized-initialization.png" alt="Parity unauthorized initialization output" width="760">
-
-</details>
+<img src="screenshots/04-parity1-unauthorized-initialization.png" alt="Parity unauthorized initialization output" width="820">
 
 Parity #2 is fully documented in `logs/parity2_freeze.log`; the included screenshots do not replace that log.
 
@@ -308,4 +305,5 @@ Pass criteria:
 - DAO fixes log shows the CEI and guard reverts plus the pull-payment safe path.
 - Parity #1 log shows uninitialized wallets drained and fixed wallet protected.
 - Parity #2 log shows wallet balances frozen in place, not stolen, and the fixed shared-library wallet remains usable.
+
 
