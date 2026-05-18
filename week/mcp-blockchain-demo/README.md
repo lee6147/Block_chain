@@ -56,6 +56,8 @@ mcp-blockchain-demo/
 ├── web_app.py                # Starlette backend; acts as an MCP client
 ├── web/
 │   └── index.html            # Browser UI/UX demo console
+├── assets/
+│   └── screenshots/          # Demo screenshots used in README files
 ├── servers/
 │   ├── weather_server.py     # Weather MCP server
 │   └── coin_server.py        # Coin/Blockchain MCP server
@@ -170,7 +172,31 @@ Available UI actions:
 
 ---
 
-## 7. MCP tools in this demo
+## 7. Demo screenshots
+
+These screenshots are included for lecture/demo use and can be shown when explaining that the browser UI and CLI client both execute the same MCP client → server → external API flow.
+
+### Web UI overview
+
+![MCP Web UI demo](assets/screenshots/web-ui-demo.png)
+
+The browser UI shows the Weather/Coin MCP demo console and the five-step flow from browser request to MCP server tool result.
+
+### Weather CLI demo
+
+![Weather MCP CLI demo](assets/screenshots/weather-cli-demo.png)
+
+The Weather CLI demo shows MCP session initialization, tool discovery, and `call_tool()` execution against `servers/weather_server.py`.
+
+### Coin CLI demo
+
+![Coin MCP CLI demo](assets/screenshots/coin-cli-demo.png)
+
+The Coin CLI demo shows the client discovering Coin MCP tools and calling price/comparison tools through `servers/coin_server.py`.
+
+---
+
+## 8. MCP tools in this demo
 
 ### Weather MCP Server
 
@@ -195,7 +221,7 @@ Supported shorthand examples include `btc`, `eth`, `sol`, `xrp`, `ada`, and `dog
 
 ---
 
-## 8. MCP client/server explanation
+## 9. MCP client/server explanation
 
 MCP solves a simple problem: LLMs understand natural language well, but they need a standardized way to call external APIs or local programs.
 
@@ -235,7 +261,7 @@ A valid MCP project should include:
 
 ---
 
-## 9. Teaching script
+## 10. Teaching script
 
 Use this sequence during a live class.
 
@@ -313,7 +339,7 @@ Example natural-language requests:
 
 ---
 
-## 10. Student final-project direction
+## 11. Student final-project direction
 
 The final project direction is to build an MCP server that provides coin or blockchain-related real-time information as tools.
 
@@ -409,7 +435,7 @@ The submitted README should include:
 
 ---
 
-## 11. Backup plan if the live demo fails
+## 12. Backup plan if the live demo fails
 
 If the live API call fails because of network/API issues:
 
@@ -424,7 +450,7 @@ The core learning point remains:
 
 ---
 
-## 12. Development checks
+## 13. Development checks
 
 Run a quick syntax check:
 
@@ -448,7 +474,7 @@ curl 'http://127.0.0.1:8765/api/coin/price?symbol=btc&currency=usd'
 
 ---
 
-## 13. Notes for GitHub upload
+## 14. Notes for GitHub upload
 
 Recommended files to include:
 
@@ -466,6 +492,6 @@ Do not commit generated/local files such as:
 
 ---
 
-## 14. License
+## 15. License
 
 Add a license before publishing if this will be shared publicly. For classroom/demo use, MIT is usually a simple default.

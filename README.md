@@ -56,6 +56,7 @@ week/mcp-blockchain-demo/
 │   └── test_mcp_client.py    # CLI MCP client showing list_tools() and call_tool()
 ├── web_app.py                # Web backend that also acts as an MCP client
 ├── web/index.html            # Browser UI demo console
+├── assets/screenshots/       # Demo screenshots embedded in README files
 ├── run_all_demos.sh          # Runs CLI demos
 └── run_ui.sh                 # Starts the browser UI server
 ```

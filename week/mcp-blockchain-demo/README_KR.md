@@ -60,6 +60,8 @@ mcp-blockchain-demo/
 ├── web_app.py                # Starlette backend, MCP client 역할
 ├── web/
 │   └── index.html            # 브라우저 UI 데모 콘솔
+├── assets/
+│   └── screenshots/          # README에 포함되는 데모 스크린샷
 ├── servers/
 │   ├── weather_server.py     # 날씨 MCP server
 │   └── coin_server.py        # 코인/블록체인 MCP server
@@ -174,7 +176,31 @@ UI에서 확인할 수 있는 기능:
 
 ---
 
-## 7. 이 데모의 MCP tool
+## 7. 데모 스크린샷
+
+아래 이미지는 수업/데모용으로 포함한 화면입니다. 브라우저 UI와 CLI client가 모두 같은 MCP client → server → external API 흐름을 실행한다는 점을 보여줄 때 사용하면 됩니다.
+
+### Web UI 전체 화면
+
+![MCP Web UI 데모](assets/screenshots/web-ui-demo.png)
+
+브라우저 UI에서 Weather/Coin MCP 데모 콘솔과 브라우저 요청부터 MCP server tool result까지 이어지는 5단계 흐름을 보여줍니다.
+
+### Weather CLI 데모
+
+![Weather MCP CLI 데모](assets/screenshots/weather-cli-demo.png)
+
+Weather CLI 데모는 MCP 세션 초기화, tool discovery, `servers/weather_server.py`에 대한 `call_tool()` 실행을 보여줍니다.
+
+### Coin CLI 데모
+
+![Coin MCP CLI 데모](assets/screenshots/coin-cli-demo.png)
+
+Coin CLI 데모는 client가 Coin MCP tool을 발견하고 `servers/coin_server.py`의 가격 조회/코인 비교 tool을 호출하는 흐름을 보여줍니다.
+
+---
+
+## 8. 이 데모의 MCP tool
 
 ### Weather MCP Server
 
@@ -203,7 +229,7 @@ btc, eth, sol, xrp, ada, doge
 
 ---
 
-## 8. MCP client/server 구조 설명
+## 9. MCP client/server 구조 설명
 
 MCP가 해결하는 문제는 단순합니다.
 
@@ -245,7 +271,7 @@ MCP 프로젝트가 되려면 최소한 다음이 필요합니다.
 
 ---
 
-## 9. 교수님께 설명할 핵심 답변
+## 10. 교수님께 설명할 핵심 답변
 
 교수님 질문은 “서버만 만든 것이냐, 클라이언트와 서버를 나눈 것이냐”였습니다.
 
@@ -266,15 +292,15 @@ web_app.py                     # Web backend이면서 MCP client
 
 ---
 
-## 10. 수업용 데모 대본
+## 11. 수업용 데모 대본
 
-### 10-1. 시작 멘트
+### 11-1. 시작 멘트
 
 오늘은 MCP가 어떤 식으로 LLM과 외부 API를 연결하는지 간단한 날씨 예제로 보여드리겠습니다.
 
 핵심은 AI가 직접 날씨 API를 호출하는 것이 아니라, MCP server가 날씨 조회 기능을 tool로 제공하고, MCP client 또는 LLM host가 그 tool을 호출한다는 점입니다.
 
-### 10-2. 구조 설명
+### 11-2. 구조 설명
 
 ```text
 사용자
@@ -298,13 +324,13 @@ MCP Client / LLM Host
 - MCP Client / LLM Host: 사용자 요청을 해석하고 필요한 tool을 호출하는 쪽입니다.
 - External API: 날씨 API, 코인 API, 블록체인 API처럼 실제 데이터를 제공하는 서비스입니다.
 
-### 10-3. 실행 명령
+### 11-3. 실행 명령
 
 ```bash
 uv run python clients/test_mcp_client.py weather
 ```
 
-### 10-4. Tool 목록 조회 설명
+### 11-4. Tool 목록 조회 설명
 
 출력에서 다음 부분을 보여줍니다.
 
@@ -318,7 +344,7 @@ uv run python clients/test_mcp_client.py weather
 
 MCP client가 server에 “어떤 tool을 제공하느냐”고 물어보고, server가 tool 목록을 반환한 것입니다.
 
-### 10-5. Tool 호출 설명
+### 11-5. Tool 호출 설명
 
 출력에서 다음 부분을 보여줍니다.
 
@@ -330,7 +356,7 @@ MCP client가 server에 “어떤 tool을 제공하느냐”고 물어보고, se
 
 여기서 client가 server의 `get_current_weather` tool을 호출합니다. server는 내부적으로 Open-Meteo API를 호출한 뒤 결과를 반환합니다.
 
-### 10-6. 결과 반환 설명
+### 11-6. 결과 반환 설명
 
 출력에서 다음 같은 결과를 보여줍니다.
 
@@ -343,7 +369,7 @@ MCP client가 server에 “어떤 tool을 제공하느냐”고 물어보고, se
 
 이 결과는 외부 Weather API에서 온 데이터를 MCP server가 정리해서 client에게 돌려준 것입니다.
 
-### 10-7. 블록체인 프로젝트로 확장
+### 11-7. 블록체인 프로젝트로 확장
 
 날씨 예제에서 API와 tool만 바꾸면 학생 기말 프로젝트가 됩니다.
 
@@ -359,7 +385,7 @@ Weather API → CoinGecko / Coinbase / Binance / Etherscan API
 - “시가총액 상위 10개 코인 보여줘”
 - “이 트랜잭션 해시의 상태를 조회해줘”
 
-### 10-8. 마무리 멘트
+### 11-8. 마무리 멘트
 
 정리하면 MCP의 핵심은 외부 기능을 LLM에게 직접 붙이는 것이 아니라, MCP server가 표준화된 tool 인터페이스로 제공하고 MCP client/LLM host가 그 tool을 호출하게 하는 것입니다.
 
@@ -367,9 +393,9 @@ Weather API → CoinGecko / Coinbase / Binance / Etherscan API
 
 ---
 
-## 11. 학생 기말 프로젝트 가이드
+## 12. 학생 기말 프로젝트 가이드
 
-### 11-1. 프로젝트 주제
+### 12-1. 프로젝트 주제
 
 기말 프로젝트는 MCP server를 만들어 코인 또는 블록체인 관련 실시간 정보를 tool로 제공하는 것입니다.
 
@@ -382,7 +408,7 @@ Weather API → CoinGecko / Coinbase / Binance / Etherscan API
 - 특정 트랜잭션 해시 조회 MCP
 - NFT 컬렉션 가격/거래량 조회 MCP
 
-### 11-2. 기본 요구사항
+### 12-2. 기본 요구사항
 
 최소 요구사항:
 
@@ -392,7 +418,7 @@ Weather API → CoinGecko / Coinbase / Binance / Etherscan API
 4. MCP client에서 tool 목록 조회와 tool 호출을 검증한다.
 5. README에 실행 방법, 구조도, 예시 질의를 작성한다.
 
-### 11-3. 추천 API
+### 12-3. 추천 API
 
 | 난이도 | API | 설명 |
 |---|---|---|
@@ -402,7 +428,7 @@ Weather API → CoinGecko / Coinbase / Binance / Etherscan API
 | 어려움 | Etherscan API | Ethereum 주소, 트랜잭션, 컨트랙트 조회 가능, API key 필요 가능 |
 | 어려움 | Solscan API | Solana 계정/트랜잭션 조회 가능 |
 
-### 11-4. 예시 tool 설계
+### 12-4. 예시 tool 설계
 
 ```text
 get_coin_price(symbol, currency)
@@ -420,7 +446,7 @@ get_latest_blocks(limit)
 - `compare_coins(["btc", "eth", "sol"], "usd")` → BTC/ETH/SOL 가격과 변동률 비교
 - `get_wallet_balance(address)` → 특정 지갑의 잔액 조회
 
-### 11-5. 예시 자연어 질의
+### 12-5. 예시 자연어 질의
 
 학생들은 아래 같은 질의가 tool 호출로 연결되도록 설계하면 됩니다.
 
@@ -431,7 +457,7 @@ get_latest_blocks(limit)
 - “이 지갑 주소의 ETH 잔액 알려줘”
 - “이 트랜잭션 해시의 상태를 조회해줘”
 
-### 11-6. 제출물
+### 12-6. 제출물
 
 필수 제출물:
 
@@ -454,7 +480,7 @@ README에는 반드시 포함:
 7. 테스트 질의 예시
 8. 실행 결과 캡처 또는 로그
 
-### 11-7. 평가 기준 예시
+### 12-7. 평가 기준 예시
 
 | 항목 | 배점 예시 |
 |---|---:|
@@ -465,7 +491,7 @@ README에는 반드시 포함:
 | README/발표 설명 | 10 |
 | 에러 처리/완성도 | 10 |
 
-### 11-8. 감점 요소
+### 12-8. 감점 요소
 
 - 단순 API 호출만 있고 MCP tool로 노출하지 않은 경우
 - client에서 `list_tools()` / `call_tool()` 검증이 없는 경우
@@ -474,7 +500,7 @@ README에는 반드시 포함:
 - 없는 코인/잘못된 주소/API 장애/rate limit 처리가 없는 경우
 - README 없이 코드만 제출한 경우
 
-### 11-9. 확장 아이디어
+### 12-9. 확장 아이디어
 
 - 가격 변동률 기준 급등/급락 코인 찾기
 - BTC/ETH/SOL 비교 리포트 생성
@@ -487,7 +513,7 @@ README에는 반드시 포함:
 
 ---
 
-## 12. 수업 운영 제안
+## 13. 수업 운영 제안
 
 ### 내일
 
@@ -507,7 +533,7 @@ README에는 반드시 포함:
 
 ---
 
-## 13. 데모가 실패할 때 백업 플랜
+## 14. 데모가 실패할 때 백업 플랜
 
 네트워크/API 문제로 라이브 호출이 실패하면 아래 순서로 설명합니다.
 
@@ -520,7 +546,7 @@ README에는 반드시 포함:
 
 ---
 
-## 14. 검증 명령
+## 15. 검증 명령
 
 문법 확인:
 
@@ -544,7 +570,7 @@ curl 'http://127.0.0.1:8765/api/coin/price?symbol=btc&currency=usd'
 
 ---
 
-## 15. GitHub 업로드 시 포함할 파일
+## 16. GitHub 업로드 시 포함할 파일
 
 포함 권장:
 
