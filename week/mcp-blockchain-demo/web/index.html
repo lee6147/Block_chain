@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MCP Weather · Coin Demo Console</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090b10;
+      --panel: #111722;
+      --panel-2: #151d2a;
+      --ink: #edf2ff;
+      --muted: #8f9bb3;
+      --line: rgba(255,255,255,.1);
+      --accent: #7dd3fc;
+      --accent-2: #a78bfa;
+      --coin: #f7c948;
+      --good: #34d399;
+      --bad: #fb7185;
+      --shadow: 0 24px 80px rgba(0,0,0,.42);
+      --radius: 22px;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 20% 10%, rgba(125, 211, 252, .16), transparent 32rem),
+        radial-gradient(circle at 80% 0%, rgba(167, 139, 250, .16), transparent 34rem),
+        linear-gradient(180deg, #090b10 0%, #0b0f16 55%, #07090d 100%);
+    }
+
+    .shell { width: min(1240px, calc(100% - 40px)); margin: 0 auto; padding: 34px 0 48px; }
+
+    header {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 24px;
+      align-items: stretch;
+      margin-bottom: 22px;
+    }
+
+    .hero, .flow-card, .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.038));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .hero { padding: 30px; position: relative; overflow: hidden; }
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -110px;
+      top: -130px;
+      width: 320px;
+      height: 320px;
+      border-radius: 999px;
+      background: conic-gradient(from 120deg, rgba(125,211,252,.36), rgba(167,139,250,.28), transparent 70%);
+      filter: blur(6px);
+      opacity: .8;
+    }
+
+    .eyebrow { color: var(--accent); font-weight: 700; letter-spacing: .14em; font-size: 12px; text-transform: uppercase; }
+    h1 { font-size: clamp(36px, 5vw, 68px); line-height: .94; margin: 14px 0 18px; letter-spacing: -.055em; text-wrap: balance; }
+    .hero p { color: #b9c3d7; font-size: 18px; line-height: 1.7; max-width: 680px; margin: 0; }
+
+    .badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .badge {
+      border: 1px solid rgba(255,255,255,.13);
+      color: #dce7f8;
+      background: rgba(255,255,255,.055);
+      padding: 9px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+    }
+
+    .flow-card { padding: 22px; }
+    .flow-card h2 { margin: 0 0 16px; font-size: 18px; }
+    .flow { display: grid; gap: 10px; }
+    .step {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 13px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      background: rgba(9, 13, 20, .45);
+    }
+    .num {
+      width: 34px; height: 34px; display: grid; place-items: center;
+      border-radius: 11px; background: rgba(125,211,252,.12); color: var(--accent); font-weight: 800;
+      border: 1px solid rgba(125,211,252,.24);
+    }
+    .step strong { display: block; font-size: 14px; }
+    .step span { display: block; color: var(--muted); font-size: 12px; margin-top: 3px; }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    .panel { padding: 22px; overflow: hidden; }
+    .panel-title { display: flex; justify-content: space-between; align-items: start; gap: 16px; margin-bottom: 18px; }
+    .panel h2 { margin: 0; font-size: 23px; letter-spacing: -.02em; }
+    .panel .sub { color: var(--muted); margin-top: 5px; font-size: 14px; }
+    .tag { border-radius: 999px; padding: 7px 10px; font-size: 12px; font-weight: 800; border: 1px solid rgba(255,255,255,.12); }
+    .tag.weather { color: var(--accent); background: rgba(125,211,252,.1); }
+    .tag.coin { color: var(--coin); background: rgba(247,201,72,.1); }
+
+    .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .controls.three { grid-template-columns: 1fr 1fr 1fr; }
+    .quick-picks { display: flex; flex-wrap: wrap; gap: 7px; margin: -2px 0 14px; }
+    .quick-pick {
+      min-height: 32px;
+      border-radius: 999px;
+      padding: 0 11px;
+      color: #dce7f8;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.11);
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .quick-pick:hover { border-color: rgba(125,211,252,.45); }
+    label { display: grid; gap: 7px; color: #c9d3e7; font-size: 12px; font-weight: 700; letter-spacing: .02em; }
+    input, select {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.25);
+      color: var(--ink);
+      border-radius: 13px;
+      padding: 0 13px;
+      outline: none;
+    }
+    input:focus, select:focus { border-color: rgba(125,211,252,.75); box-shadow: 0 0 0 3px rgba(125,211,252,.13); }
+
+    .buttons { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0 16px; }
+    button {
+      min-height: 44px;
+      border: 0;
+      border-radius: 14px;
+      padding: 0 15px;
+      color: #071018;
+      background: linear-gradient(135deg, var(--accent), #c4b5fd);
+      font-weight: 850;
+      cursor: pointer;
+      transition: transform .16s ease, filter .16s ease;
+    }
+    button.secondary { color: var(--ink); background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); }
+    button:hover { transform: translateY(-1px); filter: brightness(1.05); }
+    button:disabled { opacity: .55; cursor: wait; transform: none; }
+
+    .result {
+      min-height: 216px;
+      padding: 16px;
+      border-radius: 18px;
+      background: #070a0f;
+      border: 1px solid rgba(255,255,255,.1);
+      white-space: pre-wrap;
+      color: #dce7f8;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      line-height: 1.58;
+      font-size: 13px;
+    }
+    .result.loading { color: var(--accent); }
+    .result.error { color: var(--bad); }
+
+    .tool-strip {
+      margin-top: 22px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+    .tool-card {
+      padding: 15px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.055);
+      border: 1px solid rgba(255,255,255,.095);
+    }
+    .tool-card strong { display: block; font-size: 13px; color: #fff; margin-bottom: 5px; }
+    .tool-card span { color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+    .teacher-note {
+      margin-top: 22px;
+      padding: 20px 22px;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(125,211,252,.1), rgba(167,139,250,.08));
+      border: 1px solid rgba(125,211,252,.18);
+      color: #dbeafe;
+      line-height: 1.7;
+    }
+    .teacher-note strong { color: #fff; }
+
+    @media (max-width: 920px) {
+      header, .grid { grid-template-columns: 1fr; }
+      .tool-strip { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 560px) {
+      .shell { width: min(100% - 24px, 1240px); padding-top: 18px; }
+      .hero, .panel, .flow-card { padding: 18px; }
+      .controls, .controls.three, .tool-strip { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <section class="hero">
+        <div class="eyebrow">MCP Client / Server Demo</div>
+        <h1>날씨에서 코인까지, Tool 호출 흐름을 한 화면에서.</h1>
+        <p>
+          수업용 UI입니다. 버튼을 누르면 브라우저가 웹 백엔드에 요청하고, 백엔드는 MCP Client로 동작해
+          Weather/Coin MCP Server의 tool을 호출합니다. 교수님께는 “서버만 만든 게 아니라 client가 tool discovery와 call을 수행한다”는 점을 보여주면 됩니다.
+        </p>
+        <div class="badges">
+          <span class="badge">실제 MCP stdio 연결</span>
+          <span class="badge">Open-Meteo API</span>
+          <span class="badge">CoinGecko API</span>
+          <span class="badge">학생 기말 프로젝트 예시</span>
+        </div>
+      </section>
+
+      <aside class="flow-card">
+        <h2>작동 흐름</h2>
+        <div class="flow">
+          <div class="step"><div class="num">1</div><div><strong>브라우저 UI</strong><span>도시/코인 입력 후 실행</span></div></div>
+          <div class="step"><div class="num">2</div><div><strong>Web Backend</strong><span>요청을 받아 MCP client 생성</span></div></div>
+          <div class="step"><div class="num">3</div><div><strong>MCP Server</strong><span>tool 목록 제공 및 tool 실행</span></div></div>
+          <div class="step"><div class="num">4</div><div><strong>External API</strong><span>Open-Meteo / CoinGecko 조회</span></div></div>
+          <div class="step"><div class="num">5</div><div><strong>Tool Result</strong><span>결과를 UI에 표시</span></div></div>
+        </div>
+      </aside>
+    </header>
+
+    <section class="grid">
+      <article class="panel">
+        <div class="panel-title">
+          <div>
+            <h2>Weather MCP</h2>
+            <div class="sub">날씨 예제로 MCP 구조 설명</div>
+          </div>
+          <span class="tag weather">DEMO</span>
+        </div>
+        <div class="controls">
+          <label>도시
+            <input id="weatherCity" value="Seoul" placeholder="Seoul" list="cityOptions" />
+            <datalist id="cityOptions">
+              <option value="Seoul">서울</option>
+              <option value="Busan">부산</option>
+              <option value="Incheon">인천</option>
+              <option value="Daegu">대구</option>
+              <option value="Daejeon">대전</option>
+              <option value="Gwangju">광주</option>
+              <option value="Ulsan">울산</option>
+              <option value="Jeju City">제주</option>
+              <option value="Suwon">수원</option>
+              <option value="Gangneung">강릉</option>
+              <option value="Tokyo">도쿄</option>
+              <option value="New York">뉴욕</option>
+              <option value="London">런던</option>
+              <option value="Paris">파리</option>
+              <option value="Singapore">싱가포르</option>
+            </datalist>
+          </label>
+          <label>예보 일수<input id="forecastDays" type="number" min="1" max="7" value="3" /></label>
+        </div>
+        <div class="quick-picks" aria-label="도시 빠른 선택">
+          <button class="quick-pick" onclick="pickCity('Seoul')">서울</button>
+          <button class="quick-pick" onclick="pickCity('Busan')">부산</button>
+          <button class="quick-pick" onclick="pickCity('Jeju City')">제주</button>
+          <button class="quick-pick" onclick="pickCity('Tokyo')">도쿄</button>
+          <button class="quick-pick" onclick="pickCity('New York')">뉴욕</button>
+          <button class="quick-pick" onclick="pickCity('London')">런던</button>
+        </div>
+        <div class="buttons">
+          <button onclick="runWeatherCurrent()">현재 날씨 조회</button>
+          <button class="secondary" onclick="runWeatherForecast()">3일 예보 조회</button>
+        </div>
+        <pre id="weatherResult" class="result">Weather MCP 결과가 여기에 표시됩니다.
+
+예상 흐름:
+MCP Client → get_current_weather(city) → Weather MCP Server → Open-Meteo API</pre>
+      </article>
+
+      <article class="panel">
+        <div class="panel-title">
+          <div>
+            <h2>Coin MCP</h2>
+            <div class="sub">기말 프로젝트 방향 예시</div>
+          </div>
+          <span class="tag coin">PROJECT</span>
+        </div>
+        <div class="controls three">
+          <label>코인
+            <input id="coinSymbol" value="btc" placeholder="btc" list="coinOptions" />
+            <datalist id="coinOptions">
+              <option value="btc">Bitcoin</option>
+              <option value="eth">Ethereum</option>
+              <option value="sol">Solana</option>
+              <option value="xrp">XRP</option>
+              <option value="bnb">BNB</option>
+              <option value="ada">Cardano</option>
+              <option value="doge">Dogecoin</option>
+              <option value="usdt">Tether</option>
+              <option value="usdc">USD Coin</option>
+              <option value="ton">Toncoin</option>
+              <option value="trx">TRON</option>
+              <option value="link">Chainlink</option>
+              <option value="dot">Polkadot</option>
+              <option value="avax">Avalanche</option>
+              <option value="shib">Shiba Inu</option>
+              <option value="polygon">Polygon</option>
+              <option value="near">NEAR</option>
+              <option value="ltc">Litecoin</option>
+              <option value="bch">Bitcoin Cash</option>
+              <option value="uni">Uniswap</option>
+              <option value="atom">Cosmos</option>
+              <option value="etc">Ethereum Classic</option>
+              <option value="apt">Aptos</option>
+              <option value="arb">Arbitrum</option>
+              <option value="op">Optimism</option>
+              <option value="sui">Sui</option>
+              <option value="pepe">Pepe</option>
+            </datalist>
+          </label>
+          <label>비교 목록
+            <input id="coinSymbols" value="btc,eth,sol" list="compareOptions" />
+            <datalist id="compareOptions">
+              <option value="btc,eth,sol">BTC / ETH / SOL</option>
+              <option value="btc,eth,bnb">대형 L1 비교</option>
+              <option value="usdt,usdc">스테이블코인 비교</option>
+              <option value="link,dot,atom">인프라/인터체인 비교</option>
+              <option value="arb,op,matic">L2 비교</option>
+              <option value="doge,shib,pepe">밈코인 비교</option>
+            </datalist>
+          </label>
+          <label>통화<select id="currency"><option value="usd">USD</option><option value="krw">KRW</option><option value="eur">EUR</option><option value="jpy">JPY</option><option value="sgd">SGD</option></select></label>
+        </div>
+        <div class="quick-picks" aria-label="코인 빠른 선택">
+          <button class="quick-pick" onclick="pickCoin('btc')">BTC</button>
+          <button class="quick-pick" onclick="pickCoin('eth')">ETH</button>
+          <button class="quick-pick" onclick="pickCoin('sol')">SOL</button>
+          <button class="quick-pick" onclick="pickCoin('bnb')">BNB</button>
+          <button class="quick-pick" onclick="pickCoin('xrp')">XRP</button>
+          <button class="quick-pick" onclick="pickCoin('link')">LINK</button>
+          <button class="quick-pick" onclick="pickCoin('sui')">SUI</button>
+        </div>
+        <div class="buttons">
+          <button onclick="runCoinPrice()">가격 조회</button>
+          <button class="secondary" onclick="runCoinCompare()">코인 비교</button>
+          <button class="secondary" onclick="runTopCoins()">상위 10개</button>
+        </div>
+        <pre id="coinResult" class="result">Coin MCP 결과가 여기에 표시됩니다.
+
+예상 흐름:
+MCP Client → get_coin_price(symbol) → Coin MCP Server → CoinGecko API</pre>
+      </article>
+    </section>
+
+    <section class="tool-strip" id="toolStrip">
+      <div class="tool-card"><strong>get_current_weather</strong><span>도시 현재 날씨</span></div>
+      <div class="tool-card"><strong>get_weather_forecast</strong><span>일별 예보</span></div>
+      <div class="tool-card"><strong>get_coin_price</strong><span>가격/시총/거래량</span></div>
+      <div class="tool-card"><strong>compare_coins</strong><span>여러 코인 비교</span></div>
+      <div class="tool-card"><strong>get_top_coins</strong><span>시총 상위 코인</span></div>
+    </section>
+
+    <section class="teacher-note">
+      <strong>교수님 설명 포인트:</strong>
+      이 화면은 단순 API 대시보드가 아니라 MCP client/server 구조를 UI로 감싼 것입니다.
+      브라우저가 직접 CoinGecko나 Open-Meteo를 호출하지 않고, 백엔드가 MCP client 역할을 하며 MCP server의 tool을 호출합니다.
+      학생들은 같은 구조에서 API와 tool 설계만 블록체인 도메인으로 확장하면 됩니다.
+    </section>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    async function callApi(url, resultId) {
+      const box = $(resultId);
+      box.className = 'result loading';
+      box.textContent = 'MCP server에 연결하고 tool을 호출하는 중입니다...';
+      setButtons(true);
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        if (!data.ok) throw new Error(data.error || 'Unknown error');
+        box.className = 'result';
+        box.textContent = [
+          `[MCP Client] server: ${data.server}`,
+          `[MCP Client] tool: ${data.tool}`,
+          `[MCP Client] arguments: ${JSON.stringify(data.arguments)}`,
+          `[MCP Client] discovered tools: ${data.available_tools.join(', ')}`,
+          '',
+          '[MCP Server] tool result:',
+          data.result
+        ].join('\n');
+      } catch (error) {
+        box.className = 'result error';
+        box.textContent = '실행 실패: ' + error.message;
+      } finally {
+        setButtons(false);
+      }
+    }
+
+    function setButtons(disabled) {
+      document.querySelectorAll('button').forEach(button => button.disabled = disabled);
+    }
+
+    function pickCity(city) {
+      $('weatherCity').value = city;
+    }
+
+    function pickCoin(symbol) {
+      $('coinSymbol').value = symbol;
+      const current = $('coinSymbols').value.split(',').map(s => s.trim()).filter(Boolean);
+      if (!current.includes(symbol)) {
+        $('coinSymbols').value = [symbol, ...current].slice(0, 5).join(',');
+      }
+    }
+
+    function valueOrDefault(id, fallback) {
+      const value = ($(id).value || '').trim();
+      return value || fallback;
+    }
+
+    function runWeatherCurrent() {
+      const city = encodeURIComponent(valueOrDefault('weatherCity', 'Seoul'));
+      callApi(`/api/weather/current?city=${city}`, 'weatherResult');
+    }
+
+    function runWeatherForecast() {
+      const city = encodeURIComponent(valueOrDefault('weatherCity', 'Busan'));
+      const days = encodeURIComponent(valueOrDefault('forecastDays', '3'));
+      callApi(`/api/weather/forecast?city=${city}&days=${days}`, 'weatherResult');
+    }
+
+    function runCoinPrice() {
+      const symbol = encodeURIComponent(valueOrDefault('coinSymbol', 'btc'));
+      const currency = encodeURIComponent(valueOrDefault('currency', 'usd'));
+      callApi(`/api/coin/price?symbol=${symbol}&currency=${currency}`, 'coinResult');
+    }
+
+    function runCoinCompare() {
+      const symbols = encodeURIComponent(valueOrDefault('coinSymbols', 'btc,eth,sol'));
+      const currency = encodeURIComponent(valueOrDefault('currency', 'usd'));
+      callApi(`/api/coin/compare?symbols=${symbols}&currency=${currency}`, 'coinResult');
+    }
+
+    function runTopCoins() {
+      const currency = encodeURIComponent(valueOrDefault('currency', 'usd'));
+      callApi(`/api/coin/top?limit=10&currency=${currency}`, 'coinResult');
+    }
+  </script>
+</body>
+</html>
