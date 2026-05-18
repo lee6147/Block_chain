@@ -1,34 +1,36 @@
 # MCP Weather & Blockchain/Coin Demo
 
-A classroom-ready MCP (Model Context Protocol) demo that shows how an MCP client discovers and calls tools exposed by MCP servers. The project includes:
+A classroom-ready MCP (Model Context Protocol) demo for explaining the exact client/server separation that came up in the call with Professor Kim.
 
-- **Weather MCP Server** — calls Open-Meteo for current weather and forecasts.
-- **Coin/Blockchain MCP Server** — calls CoinGecko for live cryptocurrency data.
-- **CLI demo client** — demonstrates MCP `stdio`, `list_tools()`, and `call_tool()` clearly in the terminal.
-- **Web UI demo console** — wraps the same MCP flow in a browser-friendly interface for teaching and presentations.
+This folder is intentionally consolidated into two documentation files:
 
-> Developed and tested primarily on WSL/Linux. In the author's WSL workspace, the working path is `/home/changyeon/projects/Block_chain/mcp-blockchain-demo`.
+```text
+README.md       # English / GitHub-facing documentation
+README_KR.md    # Korean / classroom-facing documentation
+```
+
+The previous separate notes for the demo script, MCP structure, and student project guide have been merged into these README files so the explanation can be followed from one place.
 
 ---
 
-## Why this project exists
+## 1. Why this project exists
 
-This repository is designed for a lecture/demo where the key question is:
+The key question from Professor Kim was:
 
-> “Did we only build a server, or did we separate the MCP client and server?”
+> Did we only build an MCP server, or did we clearly separate the MCP client and MCP server?
 
-The answer demonstrated here is:
+The answer demonstrated by this project is:
 
-1. The **MCP Server** exposes domain functions as tools.
-2. The **MCP Client** connects to the server over `stdio`.
+1. The MCP server exposes domain functions as tools.
+2. The MCP client connects to the server over `stdio`.
 3. The client calls `list_tools()` to discover available tools.
-4. The client calls `call_tool()` with arguments.
+4. The client calls `call_tool()` with concrete arguments.
 5. The server calls an external API and returns the tool result.
 
+So this is not just an API script and not just a server. The demo explicitly includes both sides:
+
 ```text
-User / Browser / CLI
-  ↓ request
-MCP Client / Web Backend
+MCP Client / LLM Host / Web Backend
   ↓ list_tools(), call_tool()
 MCP Server
   ↓ external API request
@@ -37,19 +39,18 @@ Open-Meteo or CoinGecko
 MCP Server
   ↓ tool result
 MCP Client / UI
-  ↓ displayed answer
-User
 ```
 
 ---
 
-## Project structure
+## 2. Project structure
 
 ```text
 mcp-blockchain-demo/
-├── README.md                 # GitHub-facing documentation
-├── README_KR.md              # Korean classroom notes
+├── README.md                 # English consolidated documentation
+├── README_KR.md              # Korean consolidated documentation
 ├── pyproject.toml            # Python dependencies managed by uv
+├── uv.lock                   # Locked dependency versions
 ├── run_all_demos.sh          # Runs both CLI demos
 ├── run_ui.sh                 # Starts the browser UI server
 ├── web_app.py                # Starlette backend; acts as an MCP client
@@ -58,19 +59,15 @@ mcp-blockchain-demo/
 ├── servers/
 │   ├── weather_server.py     # Weather MCP server
 │   └── coin_server.py        # Coin/Blockchain MCP server
-├── clients/
-│   └── test_mcp_client.py    # CLI MCP client demo
-└── docs/
-    ├── demo_script_kr.md
-    ├── mcp_structure_kr.md
-    └── student_project_guide_kr.md
+└── clients/
+    └── test_mcp_client.py    # CLI MCP client demo
 ```
 
 ---
 
-## Requirements
+## 3. Requirements
 
-- Python **3.11+**
+- Python 3.11+
 - [`uv`](https://docs.astral.sh/uv/) package manager
 - WSL/Linux shell recommended
 - Internet access for live API calls
@@ -80,26 +77,31 @@ External APIs used:
 - [Open-Meteo](https://open-meteo.com/) — no API key required
 - [CoinGecko public API](https://www.coingecko.com/en/api) — no API key required for this demo
 
----
+Main Python packages:
 
-## Setup
-
-```bash
-git clone <your-repository-url>
-cd mcp-blockchain-demo
-uv sync
-```
-
-If you are using the existing WSL workspace for this project:
-
-```bash
-cd /home/changyeon/projects/Block_chain/mcp-blockchain-demo
-uv sync
-```
+- `mcp`: MCP server/client SDK
+- `httpx`: Weather API and CoinGecko API calls
+- `starlette`, `uvicorn`: Web UI backend
 
 ---
 
-## Run the CLI demos
+## 4. Setup
+
+```bash
+cd week/mcp-blockchain-demo
+uv sync
+```
+
+If running from the author's WSL workspace:
+
+```bash
+cd /home/changyeon/projects/Block_chain_repo/week/mcp-blockchain-demo
+uv sync
+```
+
+---
+
+## 5. Run the CLI demos
 
 Run both Weather and Coin demos:
 
@@ -114,7 +116,7 @@ uv run python clients/test_mcp_client.py weather
 uv run python clients/test_mcp_client.py coin
 ```
 
-By default, the CLI output is optimized for teaching: MCP/HTTP internal logs are hidden so students can focus on the flow:
+By default, the CLI output is optimized for teaching. Internal MCP/HTTP logs are hidden so students can focus on the flow:
 
 ```text
 [1/3] MCP session initialization
@@ -131,7 +133,7 @@ uv run python clients/test_mcp_client.py coin --verbose
 
 ---
 
-## Run the Web UI
+## 6. Run the Web UI
 
 Start the UI server:
 
@@ -148,21 +150,27 @@ http://127.0.0.1:8765
 The web UI is not just a static dashboard. It calls the local Starlette backend, and the backend acts as an MCP client:
 
 ```text
-Browser UI → Starlette backend → MCP ClientSession → MCP Server → External API
+Browser UI
+  ↓ HTTP request
+Starlette backend / MCP client
+  ↓ MCP ClientSession
+MCP server
+  ↓ external API request
+Open-Meteo or CoinGecko
 ```
 
 Available UI actions:
 
-- Current weather lookup with expanded city presets: Seoul, Busan, Incheon, Daegu, Daejeon, Gwangju, Ulsan, Jeju City, Suwon, Gangneung, Tokyo, New York, London, Paris, Singapore
+- Current weather lookup
 - Multi-day weather forecast
-- Coin price lookup with expanded presets: BTC, ETH, SOL, XRP, BNB, ADA, DOGE, USDT, USDC, TON, TRX, LINK, DOT, AVAX, SHIB, Polygon, NEAR, LTC, BCH, UNI, ATOM, ETC, APT, ARB, OP, SUI, PEPE
-- Coin comparison with preset baskets: L1, stablecoins, infra/interchain, L2, meme coins
+- Coin price lookup
+- Coin comparison
 - Top market-cap coin list
 - Tool discovery visualization
 
 ---
 
-## MCP tools
+## 7. MCP tools in this demo
 
 ### Weather MCP Server
 
@@ -187,90 +195,236 @@ Supported shorthand examples include `btc`, `eth`, `sol`, `xrp`, `ada`, and `dog
 
 ---
 
-## Teaching script summary
+## 8. MCP client/server explanation
 
-Use this sequence during a live class:
+MCP solves a simple problem: LLMs understand natural language well, but they need a standardized way to call external APIs or local programs.
 
-1. Open the Web UI and explain the flow diagram.
-2. Click a Weather button and show that the UI result includes:
-   - server name
-   - tool name
-   - arguments
-   - discovered tools
-   - tool result
-3. Run the CLI demo to show the same flow without the browser.
-4. Open `servers/weather_server.py` and show `@mcp.tool()` definitions.
-5. Open `clients/test_mcp_client.py` and show `list_tools()` and `call_tool()`.
-6. Explain how students can replace the Weather/Coin API with their own blockchain-related API.
+MCP defines external capabilities as tools. An MCP client or LLM host discovers those tools and calls them through a standard protocol.
 
-Key explanation:
+### Components
 
-> MCP servers provide tools. MCP clients discover and call those tools. The LLM or host application decides when a tool is needed, but the tool implementation lives in the server.
+| Component | Role | Demo mapping |
+|---|---|---|
+| User | Sends a natural-language request | “What is the weather in Seoul?” / “What is the BTC price?” |
+| MCP Client / LLM Host | Decides which tool is needed and calls it | `clients/test_mcp_client.py` or `web_app.py` |
+| MCP Server | Provides real functions as tools | `servers/weather_server.py`, `servers/coin_server.py` |
+| External API | Provides real data | Open-Meteo, CoinGecko |
+
+### Request flow
+
+```text
+1. User: “What is the weather in Seoul?”
+2. MCP Client / LLM Host: decides that a weather tool is needed
+3. MCP Client: calls get_current_weather(city="Seoul")
+4. MCP Server: calls the Open-Meteo API
+5. External API: returns live data
+6. MCP Server: returns the tool result
+7. MCP Client / LLM Host: displays or summarizes the answer
+```
+
+### Important distinction
+
+A plain API call is not automatically an MCP project.
+
+A valid MCP project should include:
+
+1. A function that calls an external API or local capability.
+2. An MCP server that exposes that function as a tool.
+3. A client or LLM host that verifies `list_tools()` and `call_tool()`.
+4. Documentation explaining how natural-language requests map to tool calls.
 
 ---
 
-## Student project direction
+## 9. Teaching script
 
-Minimum final-project requirement:
+Use this sequence during a live class.
 
-- Build at least **one MCP server**.
-- Expose at least **two MCP tools**.
-- Verify calls from a client using `list_tools()` and `call_tool()`.
-- Use a blockchain/coin-related API or local dataset.
+### Opening explanation
 
-Example tool ideas:
+Today we are showing how MCP connects an LLM or host application to external APIs through standardized tools. The key point is that the AI is not directly calling the weather or coin API. The MCP server provides the function as a tool, and the MCP client or LLM host calls that tool.
 
-- `get_coin_price(symbol, currency)`
-- `compare_coins(symbols, currency)`
-- `get_wallet_balance(address, chain)`
-- `get_latest_blocks(chain, limit)`
-- `get_token_metadata(contract_address)`
-- `analyze_transaction_hash(tx_hash)`
+### Step 1 — Show the architecture
+
+```text
+User
+  ↓ natural-language request
+MCP Client / LLM Host
+  ↓ tool call
+MCP Server
+  ↓ API request
+Weather API or Coin API
+  ↓ result
+MCP Server
+  ↓ tool result
+MCP Client / LLM Host
+  ↓ final answer
+User
+```
+
+### Step 2 — Answer the professor's question directly
+
+This demo separates the client and server:
+
+- `servers/weather_server.py` is the MCP server.
+- `clients/test_mcp_client.py` is the MCP client.
+- The client starts/connects to the server, asks for the tool list, and then calls a selected tool.
+
+So structurally, the client and server are separated.
+
+### Step 3 — Run the demo
+
+```bash
+uv run python clients/test_mcp_client.py weather
+```
+
+Show the tool discovery part:
+
+```text
+[MCP Client] discovered tools:
+- get_current_weather
+- get_weather_forecast
+```
+
+Explain that this is the MCP client asking the server which tools it provides.
+
+Then show the tool call part:
+
+```text
+[MCP Client] calling tool: get_current_weather({'city': 'Seoul'})
+```
+
+Explain that the server internally calls Open-Meteo and returns the result as an MCP tool result.
+
+### Step 4 — Extend the idea to blockchain
+
+The same structure can be reused for blockchain and coin data:
+
+```text
+Weather API → CoinGecko / Coinbase / Binance / Etherscan API
+weather lookup tool → coin price, transaction lookup, wallet balance, market summary tools
+```
+
+Example natural-language requests:
+
+- “What is the current Bitcoin price?”
+- “Compare ETH and SOL by 24h change.”
+- “Show the top 10 coins by market cap.”
+- “Check the status of this transaction hash.”
 
 ---
 
-## Troubleshooting
+## 10. Student final-project direction
 
-### Port 8765 is already in use
+The final project direction is to build an MCP server that provides coin or blockchain-related real-time information as tools.
 
-Check the process:
+### Example topics
 
-```bash
-ss -ltnp 'sport = :8765'
+- Real-time coin price MCP
+- Coin price and volume comparison MCP
+- Top coin market summary MCP
+- Wallet address lookup MCP
+- Transaction hash lookup MCP
+- NFT collection price or volume lookup MCP
+
+### Minimum requirements
+
+1. Implement at least one MCP server.
+2. Provide at least two MCP tools.
+3. Connect at least one external API or local dataset.
+4. Verify tool discovery from a client with `list_tools()`.
+5. Verify tool execution from a client with `call_tool()`.
+6. Write a README with architecture, setup, run commands, example questions, and sample output.
+
+### Recommended APIs
+
+| Difficulty | API | Notes |
+|---|---|---|
+| Easy | CoinGecko API | Starts without an API key; price, market cap, volume, 24h change |
+| Medium | Coinbase API | Good for exchange prices |
+| Medium | Binance API | Trading pairs, order book, candle data |
+| Hard | Etherscan API | Ethereum address, transaction, contract lookup; may require an API key |
+| Hard | Solscan API | Solana account and transaction lookup |
+
+### Example tool designs
+
+```text
+get_coin_price(symbol, currency)
+get_market_summary(symbol)
+get_top_coins(limit)
+compare_coins(symbols)
+get_transaction(tx_hash)
+get_wallet_balance(address)
+get_latest_blocks(limit)
 ```
 
-Either stop the existing process or run uvicorn on another port:
+### Example student questions
 
-```bash
-uv run uvicorn web_app:app --host 127.0.0.1 --port 8766
+- “What is the current Bitcoin price?”
+- “What is Ethereum's 24h change?”
+- “Compare BTC, ETH, and SOL.”
+- “Show the top 10 coins by market cap.”
+- “What is the ETH balance of this wallet?”
+- “Check the status of this transaction hash.”
+
+### Required submission files
+
+```text
+project/
+├── server.py or servers/*.py
+├── client_test.py
+├── README.md
+└── requirements.txt or pyproject.toml
 ```
 
-### `VIRTUAL_ENV` warning from `uv`
+The submitted README should include:
 
-The run scripts unset `VIRTUAL_ENV` before calling `uv`, so this should not appear when using:
+1. Project topic
+2. MCP architecture diagram
+3. Tool list
+4. External API explanation
+5. Setup instructions
+6. Run instructions
+7. Example questions
+8. Sample output or screenshots
 
-```bash
-./run_all_demos.sh
-./run_ui.sh
-```
+### Example grading rubric
 
-If you run commands manually, the warning is usually harmless, but you can run:
+| Item | Example points |
+|---|---:|
+| MCP server implementation | 25 |
+| Tool design clarity | 20 |
+| External API integration | 20 |
+| Client-side call verification | 15 |
+| README/presentation explanation | 10 |
+| Error handling/completeness | 10 |
 
-```bash
-unset VIRTUAL_ENV
-```
+### Common deductions
 
-### External API failure
-
-If Open-Meteo or CoinGecko is temporarily unavailable:
-
-1. Show the MCP server tool definitions in `servers/`.
-2. Show the MCP client code in `clients/test_mcp_client.py`.
-3. Explain that the MCP structure still works; only the external API call failed.
+- Only calling an API without exposing it as an MCP tool
+- No client-side `list_tools()` / `call_tool()` verification
+- Unclear run instructions
+- Hard-coded API keys
+- No handling for invalid symbols, bad addresses, API failures, or rate limits
+- Missing README
 
 ---
 
-## Development checks
+## 11. Backup plan if the live demo fails
+
+If the live API call fails because of network/API issues:
+
+1. Open `servers/weather_server.py` and show the MCP tool definitions.
+2. Open `clients/test_mcp_client.py` and show the `list_tools()` and `call_tool()` calls.
+3. Show previous terminal output or screenshots if available.
+4. Explain that the MCP structure still works; only the external API request failed.
+
+The core learning point remains:
+
+> MCP server provides tools. MCP client discovers and calls those tools.
+
+---
+
+## 12. Development checks
 
 Run a quick syntax check:
 
@@ -294,16 +448,16 @@ curl 'http://127.0.0.1:8765/api/coin/price?symbol=btc&currency=usd'
 
 ---
 
-## Notes for GitHub upload
+## 13. Notes for GitHub upload
 
 Recommended files to include:
 
 - Source files: `servers/`, `clients/`, `web/`, `web_app.py`
-- Docs: `README.md`, `README_KR.md`, `docs/`
+- Docs: `README.md`, `README_KR.md`
 - Dependency files: `pyproject.toml`, `uv.lock`
 - Run scripts: `run_all_demos.sh`, `run_ui.sh`
 
-Do **not** commit generated/local files such as:
+Do not commit generated/local files such as:
 
 - `.venv/`
 - `__pycache__/`
@@ -312,6 +466,6 @@ Do **not** commit generated/local files such as:
 
 ---
 
-## License
+## 14. License
 
 Add a license before publishing if this will be shared publicly. For classroom/demo use, MIT is usually a simple default.
