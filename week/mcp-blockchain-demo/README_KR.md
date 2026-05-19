@@ -96,7 +96,23 @@ cd /home/changyeon/projects/Block_chain/mcp-blockchain-demo
 
 ---
 
-## 4. Weather MCP 데모 실행
+## 4. 데모 스크린샷
+
+아래 이미지는 실제 수업/발표에서 보여줄 데모 화면입니다. 이미지 파일은 `assets/screenshots/`에 포함되어 있고, README에서는 저장소 기준 상대 경로로 연결했습니다.
+
+### Web UI 데모
+
+![MCP Web UI 데모 스크린샷](assets/screenshots/web-ui-demo.png)
+
+### CLI 데모 출력
+
+| Weather CLI | Coin CLI |
+|---|---|
+| ![Weather CLI 데모 스크린샷](assets/screenshots/weather-cli-demo.png) | ![Coin CLI 데모 스크린샷](assets/screenshots/coin-cli-demo.png) |
+
+---
+
+## 5. Weather MCP 데모 실행
 
 ```bash
 cd /home/changyeon/projects/Block_chain/mcp-blockchain-demo
@@ -112,7 +128,7 @@ uv run python clients/test_mcp_client.py weather
 
 ---
 
-## 5. Coin MCP 기말 프로젝트 예시 실행
+## 6. Coin MCP 기말 프로젝트 예시 실행
 
 ```bash
 cd /home/changyeon/projects/Block_chain/mcp-blockchain-demo
@@ -132,7 +148,7 @@ uv run python clients/test_mcp_client.py coin
 
 ---
 
-## 6. 교수님께 설명할 핵심 답변
+## 7. 교수님께 설명할 핵심 답변
 
 교수님 질문은 “서버만 만든 것이냐, 클라이언트와 서버를 나눈 것이냐”였습니다.
 
@@ -145,7 +161,7 @@ uv run python clients/test_mcp_client.py coin
 
 ---
 
-## 7. 수업 운영 제안
+## 8. 수업 운영 제안
 
 ### 내일
 
@@ -165,7 +181,7 @@ uv run python clients/test_mcp_client.py coin
 
 ---
 
-## 8. 데모가 실패할 때 백업 플랜
+## 9. 데모가 실패할 때 백업 플랜
 
 네트워크/API 문제로 라이브 호출이 실패하면 아래 순서로 설명합니다.
 
@@ -176,7 +192,7 @@ uv run python clients/test_mcp_client.py coin
 
 ---
 
-## 9. 검증 완료
+## 10. 검증 완료
 
 아래 명령으로 실제 실행 검증했습니다.
 

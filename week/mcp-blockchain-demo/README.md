@@ -170,6 +170,22 @@ Available UI actions:
 
 ---
 
+## Demo screenshots
+
+The screenshots below show the actual classroom demo outputs. They are stored in `assets/screenshots/` and are linked with repository-relative paths so they render correctly on GitHub.
+
+### Web UI demo
+
+![MCP Web UI demo screenshot](assets/screenshots/web-ui-demo.png)
+
+### CLI demo outputs
+
+| Weather CLI | Coin CLI |
+|---|---|
+| ![Weather CLI demo screenshot](assets/screenshots/weather-cli-demo.png) | ![Coin CLI demo screenshot](assets/screenshots/coin-cli-demo.png) |
+
+---
+
 ## MCP tools
 
 ### Weather MCP Server
