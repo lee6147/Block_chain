@@ -1,3 +1,12 @@
+# MCP란? (학생들을 위한 한눈에 이해)
+
+**MCP(Multi-Tool Calling Protocol, 멀티툴 호출 프로토콜)는 AI, LLM, 또는 일반 프로그램이 외부 기능(API나 로컬 코드)을 'tool' 형태로 표준화해서 호출할 수 있게 해 주는 구조입니다.**
+
+이 프로젝트(기말 과제)에서는 MCP 서버가 실시간 코인/블록체인 관련 기능을 여러 개 'tool'로 제공하고, MCP 클라이언트가 그 tool을 직접 요청해서 정보를 받아오는 양방향 구조를 구현합니다.  
+즉, 단순 API 호출 예시가 아니라 client와 server가 분리되고, 'tool'이라는 표준 방식으로 데이터를 조회하는 예제를 만드는 것이 포인트입니다.
+
+---
+
 # MCP 날씨 데모 + 블록체인/코인 MCP 기말 프로젝트 준비물
 
 이 폴더는 김형중 교수님 통화 이후 바로 수업에서 쓸 수 있도록 만든 자료입니다.
@@ -78,7 +87,7 @@ cd /home/changyeon/projects/Block_chain/mcp-blockchain-demo
 
 브라우저에서 `http://127.0.0.1:8765`를 엽니다.
 
-> 발표/수업용 기본 출력은 MCP 내부 로그를 숨기고 `client 연결 → tool discovery → tool call` 흐름만 보여줍니다. 문제 해결이 필요하면 `--verbose` 옵션을 붙여 내부 로그까지 확인할 수 있습니다.
+> 발표/수업용 기본 출력은 MCP 내부 로그를 숨기고 `client 연결 → tool discovery → tool call` 흐름만 보여줍니다. 문제 해결이 필요하면 `--verbose` 옵션을 추가합니다.
 
 설치되는 주요 패키지:
 
