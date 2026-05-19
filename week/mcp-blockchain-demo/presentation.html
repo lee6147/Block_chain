@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Block_chain 저장소 발표 자료</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg0:#07111f; --bg1:#0f172a; --card:#172033; --card2:#101827;
+    --text:#e5edf8; --muted:#93a4b8; --line:#283449;
+    --blue:#60a5fa; --cyan:#22d3ee; --green:#34d399; --amber:#fbbf24; --pink:#f472b6;
+    --purple:#a78bfa; --red:#fb7185;
+  }
+  html, body { width:100%; height:100%; overflow:hidden; }
+  body {
+    font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    background:
+      radial-gradient(circle at 15% 12%, rgba(34,211,238,.16), transparent 28%),
+      radial-gradient(circle at 86% 18%, rgba(167,139,250,.16), transparent 30%),
+      linear-gradient(135deg, var(--bg0), var(--bg1) 52%, #111827);
+    color: var(--text);
+  }
+  .progress { position:fixed; top:0; left:0; height:4px; width:0; background:linear-gradient(90deg,var(--cyan),var(--purple),var(--pink)); z-index:10; transition:width .25s ease; }
+  .counter { position:fixed; right:28px; bottom:22px; color:var(--muted); font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; z-index:10; }
+  .hint { position:fixed; left:28px; bottom:22px; color:#64748b; font-size:.86rem; z-index:10; }
+  .hint kbd { padding:2px 8px; border:1px solid #334155; border-radius:6px; background:#0f172a; color:#cbd5e1; }
+  .fullscreen-btn, .zoom-close {
+    border:1px solid rgba(148,163,184,.35); border-radius:999px; background:rgba(15,23,42,.78); color:#e2e8f0;
+    font:inherit; font-weight:800; cursor:pointer; backdrop-filter:blur(10px); box-shadow:0 12px 34px rgba(0,0,0,.24);
+  }
+  .fullscreen-btn { position:fixed; top:16px; right:22px; z-index:30; padding:9px 14px; font-size:.9rem; }
+  .fullscreen-btn:hover, .fullscreen-btn:focus-visible, .zoom-close:hover, .zoom-close:focus-visible { border-color:var(--cyan); outline:none; color:#fff; }
+  .slide {
+    position:absolute; inset:0; padding:64px 78px 76px; display:flex; flex-direction:column; justify-content:center; gap:24px;
+    opacity:0; transform:translateX(40px); pointer-events:none; transition:opacity .35s ease, transform .35s ease;
+  }
+  .slide.active { opacity:1; transform:translateX(0); pointer-events:auto; }
+  .slide.prev { transform:translateX(-40px); }
+  .eyebrow { color:var(--cyan); font-size:1rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+  h1 { font-size:clamp(3rem,6vw,5.4rem); line-height:1.05; letter-spacing:-.05em; }
+  h2 { font-size:clamp(2rem,4.2vw,3.8rem); line-height:1.14; letter-spacing:-.04em; }
+  h3 { font-size:1.35rem; margin-bottom:10px; color:#dbeafe; }
+  p, li { font-size:1.18rem; line-height:1.68; color:#cbd5e1; }
+  strong { color:#fff; }
+  code, pre { font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  code { color:#bae6fd; background:rgba(34,211,238,.08); border:1px solid rgba(34,211,238,.18); padding:.08em .38em; border-radius:6px; }
+  pre { white-space:pre-wrap; background:#0b1220; border:1px solid var(--line); padding:20px; border-radius:18px; color:#dbeafe; line-height:1.55; font-size:1rem; box-shadow:0 18px 45px rgba(0,0,0,.22); }
+  ul { padding-left:1.4rem; }
+  .subtitle { font-size:1.45rem; color:#b7c7da; max-width:1050px; }
+  .meta { color:var(--muted); font-size:1rem; }
+  .grid { display:grid; gap:18px; }
+  .cols2 { grid-template-columns:1fr 1fr; }
+  .cols3 { grid-template-columns:repeat(3,1fr); }
+  .card { background:linear-gradient(180deg,rgba(23,32,51,.92),rgba(16,24,39,.92)); border:1px solid var(--line); border-radius:22px; padding:24px; box-shadow:0 18px 50px rgba(0,0,0,.22); }
+  .card.accent { border-color:rgba(34,211,238,.42); }
+  .card.green { border-color:rgba(52,211,153,.42); }
+  .card.purple { border-color:rgba(167,139,250,.42); }
+  .badge { display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border:1px solid rgba(96,165,250,.28); background:rgba(96,165,250,.1); color:#bfdbfe; border-radius:999px; font-weight:800; font-size:.9rem; margin:4px 6px 4px 0; }
+  .big-number { font-size:3.4rem; font-weight:900; color:var(--cyan); line-height:1; }
+  .flow { display:flex; align-items:stretch; gap:12px; flex-wrap:wrap; }
+  .node { flex:1 1 170px; min-width:170px; border:1px solid var(--line); border-radius:18px; padding:18px; background:rgba(15,23,42,.82); text-align:center; }
+  .node .label { color:#fff; font-weight:900; font-size:1.08rem; }
+  .node .small { color:var(--muted); font-size:.9rem; margin-top:6px; line-height:1.4; }
+  .arrow { display:flex; align-items:center; color:var(--cyan); font-weight:900; font-size:1.6rem; }
+  table { border-collapse:collapse; width:100%; overflow:hidden; border-radius:18px; border:1px solid var(--line); }
+  th, td { border-bottom:1px solid var(--line); padding:14px 16px; text-align:left; font-size:1rem; line-height:1.45; }
+  th { color:#e0f2fe; background:rgba(96,165,250,.16); }
+  td { color:#cbd5e1; background:rgba(15,23,42,.55); }
+  tr:last-child td { border-bottom:0; }
+  .screenshot { max-height:56vh; max-width:100%; border-radius:20px; border:1px solid #334155; box-shadow:0 24px 70px rgba(0,0,0,.42); object-fit:contain; background:#0b1220; cursor:zoom-in; }
+  .screenshot:focus-visible { outline:3px solid var(--cyan); outline-offset:4px; }
+  .zoom-modal { position:fixed; inset:0; z-index:80; display:none; overflow:auto; padding:72px 48px; background:rgba(2,6,23,.88); backdrop-filter:blur(12px); }
+  .zoom-modal.open { display:block; }
+  .zoom-modal img { display:block; width:var(--zoom-width, 1200px); max-width:none; height:auto; margin:auto; border-radius:18px; border:1px solid #475569; background:#0b1220; box-shadow:0 28px 80px rgba(0,0,0,.55); cursor:zoom-out; }
+  .zoom-modal .zoom-caption { position:fixed; left:24px; top:20px; max-width:calc(100vw - 150px); color:#cbd5e1; font-size:.95rem; }
+  .zoom-close { position:fixed; top:16px; right:22px; z-index:81; padding:9px 14px; font-size:.9rem; }
+  .two-pane { display:grid; grid-template-columns:1.05fr .95fr; gap:26px; align-items:center; }
+  .timeline { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; }
+  .week { border-top:4px solid var(--cyan); background:rgba(15,23,42,.78); border-radius:16px; padding:16px; min-height:130px; }
+  .week:nth-child(2n) { border-top-color:var(--purple); }
+  .week:nth-child(3n) { border-top-color:var(--green); }
+  .week .num { font-weight:900; color:#fff; margin-bottom:8px; }
+  .week p { font-size:.94rem; line-height:1.5; }
+  .speaker { margin-top:6px; color:#7dd3fc; font-size:.98rem; }
+  .cover { justify-content:center; }
+  .cover h1 span { display:block; background:linear-gradient(90deg,#e0f2fe,#67e8f9,#c4b5fd,#f9a8d4); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .quote { font-size:1.55rem; line-height:1.55; color:#eff6ff; border-left:5px solid var(--cyan); padding:14px 0 14px 24px; }
+  .footer-note { position:absolute; left:78px; right:78px; bottom:52px; color:#64748b; font-size:.92rem; }
+  .callout { border:1px solid rgba(251,191,36,.38); background:rgba(251,191,36,.08); border-radius:20px; padding:20px 24px; }
+  @media (max-width: 900px) {
+    .slide { padding:42px 28px 76px; overflow-y:auto; justify-content:flex-start; -webkit-overflow-scrolling:touch; }
+    .cols2, .cols3, .two-pane, .timeline { grid-template-columns:1fr; }
+    h1 { font-size:2.7rem; } h2 { font-size:2.2rem; }
+    .arrow { display:none; }
+    .footer-note { position:static; margin-top:12px; }
+    table { display:block; overflow-x:auto; white-space:nowrap; }
+    pre { overflow-x:auto; white-space:pre; font-size:.92rem; }
+    .screenshot { width:100%; max-height:none; }
+  }
+  @media (max-width: 600px) {
+    body { overflow:hidden; }
+    .slide { padding:44px 18px 84px; gap:16px; }
+    h1 { font-size:clamp(2.15rem, 13vw, 3rem); letter-spacing:-.06em; }
+    h2 { font-size:clamp(1.55rem, 9vw, 2.15rem); }
+    h3 { font-size:1.12rem; }
+    p, li { font-size:1rem; line-height:1.58; }
+    .subtitle { font-size:1.08rem; }
+    .card { padding:18px; border-radius:18px; }
+    .quote { font-size:1.08rem; padding-left:16px; }
+    .flow { display:grid; grid-template-columns:1fr; }
+    .node { min-width:0; }
+    .hint { left:16px; right:92px; bottom:16px; font-size:.74rem; line-height:1.45; }
+    .counter { right:18px; bottom:16px; font-size:.82rem; }
+    .fullscreen-btn { top:10px; right:10px; padding:7px 11px; font-size:.78rem; }
+    .zoom-modal { padding:58px 18px 28px; }
+    .zoom-modal .zoom-caption { top:16px; left:18px; max-width:calc(100vw - 112px); font-size:.8rem; }
+    .zoom-close { top:10px; right:10px; padding:7px 11px; font-size:.78rem; }
+  }
+  @media print {
+    html, body { overflow:visible; height:auto; background:#fff; color:#111; }
+    .progress,.counter,.hint { display:none; }
+    .slide { position:relative; opacity:1 !important; transform:none !important; page-break-after:always; min-height:100vh; background:#07111f; }
+  }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<button class="fullscreen-btn" id="fullscreenBtn" type="button" aria-label="전체화면 전환">⛶ 전체화면</button>
+<div class="hint"><kbd>←</kbd> <kbd>→</kbd> 이동 · <kbd>F</kbd> 전체화면 · 사진 클릭 2배 확대</div>
+<div class="counter" id="counter"></div>
+<div class="zoom-modal" id="zoomModal" role="dialog" aria-modal="true" aria-label="이미지 2배 확대 보기">
+  <div class="zoom-caption" id="zoomCaption">사진 클릭 또는 Esc로 닫기</div>
+  <button class="zoom-close" id="zoomClose" type="button">닫기</button>
+  <img id="zoomImage" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="확대 이미지">
+</div>
+
+<section class="slide cover active">
+  <div class="eyebrow">README 중심 저장소 발표</div>
+  <h1><span>Block_chain</span><span>수업 자료 &amp; MCP 데모</span></h1>
+  <p class="subtitle">블록체인 실습 저장소의 전체 구조를 빠르게 이해하고, 핵심인 <strong>MCP client/server 분리 데모</strong>를 발표 흐름으로 설명합니다.</p>
+  <p class="meta">주요 근거: <code>README.md</code>, <code>week/mcp-blockchain-demo/README_KR.md</code>, MCP demo source files</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">1. 한 줄 요약</div>
+  <h2>이 저장소는 “블록체인 강의 실습 자료 + MCP 최종 프로젝트 예시”입니다.</h2>
+  <div class="grid cols3">
+    <div class="card accent"><div class="big-number">01</div><h3>수업 실습</h3><p>지갑 연결, 테스트넷 송금, Solidity, ERC20/Staking, 보안 실습까지 주차별 자료를 제공합니다.</p></div>
+    <div class="card green"><div class="big-number">02</div><h3>이론 보강</h3><p>주차별 보강 문서와 HTML 자료, QA/evaluation 결과가 별도 폴더로 정리되어 있습니다.</p></div>
+    <div class="card purple"><div class="big-number">03</div><h3>MCP 데모</h3><p>README에서 가장 강조하는 부분: MCP server만이 아니라 client/server 구조를 분리해 보여줍니다.</p></div>
+  </div>
+  <p class="speaker">발표 포인트: “전체 커리큘럼 저장소이지만, README의 초점은 MCP 데모 설명에 있다.”</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">2. 루트 구조</div>
+  <h2>상위 폴더는 수업 흐름과 보강 자료로 나뉩니다.</h2>
+  <div class="grid cols2">
+    <pre>Block_chain_repo/
+├── README.md                         # 저장소 핵심 안내: MCP demo 중심
+├── 20260428-국민대블록체인강의.pdf
+├── week/                             # 주차별 실습/데모 자료
+├── 이론보강/                         # 주차별 이론 보강 HTML/MD와 QA
+├── 특강/                             # 특강 DApp/Remix 자료
+├── REPO_CLEANUP_*.md                 # 정리/중복/감사 기록
+└── presentation.html                 # 이번 발표 자료</pre>
+    <div class="card">
+      <h3>읽는 순서</h3>
+      <ul>
+        <li><strong>README.md</strong>: 저장소가 무엇을 보여주려는지 파악</li>
+        <li><strong>week/mcp-blockchain-demo/README_KR.md</strong>: 수업/교수님 설명용 상세 문서</li>
+        <li><strong>servers / clients / web_app.py</strong>: 실제 client/server 분리 확인</li>
+        <li><strong>week/*, 이론보강/*</strong>: 커리큘럼 확장 자료 확인</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">3. README.md의 핵심 질문</div>
+  <h2>“MCP 서버만 만든 것인가, client/server 구조가 분리되어 있는가?”</h2>
+  <div class="card accent">
+    <p class="quote">답: 이 프로젝트는 <strong>서버만 있는 구조가 아니라</strong>, MCP client가 server에 연결하고 tool을 발견·호출하는 흐름을 명확히 보여주는 데모입니다.</p>
+  </div>
+  <div class="grid cols2">
+    <div class="card"><h3>Server 역할</h3><ul><li>도메인 기능을 MCP tool로 제공</li><li>Open-Meteo / CoinGecko 같은 외부 API 호출</li><li>tool result를 client로 반환</li></ul></div>
+    <div class="card"><h3>Client 역할</h3><ul><li><code>stdio</code>로 MCP server 연결</li><li><code>list_tools()</code>로 tool discovery</li><li><code>call_tool()</code>로 실제 인자와 함께 tool 호출</li></ul></div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">4. MCP 흐름</div>
+  <h2>발표에서 가장 중요한 아키텍처 흐름</h2>
+  <div class="flow">
+    <div class="node"><div class="label">사용자 / UI / CLI</div><div class="small">날씨·코인 요청</div></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="label">MCP Client</div><div class="small"><code>list_tools()</code><br><code>call_tool()</code></div></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="label">MCP Server</div><div class="small">tool 실행</div></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="label">External API</div><div class="small">Open-Meteo<br>CoinGecko</div></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="label">Tool Result</div><div class="small">client/UI에 표시</div></div>
+  </div>
+  <div class="callout"><p><strong>핵심 문장:</strong> 브라우저 UI도 단순 정적 화면이 아니라, Starlette backend가 MCP client가 되어 server tool을 호출합니다.</p></div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">5. MCP 데모 폴더 구조</div>
+  <h2><code>week/mcp-blockchain-demo/</code>가 README의 중심입니다.</h2>
+  <div class="grid cols2">
+    <pre>week/mcp-blockchain-demo/
+├── README.md                 # 영어 / GitHub 공개용
+├── README_KR.md              # 한국어 / 수업 설명용
+├── pyproject.toml            # Python 3.11+, uv 의존성
+├── run_all_demos.sh          # CLI demo 전체 실행
+├── run_ui.sh                 # browser UI 실행
+├── web_app.py                # Starlette backend + MCP client
+├── web/index.html            # 브라우저 데모 콘솔
+├── servers/
+│   ├── weather_server.py     # Weather MCP server
+│   └── coin_server.py        # Coin/Blockchain MCP server
+├── clients/test_mcp_client.py# CLI MCP client
+└── assets/screenshots/       # 발표용 스크린샷</pre>
+    <div class="card green">
+      <h3>설명 전략</h3>
+      <ul>
+        <li>먼저 <code>clients/</code>와 <code>servers/</code> 분리를 보여줍니다.</li>
+        <li>그 다음 <code>web_app.py</code>가 웹 backend이면서 MCP client 역할을 한다고 설명합니다.</li>
+        <li>마지막으로 CLI와 Web UI가 같은 MCP 원리를 공유한다고 연결합니다.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">6. 실제 MCP tool 구성</div>
+  <h2>Weather + Coin/Blockchain 도메인 tool</h2>
+  <table>
+    <thead><tr><th>서버 파일</th><th>Tool</th><th>역할</th></tr></thead>
+    <tbody>
+      <tr><td><code>servers/weather_server.py</code></td><td><code>get_current_weather(city)</code></td><td>현재 날씨, 기온, 습도, 풍속, 관측 시각 반환</td></tr>
+      <tr><td><code>servers/weather_server.py</code></td><td><code>get_weather_forecast(city, days)</code></td><td>일별 예보, 최고/최저 기온, 강수 확률 반환</td></tr>
+      <tr><td><code>servers/coin_server.py</code></td><td><code>get_coin_price(symbol, currency)</code></td><td>현재 가격, 시가총액, 거래량, 24시간 변동률 반환</td></tr>
+      <tr><td><code>servers/coin_server.py</code></td><td><code>get_top_coins(limit, currency)</code></td><td>시가총액 기준 상위 코인 목록 반환</td></tr>
+      <tr><td><code>servers/coin_server.py</code></td><td><code>compare_coins(symbols, currency)</code></td><td>여러 코인의 가격과 24시간 변동률 비교</td></tr>
+    </tbody>
+  </table>
+  <p><span class="badge">btc</span><span class="badge">eth</span><span class="badge">sol</span><span class="badge">xrp</span><span class="badge">ada</span><span class="badge">doge</span></p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">7. CLI 데모 흐름</div>
+  <h2>터미널에서는 3단계만 보여주면 됩니다.</h2>
+  <div class="grid cols2">
+    <div class="card">
+      <h3>실행 명령</h3>
+      <pre>cd week/mcp-blockchain-demo
+uv sync
+./run_all_demos.sh
+
+# 개별 실행
+uv run python clients/test_mcp_client.py weather
+uv run python clients/test_mcp_client.py coin</pre>
+    </div>
+    <div class="card accent">
+      <h3>학생에게 보여줄 출력 구조</h3>
+      <pre>[1/3] MCP 세션 초기화
+[2/3] Tool discovery
+[3/3] Tool call 실행</pre>
+      <p>문제 해결 시에는 <code>--verbose</code>로 MCP/HTTP 내부 로그까지 확인할 수 있습니다.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">8. Web UI 데모 흐름</div>
+  <h2>브라우저 UI는 MCP client/server 분리를 시각적으로 보여줍니다.</h2>
+  <div class="two-pane">
+    <div>
+      <pre>cd week/mcp-blockchain-demo
+./run_ui.sh
+
+브라우저 접속:
+http://127.0.0.1:8765</pre>
+      <div class="card"><h3>UI에서 확인할 기능</h3><ul><li>현재 날씨 조회 / 여러 날짜 예보</li><li>코인 가격 조회 / 코인 비교</li><li>시가총액 상위 코인 목록</li><li>tool discovery 시각화</li></ul></div>
+    </div>
+    <img class="screenshot" src="assets/screenshots/web-ui-demo.png" alt="MCP Web UI demo screenshot">
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">9. CLI 스크린샷으로 증명</div>
+  <h2>같은 MCP 원리가 Weather와 Coin 양쪽에서 반복됩니다.</h2>
+  <div class="grid cols2">
+    <div class="card"><h3>Weather CLI</h3><img class="screenshot" src="assets/screenshots/weather-cli-demo.png" alt="Weather CLI demo screenshot"></div>
+    <div class="card"><h3>Coin CLI</h3><img class="screenshot" src="assets/screenshots/coin-cli-demo.png" alt="Coin CLI demo screenshot"></div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">10. 주차별 실습 커리큘럼</div>
+  <h2>저장소 전체는 블록체인 학습 경로를 따라 확장됩니다.</h2>
+  <div class="timeline">
+    <div class="week"><div class="num">Week 1</div><p>블록체인 기초, 가격 조회, HTML 발표 자료</p></div>
+    <div class="week"><div class="num">Week 2</div><p>MetaMask 지갑 연결, 가격 추적, 트랜잭션 과정</p></div>
+    <div class="week"><div class="num">Week 3</div><p>Sepolia/Base Sepolia/GIWA 테스트넷, gas·nonce·signature·bridge</p></div>
+    <div class="week"><div class="num">Week 4</div><p>스테이블코인 네트워크와 explorer 자료</p></div>
+    <div class="week"><div class="num">Week 5–6</div><p>Solidity, Remix, Faucet, ERC20, Staking DApp</p></div>
+    <div class="week"><div class="num">Week 12</div><p>DAO reentrancy와 Parity wallet 보안 시뮬레이션</p></div>
+  </div>
+  <p class="speaker">발표 포인트: MCP 데모는 이 커리큘럼 위에 “기말 프로젝트 방향”을 얹는 역할입니다.</p>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">11. 보강/특강 자료</div>
+  <h2>강의 운영을 위한 보조 자료도 별도로 정리되어 있습니다.</h2>
+  <div class="grid cols2">
+    <div class="card green">
+      <h3><code>이론보강/</code></h3>
+      <ul>
+        <li>Week 1–6 이론 보강 HTML/Markdown</li>
+        <li>스마트 컨트랙트 보안 자료</li>
+        <li>QA report, evaluation, scorecard</li>
+        <li><code>START_HERE.md</code>로 진입점 제공</li>
+      </ul>
+    </div>
+    <div class="card purple">
+      <h3><code>특강/</code></h3>
+      <ul>
+        <li>국민대 블록체인 강의 PDF</li>
+        <li>DApp/Remix-to-DApp guide</li>
+        <li>KUSDC 카페 결제 DApp 예시</li>
+        <li>특정 행사·특강용 실전 자료</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">12. 학생 프로젝트 방향</div>
+  <h2>README가 제시하는 기말 프로젝트 요구사항</h2>
+  <div class="grid cols2">
+    <div class="card accent">
+      <h3>필수 방향</h3>
+      <ul>
+        <li>MCP server를 최소 1개 만든다.</li>
+        <li>tool을 최소 2개 이상 노출한다.</li>
+        <li>client에서 <code>list_tools()</code>, <code>call_tool()</code>로 검증한다.</li>
+        <li>블록체인/코인 관련 API 또는 로컬 데이터셋을 사용한다.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>예시 tool</h3>
+      <p><span class="badge">get_coin_price</span><span class="badge">compare_coins</span><span class="badge">get_wallet_balance</span><span class="badge">get_latest_blocks</span><span class="badge">get_token_metadata</span><span class="badge">analyze_transaction_hash</span></p>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">13. 발표 데모 시나리오</div>
+  <h2>10분 발표 구성 예시</h2>
+  <table>
+    <thead><tr><th>시간</th><th>내용</th><th>보여줄 파일/화면</th></tr></thead>
+    <tbody>
+      <tr><td>0:00–1:00</td><td>저장소 목적과 전체 구조</td><td><code>README.md</code>, 루트 구조</td></tr>
+      <tr><td>1:00–3:00</td><td>MCP client/server 핵심 질문과 답</td><td>README의 MCP flow</td></tr>
+      <tr><td>3:00–5:00</td><td>소스 구조 설명</td><td><code>servers/</code>, <code>clients/</code>, <code>web_app.py</code></td></tr>
+      <tr><td>5:00–7:00</td><td>CLI demo 실행</td><td><code>./run_all_demos.sh</code></td></tr>
+      <tr><td>7:00–9:00</td><td>Web UI demo 실행</td><td><code>http://127.0.0.1:8765</code></td></tr>
+      <tr><td>9:00–10:00</td><td>학생 프로젝트 확장 방향</td><td>예시 MCP tools</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">14. 결론</div>
+  <h2>발표의 핵심 메시지 3가지</h2>
+  <div class="grid cols3">
+    <div class="card accent"><h3>README의 중심</h3><p>이 저장소에서 가장 중요한 설명은 MCP demo의 client/server 분리입니다.</p></div>
+    <div class="card green"><h3>증명 방식</h3><p>CLI client와 Web backend가 모두 MCP client로 server tool을 발견하고 호출합니다.</p></div>
+    <div class="card purple"><h3>확장 방향</h3><p>학생들은 블록체인/코인 도메인 tool을 직접 설계해 MCP 최종 프로젝트로 확장할 수 있습니다.</p></div>
+  </div>
+  <div class="footer-note">Tip: 발표 중에는 “server만 구현한 것이 아니라, client가 list_tools/call_tool로 검증한다”는 문장을 반복하면 전체 구조가 선명해집니다.</div>
+</section>
+
+<script>
+const slides = Array.from(document.querySelectorAll('.slide'));
+const progress = document.getElementById('progress');
+const counter = document.getElementById('counter');
+const fullscreenBtn = document.getElementById('fullscreenBtn');
+const zoomModal = document.getElementById('zoomModal');
+const zoomImage = document.getElementById('zoomImage');
+const zoomCaption = document.getElementById('zoomCaption');
+const zoomClose = document.getElementById('zoomClose');
+let index = 0;
+let touchStartX = 0;
+let touchStartY = 0;
+
+function show(i) {
+  index = Math.max(0, Math.min(slides.length - 1, i));
+  slides.forEach((s, n) => {
+    s.classList.toggle('active', n === index);
+    s.classList.toggle('prev', n < index);
+    if (n === index) s.scrollTop = 0;
+  });
+  progress.style.width = `${((index + 1) / slides.length) * 100}%`;
+  counter.textContent = `${index + 1} / ${slides.length}`;
+  location.hash = `slide-${index + 1}`;
+}
+function fromHash() {
+  const m = location.hash.match(/slide-(\d+)/);
+  if (m) show(Number(m[1]) - 1);
+}
+async function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
+  } else if (document.exitFullscreen) {
+    await document.exitFullscreen();
+  }
+}
+function updateFullscreenButton() {
+  fullscreenBtn.textContent = document.fullscreenElement ? '전체화면 종료' : '⛶ 전체화면';
+}
+function openZoom(img) {
+  const rect = img.getBoundingClientRect();
+  const zoomWidth = Math.max(320, Math.round(rect.width * 2));
+  zoomImage.src = img.currentSrc || img.src;
+  zoomImage.alt = img.alt || '확대 이미지';
+  zoomModal.style.setProperty('--zoom-width', `${zoomWidth}px`);
+  zoomCaption.textContent = `${img.alt || '이미지'} · 2배 확대`;
+  zoomModal.classList.add('open');
+  zoomClose.focus({ preventScroll: true });
+}
+function closeZoom() {
+  zoomModal.classList.remove('open');
+  zoomImage.removeAttribute('src');
+}
+
+document.querySelectorAll('.screenshot').forEach((img) => {
+  img.setAttribute('tabindex', '0');
+  img.setAttribute('role', 'button');
+  img.setAttribute('aria-label', `${img.alt || '이미지'} 2배 확대`);
+  img.addEventListener('click', () => openZoom(img));
+  img.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openZoom(img); }
+  });
+});
+fullscreenBtn.addEventListener('click', () => toggleFullscreen().catch(() => {}));
+document.addEventListener('fullscreenchange', updateFullscreenButton);
+zoomClose.addEventListener('click', closeZoom);
+zoomModal.addEventListener('click', (e) => {
+  if (e.target === zoomModal || e.target === zoomImage) closeZoom();
+});
+document.addEventListener('keydown', (e) => {
+  if (zoomModal.classList.contains('open')) {
+    if (e.key === 'Escape') closeZoom();
+    return;
+  }
+  if (['ArrowRight','PageDown',' '].includes(e.key)) { e.preventDefault(); show(index + 1); }
+  if (['ArrowLeft','PageUp'].includes(e.key)) { e.preventDefault(); show(index - 1); }
+  if (e.key === 'Home') { e.preventDefault(); show(0); }
+  if (e.key === 'End') { e.preventDefault(); show(slides.length - 1); }
+  if (e.key.toLowerCase() === 'f') { e.preventDefault(); toggleFullscreen().catch(() => {}); }
+});
+document.addEventListener('touchstart', (e) => {
+  if (zoomModal.classList.contains('open') || e.touches.length !== 1) return;
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+document.addEventListener('touchend', (e) => {
+  if (zoomModal.classList.contains('open') || !touchStartX || e.changedTouches.length !== 1) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  touchStartX = 0;
+  touchStartY = 0;
+  if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.4) show(index + (dx < 0 ? 1 : -1));
+}, { passive: true });
+window.addEventListener('hashchange', fromHash);
+fromHash();
+show(index);
+updateFullscreenButton();
+</script>
+</body>
+</html>

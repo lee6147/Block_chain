@@ -2,6 +2,12 @@
 
 Blockchain lab materials and teaching demos.
 
+## Presentation slides
+
+A repository-level Korean presentation deck summarizing this README, the folder structure, and the MCP client/server demo is available at [presentation.html](presentation.html).
+
+Open it directly in a browser from the repository root. The deck intentionally uses root-relative screenshot paths into `week/mcp-blockchain-demo/assets/screenshots/` because it is a whole-repository overview rather than a single-week module deck.
+
 ## MCP Weather & Blockchain/Coin Demo
 
 The MCP-related material discussed after the call with Professor Kim is organized under:
