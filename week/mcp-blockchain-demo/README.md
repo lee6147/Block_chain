@@ -1,3 +1,11 @@
+# What is MCP? (Student-friendly quick overview)
+
+**MCP (Multi-Tool Calling Protocol) is a standard protocol that allows AI, LLMs, or any program to call external functions (APIs or local code) as 'tools' in a unified, standardized way.**
+
+In this project (and for your final assignment), the MCP server exposes multiple live coin/blockchain features as 'tools,' and the MCP client actually calls those tools. The structure requires a real separation between client and server, and demonstrates tool discovery and invocation -- it's not just a basic API example.
+
+---
+
 # MCP Weather & Blockchain/Coin Demo
 
 A classroom-ready MCP (Model Context Protocol) demo that shows how an MCP client discovers and calls tools exposed by MCP servers. The project includes:
