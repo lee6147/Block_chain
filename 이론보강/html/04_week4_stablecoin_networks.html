@@ -21,6 +21,20 @@
 
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
+    .skip-link {
+      position: absolute;
+      left: 12px;
+      top: -64px;
+      z-index: 1000;
+      padding: 10px 14px;
+      border: 3px solid var(--ink);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .skip-link:focus { top: 12px; }
     body {
       margin: 0;
       color: var(--ink);
@@ -29,6 +43,7 @@
         linear-gradient(315deg, rgba(15, 159, 110, 0.09), transparent 32%),
         var(--bg);
       font-family: "Segoe UI", "Malgun Gothic", system-ui, sans-serif;
+      font-size: 16px;
       line-height: 1.65;
     }
 
@@ -61,7 +76,7 @@
     nav a, .pill {
       display: inline-flex;
       align-items: center;
-      min-height: 36px;
+      min-height: 44px;
       padding: 7px 12px;
       border: 1px solid var(--line);
       border-radius: 999px;
@@ -70,6 +85,10 @@
       text-decoration: none;
       font-size: 0.92rem;
       white-space: normal;
+    }
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 3px solid #111827;
+      outline-offset: 3px;
     }
 
     main {
@@ -151,7 +170,7 @@
 
     select, input[type="range"], input[type="number"] {
       width: 100%;
-      min-height: 40px;
+      min-height: 44px;
       border: 1px solid #bac6d4;
       border-radius: 8px;
       padding: 7px 10px;
@@ -178,7 +197,7 @@
     }
 
     button {
-      min-height: 42px;
+      min-height: 44px;
       border: 0;
       border-radius: 8px;
       padding: 10px 14px;
@@ -309,6 +328,14 @@
       color: var(--muted);
       font-size: 0.92rem;
     }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
 
     @media (max-width: 860px) {
       .grid, .two, .controls, .network-stage, .metric-grid, .checks {
@@ -326,6 +353,7 @@
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">본문으로 건너뛰기</a>
   <header>
     <span class="pill">Week4 이론 보강</span>
     <h1>스테이블코인 전용 네트워크</h1>
@@ -344,7 +372,19 @@
     </nav>
   </header>
 
-  <main>
+  <main id="main" tabindex="-1">
+    <section id="read-first" aria-labelledby="read-first-title">
+      <h2 id="read-first-title">오늘 이해할 3문장</h2>
+      <div class="grid">
+        <div class="concept"><strong>1. 송금 자산과 gas token은 다를 수 있다.</strong><br>USDC를 보내더라도 수수료는 ETH 같은 별도 native token으로 낼 수 있다.</div>
+        <div class="concept"><strong>2. 네트워크 구조가 UX를 바꾼다.</strong><br>L1, L2, 전용 네트워크는 비용, 속도, settlement 위치가 다르다.</div>
+        <div class="concept"><strong>3. Faucet은 실습 준비물이다.</strong><br>Faucet 미수령은 테스트 실습 경고이지 모든 네트워크 송금 실패 조건이 아니다.</div>
+      </div>
+      <div class="guide">
+        <strong>처음이면 이 순서로</strong>
+        <p>송금 자산, gas token, 네트워크 유형을 차례대로 고른 뒤 실습용 Faucet과 gas 잔고는 별도 준비 상태로 해석한다.</p>
+      </div>
+    </section>
     <section id="goals">
       <h2>학습 목표</h2>
       <div class="grid">
@@ -356,10 +396,14 @@
 
     <section id="concept">
       <h2>정석 개념 설명</h2>
+      <div class="callout">
+        <strong>비유로 먼저 이해하기</strong>
+        <p>일반 네트워크에서 스테이블코인을 보내는 것은 달러 상품권을 보내는데 배송비는 가격이 매일 바뀌는 기름으로 내는 상황과 비슷하다. 전용 네트워크는 상품권 결제 전용 고속도로처럼 통행료 단위와 결제 흐름을 단순하게 만든다.</p>
+      </div>
       <p>스테이블코인(stablecoin)은 달러, 원화, 유로 같은 기준 자산에 가치가 연동되도록 설계된 암호화폐다. 정의의 중심은 가격 안정성이다. 다만 페깅은 목표 구조이며 담보, 상환, 발행자, 시장 상황에 따라 리스크가 남는다.</p>
       <p>스테이블코인 전용 네트워크는 가격 안정 자산을 더 잘 전송하기 위한 블록체인 인프라다. 핵심은 네트워크 수수료, 최종성, 결제 흐름, 기업 요구, 브릿지 구조가 스테이블코인 사용에 맞춰져 있다는 점이다.</p>
       <div class="callout">
-        <strong>비유로 먼저 이해하기</strong>
+        <strong>비유 다시 보기</strong>
         <p>일반 네트워크에서 스테이블코인을 보내는 것은 달러 상품권을 보내는데 배송비는 가격이 매일 바뀌는 기름으로 내는 상황과 비슷하다. 전용 네트워크는 상품권 결제 전용 고속도로처럼 통행료 단위와 결제 흐름을 단순하게 만든다.</p>
       </div>
       <table>
@@ -379,6 +423,11 @@
         <strong>리스크 안전난간</strong>
         <p>스테이블 gas token은 비용 단위를 이해하기 쉽게 만들 수 있지만 무료나 무위험을 뜻하지 않는다. depeg, 발행자 신뢰, 동결/검열, 브릿지 보안, L2 정산 지연은 별도 질문으로 남는다.</p>
       </div>
+      <details class="guide">
+        <summary><strong>더 깊게 보기: 자산 리스크와 네트워크 UX 리스크 분리</strong></summary>
+        <p>자산 리스크는 준비금, 상환, 발행자, depeg, 동결 가능성처럼 토큰 자체가 약속을 지킬 수 있는가의 문제다. 네트워크 UX 리스크는 gas token, 혼잡, bridge, settlement처럼 그 토큰을 보내는 과정의 문제다.</p>
+        <p>후원 수수료는 무료와 같지 않다. 누군가 대신 내거나 정책적으로 보조하는 모델일 수 있으므로 남용 방지 조건, 지속 가능성, 운영 정책을 별도로 확인한다.</p>
+      </details>
     </section>
 
     <section id="simulator">
@@ -467,7 +516,7 @@
               <div class="road"></div><div class="coin">₩</div>
             </div>
           </div>
-          <div id="result" class="result status">
+          <div id="result" class="result status" role="status" aria-live="polite">
             <h3>판정 대기</h3>
             <p>조건을 조정한 뒤 실행하면 준비물, 예상 수수료, 실패 가능 원인을 보여준다.</p>
           </div>
@@ -520,7 +569,7 @@
             <button id="resetLayers" class="secondary">초기 상태</button>
           </div>
         </div>
-        <div id="layerResult" class="result status">
+        <div id="layerResult" class="result status" role="status" aria-live="polite">
           <h3>비교 결과</h3>
           <p>L1은 자체 합의와 보안을 가진 기본 체인이고, L2는 L1 위에서 실행을 확장한다. Rollup은 여러 거래를 묶어 L1에 결과를 기록한다. 여기서 settlement는 거래 포함/최종성, 출금 완료, 발행자 상환/업무 정산 중 무엇을 말하는지 먼저 나눠야 한다.</p>
         </div>
@@ -543,6 +592,15 @@
       <div class="guide">
         <strong>한 줄 결론</strong>
         <p>스테이블코인은 가격 안정 자산이고, 전용 네트워크는 그 자산을 보내기 쉽게 만드는 실행 인프라다. 화면에서는 체크리스트 대신 `보내는 자산 -> gas token -> 정산 위치 -> 남는 리스크` 순서만 잡고 다음 주차 Solidity 실행 흐름으로 넘어간다.</p>
+      </div>
+    </section>
+
+    <section id="checklist" aria-labelledby="checklist-title">
+      <h2 id="checklist-title">초보자 체크리스트</h2>
+      <div class="cards">
+        <article class="card"><h3>무엇을 눌렀는가</h3><p>보내는 자산, gas token, 네트워크 종류, 혼잡도, 보유 잔고를 바꾸며 결과를 비교한다.</p></article>
+        <article class="card"><h3>무엇이 바뀌었는가</h3><p>수수료 준비물, 예측 가능성, settlement 위치, 브릿지/발행자 리스크가 서로 다르게 바뀐다.</p></article>
+        <article class="card"><h3>왜 중요한가</h3><p>스테이블코인 자체의 자산 리스크와 네트워크 UX 리스크를 섞지 않고 설명할 수 있어야 한다.</p></article>
       </div>
     </section>
   </main>

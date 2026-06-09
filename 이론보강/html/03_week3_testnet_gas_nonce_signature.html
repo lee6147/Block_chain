@@ -18,7 +18,21 @@
       --shadow: 0 10px 24px rgba(23, 33, 43, .08);
     }
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: Arial, "Noto Sans KR", sans-serif; line-height: 1.65; color: var(--ink); background: #eef3f5; }
+    .skip-link {
+      position: absolute;
+      left: 12px;
+      top: -64px;
+      z-index: 1000;
+      padding: 10px 14px;
+      border: 3px solid var(--ink);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .skip-link:focus { top: 12px; }
+    body { margin: 0; font-family: Arial, "Noto Sans KR", sans-serif; font-size: 16px; line-height: 1.65; color: var(--ink); background: #eef3f5; }
     header { padding: 32px 20px 20px; background: linear-gradient(135deg, #ffffff 0%, #e4f6f8 100%); border-bottom: 1px solid var(--line); }
     .wrap { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
     h1 { margin: 0 0 12px; font-size: clamp(27px, 4vw, 42px); line-height: 1.18; letter-spacing: 0; }
@@ -27,7 +41,7 @@
     p { margin: 0 0 12px; }
     nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
     nav a, button {
-      min-height: 42px;
+      min-height: 44px;
       border: 1px solid var(--line);
       border-radius: 7px;
       padding: 9px 12px;
@@ -36,6 +50,10 @@
       text-decoration: none;
       font-weight: 700;
       cursor: pointer;
+    }
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 3px solid #111827;
+      outline-offset: 3px;
     }
     button.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
     main { padding: 22px 0 42px; }
@@ -48,7 +66,7 @@
     .label { display: block; margin: 10px 0 5px; font-weight: 700; color: var(--muted); }
     input, select {
       width: 100%;
-      min-height: 42px;
+      min-height: 44px;
       border: 1px solid var(--line);
       border-radius: 7px;
       padding: 9px 10px;
@@ -92,6 +110,14 @@
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { border: 1px solid var(--line); padding: 10px; vertical-align: top; }
     th { background: #eef3f8; text-align: left; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
     @media (max-width: 900px) {
       .grid, .two, .timeline { grid-template-columns: 1fr; }
       section { padding: 16px; }
@@ -110,6 +136,7 @@
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">본문으로 건너뛰기</a>
   <header>
     <div class="wrap">
       <h1>Week 3. 테스트넷, Gas, Nonce, Signature</h1>
@@ -123,9 +150,25 @@
     </div>
   </header>
 
-  <main class="wrap">
+  <main class="wrap" id="main" tabindex="-1">
+    <section id="read-first" aria-labelledby="read-first-title">
+      <h2 id="read-first-title">오늘 이해할 3문장</h2>
+      <div class="grid">
+        <div class="card"><strong>1. Faucet은 준비 단계다.</strong><p>Faucet 실패는 테스트 ETH 준비 문제이지, 트랜잭션 실행 결과가 아니다.</p></div>
+        <div class="card"><strong>2. Nonce는 줄 번호다.</strong><p>같은 지갑의 트랜잭션은 nonce 순서대로 처리되며, 순서가 꼬이면 pending이 생긴다.</p></div>
+        <div class="card"><strong>3. Receipt가 최종 증거다.</strong><p>tx hash만 보고 끝내지 말고 status, gasUsed, blockNumber를 확인한다.</p></div>
+      </div>
+      <div class="guide">
+        <strong>처음이면 이 순서로</strong>
+        <p>Faucet 상태와 잔액을 먼저 확인하고, nonce/gas/signature 조건을 바꾼 뒤 결과 문장의 다음 확인 위치를 읽는다.</p>
+      </div>
+    </section>
     <section id="concept">
       <h2>핵심 개념 요약</h2>
+      <div class="guide">
+        <strong>비유로 먼저 이해하기</strong>
+        <p>Faucet은 택배를 보내기 전에 우표를 받는 안내 데스크, nonce는 송장 일련번호, gas는 배송 예산, signature는 위조 방지 도장이다. 우표를 못 받은 문제와 이미 접수한 택배가 실패한 문제를 먼저 나눈다.</p>
+      </div>
       <div class="grid">
         <div class="card">
           <h3>Faucet</h3>
@@ -284,6 +327,28 @@
           <tr><td><code>execution reverted</code></td><td>블록 포함 후 컨트랙트 조건 실패</td><td>require, 입력값, allowance, lock, 권한, revert reason</td></tr>
         </tbody>
       </table>
+    </section>
+
+    <section id="practice-link">
+      <h2>수업 실습과 연결</h2>
+      <table>
+        <thead><tr><th>Week3 실습 요소</th><th>이 페이지에서 확인한 개념</th></tr></thead>
+        <tbody>
+          <tr><td>Faucet 수령</td><td>트랜잭션 실행 전 gas용 테스트 ETH를 준비하는 단계다.</td></tr>
+          <tr><td><code>01-check-balance.js</code></td><td>잔고와 현재 nonce를 먼저 확인해 실행 가능성을 판단한다.</td></tr>
+          <tr><td><code>02-send-eth.js</code></td><td>value, gas, nonce, signature가 맞아야 RPC 제출과 블록 포함으로 이어진다.</td></tr>
+          <tr><td><code>03-track-tx.js</code>와 Explorer</td><td>tx hash, status, gasUsed, blockNumber, nonce를 함께 확인한다.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="checklist" aria-labelledby="checklist-title">
+      <h2 id="checklist-title">초보자 체크리스트</h2>
+      <div class="grid">
+        <div class="card"><h3>무엇을 눌렀는가</h3><p>잔고, gas, nonce, 서명, pending 조건을 바꾸고 판별 버튼을 눌러 어느 단계에서 막히는지 확인한다.</p></div>
+        <div class="card"><h3>무엇이 바뀌었는가</h3><p>Faucet 실패는 준비 단계 문제이고, tx hash 이후 실패는 gas, nonce, receipt, require 조건을 따로 봐야 한다.</p></div>
+        <div class="card"><h3>왜 중요한가</h3><p>오류를 MetaMask 고장으로 묶지 않고 잔고, 네트워크, nonce, gas, 서명, 컨트랙트 조건 중 하나로 좁힐 수 있다.</p></div>
+      </div>
     </section>
   </main>
 
