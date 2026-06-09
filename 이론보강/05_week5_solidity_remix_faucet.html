@@ -21,9 +21,24 @@
 
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
+    .skip-link {
+      position: absolute;
+      left: 12px;
+      top: -64px;
+      z-index: 1000;
+      padding: 10px 14px;
+      border: 3px solid var(--ink);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .skip-link:focus { top: 12px; }
     body {
       margin: 0;
       font-family: "Segoe UI", "Malgun Gothic", system-ui, sans-serif;
+      font-size: 16px;
       line-height: 1.65;
       color: var(--ink);
       background:
@@ -61,7 +76,7 @@
     nav a, .pill {
       display: inline-flex;
       align-items: center;
-      min-height: 36px;
+      min-height: 44px;
       padding: 7px 12px;
       border: 1px solid var(--line);
       border-radius: 999px;
@@ -69,6 +84,10 @@
       background: #f8fafc;
       text-decoration: none;
       font-size: 0.92rem;
+    }
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 3px solid #111827;
+      outline-offset: 3px;
     }
 
     main {
@@ -129,7 +148,7 @@
 
     select, input[type="number"], input[type="range"] {
       width: 100%;
-      min-height: 40px;
+      min-height: 44px;
       border: 1px solid #bac6d4;
       border-radius: 8px;
       padding: 7px 10px;
@@ -139,7 +158,7 @@
     }
 
     button {
-      min-height: 42px;
+      min-height: 44px;
       border: 0;
       border-radius: 8px;
       padding: 10px 14px;
@@ -350,6 +369,14 @@
       color: var(--muted);
       font-size: 0.92rem;
     }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
 
     @media (max-width: 880px) {
       .grid, .two, .controls, .stepper { grid-template-columns: 1fr; }
@@ -381,6 +408,7 @@
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">본문으로 건너뛰기</a>
   <header>
     <span class="pill">Week5 이론 보강</span>
     <h1>Solidity, Remix, Faucet 실행 흐름</h1>
@@ -400,7 +428,19 @@
     </nav>
   </header>
 
-  <main>
+  <main id="main" tabindex="-1">
+    <section id="read-first" aria-labelledby="read-first-title">
+      <h2 id="read-first-title">오늘 이해할 3문장</h2>
+      <div class="grid">
+        <div class="concept"><strong>1. Compile 실패는 아직 체인 문제가 아니다.</strong><br>문법, pragma, import, 타입을 먼저 확인한다.</div>
+        <div class="concept"><strong>2. Deploy 이후부터 gas와 네트워크를 본다.</strong><br>컨트랙트 주소가 생기기 전과 후의 오류 위치를 구분한다.</div>
+        <div class="concept"><strong>3. Faucet 오류도 층을 나눠야 한다.</strong><br>cooldown, Faucet balance, 지갑 gas, write tx revert를 따로 해석한다.</div>
+      </div>
+      <div class="guide">
+        <strong>처음이면 이 순서로</strong>
+        <p>Compile -> Deploy -> Read/Write -> Faucet withdraw() -> 오류 분류 순서로 진행한다. 막히면 다음 버튼으로 넘어가지 않고 현재 단계의 실패 위치를 먼저 말한다.</p>
+      </div>
+    </section>
     <section id="goals">
       <h2>학습 목표</h2>
       <div class="grid">
@@ -430,6 +470,10 @@
         <strong>처음이면 이 순서로</strong>
         <p>Compile 검사 -> Deploy 검사 -> Function Call 검사 -> Faucet withdraw() -> 오류 분류 순서로 진행한다. 막히면 다음 단계로 넘어가지 않고 지금 실패가 컴파일 전인지, 컨트랙트 주소 생성 전인지, write tx revert인지 먼저 말한다.</p>
       </div>
+      <details class="guide">
+        <summary><strong>더 깊게 보기: Compile 성공 전에는 Deploy가 없다</strong></summary>
+        <p>Compile은 ABI와 bytecode를 만들 수 있는지 확인하는 단계다. 이 단계에서 빨간 오류가 남아 있으면 아직 지갑, gas, Faucet, 네트워크 문제가 아니다. Deploy는 Compile이 성공한 다음에야 컨트랙트 주소를 만드는 쓰기 트랜잭션이 된다.</p>
+      </details>
     </section>
 
     <section id="remix">
@@ -480,7 +524,7 @@
             <div id="stepCall" class="step"><h3>Read / Write</h3><p class="small">eth_call 조회와 트랜잭션 실행 구분</p></div>
             <div id="stepEvent" class="step"><h3>Event</h3><p class="small">receipt log 확인</p></div>
           </div>
-          <div id="remixResult" class="result status">
+          <div id="remixResult" class="result status" role="status" aria-live="polite">
             <h3>단계 대기</h3>
             <p>Compile, Deploy, Function Call을 눌러 어느 단계에서 무엇을 확인하는지 보세요.</p>
           </div>
@@ -543,7 +587,7 @@
               </div>
             </div>
           </div>
-          <div id="faucetResult" class="result status">
+          <div id="faucetResult" class="result status" role="status" aria-live="polite">
             <h3>판정 대기</h3>
             <p>쿨다운과 Faucet 잔액 조건을 확인한 뒤 성공 또는 revert를 표시한다.</p>
           </div>
@@ -600,11 +644,20 @@
             <button id="resetError" class="secondary">초기 상태</button>
           </div>
         </div>
-        <div id="errorResult" class="result status">
+        <div id="errorResult" class="result status" role="status" aria-live="polite">
           <h3>피드백 대기</h3>
           <p>증상과 분류를 고르면 먼저 확인할 항목을 보여준다.</p>
         </div>
       </div>
+      <details class="guide">
+        <summary><strong>더 깊게 보기: execution reverted 다음 4질문</strong></summary>
+        <ol>
+          <li>어떤 버튼과 함수에서 실패했는가?</li>
+          <li>tx hash와 failed receipt가 있는가, 아니면 Compile 전 오류인가?</li>
+          <li>cooldown, Faucet 잔액, 지갑 gas, 네트워크, require 조건 중 어느 갈래인가?</li>
+          <li>성공 event와 storage 변경이 남았는가, 아니면 revert로 모두 되돌아갔는가?</li>
+        </ol>
+      </details>
       <p><strong>실제 실습에서 어디에 해당하는가:</strong> Remix compile 탭, Faucet 웹사이트 또는 수업용 Faucet, MetaMask 승인 후 failed 화면을 서로 다른 진단 화면으로 분리하는 훈련이다.</p>
     </section>
 
